@@ -1,0 +1,825 @@
+.siteseopro-setting-content{
+display:flex;
+}
+
+.siteseopro-tab-group{
+padding:0;
+}
+
+.siteseopro-license-table{
+background-color: #FFF;
+border-radius:5px;
+border: 1px solid #ccc;
+padding: 10px;
+}
+
+.siteseopro-btn-primary{
+background-color: #00308F;
+border: 1px solid #3d5afe;
+color: #FFF;
+}
+
+.siteseopro-btn-primary:hover,
+a.siteseopro-btn-primary:hover{
+background-color:#0529f7;
+transform: translateY(-1px);
+transition: background-color 0.6s, transform 0.4s;
+color:#FFF;
+}
+
+.siteseopro-btn{
+outline: none;
+border: none;
+border-radius: 3px;
+box-shadow: 1px 0 5px 0 #ccc;
+padding: 8px 10px;
+font-weight: bold;
+font-size:0.7rem;
+cursor:pointer;
+vertical-align:top;
+}
+
+a.siteseopro-btn{
+text-decoration: none;
+vertical-align:baseline;
+text-align:center;
+padding:5px 10px;
+}
+
+.siteseopro_license_notices{
+position: fixed;
+top: 0;
+left: 0;
+width: 100vw;
+height: 100vh;
+z-index: 999;
+backdrop-filter: blur(1px);
+background-color: rgba(255, 255, 255, 0.5);
+padding-left:35%;
+padding-right:20%;
+padding-top:21%;
+}
+
+#siteseo-root .spinner{
+display: none;
+float:unset !important;
+}
+
+#siteseo-root .spinner.is-active{
+display: inline-block;
+}
+
+#siteseo-auto-schema-modal .spinner{
+float:unset !important;
+}
+
+.tab-content{
+display: none;
+}
+
+.tab-content.active{
+display: block;
+}
+
+.siteseo-analysis-block{
+clear: both;
+}
+
+.siteseo-audit-title{
+display:flex;
+align-items:center;
+gap: 10px;
+position: relative;
+}
+
+/* main below code*/
+.siteseo-audit-title:focus{
+color: #191e23;
+border: none;
+box-shadow: none;
+outline-offset: -2px;
+outline: 1px dotted #555d66;
+}
+
+.siteseo-audit-title:hover{
+background: #f3f4f5;
+}
+
+.siteseo-audit-title {
+display:flex;
+position: relative;
+background: #fff;
+color: #1e1e1e;
+width: 100%;
+border: 0;
+margin: 0;
+padding: 15px 5px;
+line-height: unset;
+text-align: center;
+font-size: 14px;
+font-weight: 600;
+cursor: pointer;
+transition: all 300ms linear;
+}
+
+.description{
+padding: 0 1rem 0.5rem 1rem;
+display: none;
+width: 100%;
+}
+
+.siteseo-pro-fechtime{
+padding: 3px 12px;
+margin-top:5px;
+border-radius: 50px;
+display:inline-flex;
+justify-content:center;
+align-self:center;
+background: #00308f05;
+border:1px solid #00308f45;
+}
+
+.siteseo-pro-details{
+display:inline-flex;
+padding: 3px 17px;
+justify-content:center;
+align-self:center;
+border:1px solid #d3d3d3;
+border-radius: 50px;
+margin:10px 0;
+}
+
+.siteseopro-flex-wrapper{
+display: flex;
+justify-content:center;
+}
+
+.siteseo-circular-chart.siteseopro-flex-wrapper{
+display: flex;
+flex-flow: row nowrap;
+}
+
+.siteseo-single-chart{
+width: 33%;
+justify-content: space-around;
+}
+
+.siteseo-circular-chart{
+display: block;
+margin: 10px auto;
+max-width: 80%;
+max-height: 160px;
+}
+
+.siteseo-circle-bg{
+fill: none;
+stroke: #eee;
+stroke-width: 3.8;
+}
+
+.siteseo-circle{
+fill: none;
+stroke-width: 2.8;
+stroke-linecap: round;
+animation: siteseo-progress 1s ease-out forwards;
+}
+
+@keyframes siteseo-progress{
+  0%{
+    stroke-dasharray: 0 100;
+  }
+}
+
+.siteseo-percentage{
+fill: #666;
+font-family: sans-serif;
+font-size: 0.5em;
+text-anchor: middle;
+} 
+
+.siteseo-circle{
+stroke: #3c9ee5;
+}
+
+.siteseo_notice {
+padding:10px,12px;
+margin-left:35%;
+background: #00308f05;
+border-radius:5px;
+border: 1px solid #00308f45;
+}
+
+.siteseo-inner-tab:hover {
+background-color:#f3f4f5;
+}
+
+.siteseo-pagespeed-input-wrapper{
+display:flex;
+justify-content:center;
+gap:5px;
+align-items:center;
+}
+
+.siteseo-pagespeed-input-wrapper input{
+width: 35%;
+}
+
+#siteseopro-pagespeed-results ul.siteseo-inner-tabs{
+width: unset !important;
+max-width: unset !important;
+padding: unset !important;
+}
+
+#siteseopro-pagespeed-results ul.siteseo-inner-tabs li{
+padding: 0 20px;
+}
+
+.siteseo-audit-tabs{
+display:flex;
+flex-direction:column;
+width: 50%;
+align-self:center;	
+}
+
+.siteseo-ps-device-toggle{
+cursor: pointer;
+display:flex;
+height:60px;
+width:100px;
+align-items:center;
+justify-content:center;
+border: 2px solid transparent;
+background-color:transparent;
+}
+
+input[name=ps_device_type]:checked + label{
+border-bottom: 2px solid #00308F !important;
+color: #00308F;
+}
+
+.siteseo-toggleCnt{
+display: flex;
+align-items: center;
+padding-left:20px;
+}
+
+.siteseo-toggleSw{
+position: relative;
+width: 47px;
+height: 20px;
+background-color: #ccc;
+border-radius: 20px;
+cursor: pointer;
+margin-right: 10px;
+transition: background-color 0.3s;
+}
+
+.siteseo-toggleSw::before{
+content: '';
+position: absolute;
+width: 24px;
+height: 24px;
+background-color: white;
+border: 2px solid #ccc;
+border-radius: 50%;
+top: -4px;
+left: -2px;
+transition: 0.3s;
+}
+
+.row.mx-0 .siteseo-toggleSw::before{
+top: -2px;
+}
+
+.row.mx-0 pre{
+margin-top: 1rem;
+}
+
+.siteseo-toggleCnt span{
+font-size: 14px;
+color: #555;
+font-weight: bold;
+}
+
+.siteseo-toggleSw.active{
+background-color: #003399;
+}
+
+.siteseo-toggleSw.active::before{
+left: 27px;
+border-color: #003399;
+}
+
+.siteseo-arrow{
+margin-right: 5px;
+font-size: 14px;
+color: #555;
+font-weight: bold;
+}
+.siteseo-toggle-label{
+font-style: italic;
+font-size: 11px;
+font-weight: normal;
+}
+
+.siteseo-arrow-icon{
+font-size: 10%;
+padding-top:3px;
+}
+
+.siteseo-metabox-subtabs{
+display:flex;
+flex-wrap:nowrap;
+justify-content:center;
+font-weight:500;
+font-size:1.05em;
+}
+
+.siteseo-metabox-subtabs input{
+display:none;
+}
+
+.siteseo-metabox-subtabs > div{
+cursor:pointer;
+padding: 20px;
+display:inline-flex;
+align-items:center;
+justify-content:center;
+text-align:center;
+user-select: none;
+}
+
+.siteseo-metabox-subtabs > div{
+border-bottom: 2px solid transparent;
+}
+
+.siteseo-metabox-tab-label-active{
+border-bottom: 2px solid #00308F !important;
+color: #00308F;
+}
+
+.siteseo-notice-pro{  
+position: relative;
+display: grid;
+flex-direction: column;
+background: #00308f05;
+padding: 10px;
+width: calc(100% - 20px);
+z-index: 10;
+border-radius: 5px;
+width: auto;
+display: flex;
+border:1px solid #00308f45;
+}
+
+#siteseo-sidebar-refersh-tokens{
+font-size:17px;
+cursor:pointer;
+}
+
+.siteseo-sidebar-ai-tokens{
+color: #000;
+cursor:pointer;
+}
+
+.siteseo-pro-ai-promo-card{
+border-radius: 16px;
+padding: 24px;
+box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+border: 1px solid #E5E7EB;
+z-index: 1000;
+display: flex;
+flex-direction: column;
+gap: 16px;
+margin-bottom:20px;
+}
+
+.siteseo-pro-ai-card-header {
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.siteseo-pro-ai-card-header .siteseo-pro-ai-icon {
+flex-shrink: 0;
+width: 40px;
+height: 40px;
+display: grid;
+place-items: center;
+background-color: #EEF2FF;
+border-radius: 50%;
+}
+
+.siteseo-pro-ai-card-header .siteseo-pro-ai-icon svg {
+width: 20px;
+height: 20px;
+color: #003399;
+}
+
+.siteseo-pro-ai-card-header h3 {
+font-size: 18px;
+font-weight: 600;
+color: #111827;
+margin: 0;
+}
+
+.siteseo-pro-ai-card-body p {
+font-size: 14px;
+line-height: 1.6;
+color: #4B5563;
+margin: 0;
+}
+
+.siteseo-ai-card-actions{
+display: flex;
+flex-direction: column;
+gap: 12px;
+margin-top: 8px;
+}
+
+.siteseo-ai-doc-link {
+display: block;
+padding: 10px 16px;
+border-radius: 8px;
+text-decoration: none;
+font-weight: 500;
+font-size: 14px;
+text-align: center;
+transition: all 0.2s ease-in-out;
+}
+
+.siteseo-ai-doc-link.primary {
+background-color: #003399;
+color: white;
+}
+
+.siteseo-ai-doc-link.primary:hover {
+background-color: #4338CA;
+}
+
+/** Global auto schema **/  
+#siteseo-schema-form{
+padding:8px;
+}
+
+#siteseo-schema-form select,
+#siteseo-schema-form input[type="text"]{
+  width: 100%;
+}
+
+#siteseo-schema-form .wrap-tags{
+gap:0px !important;
+margin:0px !important;
+}
+
+/* siteseo Modal Dialog Styling */
+.siteseo-modal .ui-dialog.ui-widget.ui-widget-content.ui-corner-all{
+position: fixed !important;
+top: 50% !important;
+left: 50% !important;
+transform: translate(-50%, -50%) !important;
+border-radius: 12px !important;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+max-width: 600px !important;
+max-height: 80vh !important;
+}
+
+/* Dialog Title Bar */
+.siteseo-modal .ui-dialog-titlebar{
+border-radius: 12px 12px 0 0 !important;
+padding: 15px 20px !important;
+border-bottom: 1px solid #dcdcde !important;
+font-weight: 600 !important;
+}
+
+.siteseo-modal .ui-dialog-title{
+font-size: 18px !important;
+margin: 0 !important;
+padding-left: 10px !important;
+}
+
+/* Close Button Styling - White color, bigger size, no hover */
+.siteseo-modal .ui-dialog-titlebar-close{
+background: none !important;
+border: none !important;
+font-size: 140px !important;
+font-weight: bold !important;
+width: 50px !important;
+height: 50px !important;
+padding: 15px !important;
+margin: 0 !important;
+cursor: pointer !important;
+transition: none !important;
+}
+
+.siteseo-modal .ui-dialog-titlebar-close .ui-icon{
+background: none !important;
+color: white !important;
+font-size: 35px !important;
+width: 32px !important;
+height: 32px !important;
+padding-top:10px !important;
+text-indent: 0 !important;
+}
+
+.siteseo-modal .ui-dialog-titlebar-close .ui-icon:before{
+content: "×" !important;
+font-size: 35px !important;
+line-height: 32px !important;
+color: white !important;
+display: block !important;
+text-align: center !important;
+}
+
+/* Dialog Content */
+.siteseo-modal .ui-dialog-content{
+padding: 20px !important;
+border-radius: 0 0 12px 12px !important;
+max-height: 60vh !important;
+overflow-y: auto !important;
+}
+
+
+/* Button Styling - Fixed padding and centering */
+.siteseo-modal .ui-dialog-buttonpane{
+text-align: center !important;
+padding: 20px !important;
+border-top:none;
+border-radius: 0 0 12px 12px !important;
+margin: 0 !important;
+min-height: 20px !important;
+height: auto !important;
+flex-shrink: 0 !important;
+}
+
+.siteseo-modal .ui-dialog-buttonset button,
+.siteseo-modal .ui-dialog-buttonset .save-schema-btn,
+.siteseo-modal .ui-dialog-buttonset button.save-schema-btn{
+background: #24b974 !important;
+color: white !important;
+border: none !important;
+padding: 5px !important;
+border-radius: 8px !important;
+font-size: 16px !important;
+font-weight: bold !important;
+cursor: pointer !important;
+transition: all 0.3s ease !important;
+box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3) !important;
+margin: 0 auto !important;
+display: block !important;
+min-width: 85px !important;
+height: auto !important;
+}
+
+.siteseo-modal .ui-dialog-buttonset{
+display: flex !important;
+justify-content: center !important;
+align-items: center !important;
+width: 100% !important;
+margin: 0 auto !important;
+}
+
+.siteseo-modal .ui-dialog-buttonset button{
+background: linear-gradient(135deg, #28a745, #20c997) !important;
+color: white !important;
+border: none !important;
+padding:5px 30px !important;
+border-radius: 8px !important;
+font-size: 16px !important;
+font-weight: 600 !important;
+cursor: pointer !important;
+transition: all 0.3s ease !important;
+box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3) !important;
+margin: 0 auto !important;
+display: block !important;
+}
+
+/* Add Schema Button Styling */
+/* Prevent modal from moving with cursor */
+.siteseo-modal .ui-draggable .ui-dialog-titlebar{
+cursor: default !important;
+}
+
+.siteseo-modal .ui-dialog.ui-draggable{
+position: fixed !important;
+}
+
+/* Overlay styling */
+.siteseo-modal .ui-widget-overlay{
+background: rgba(0, 0, 0, 0.5) !important;
+position: fixed !important;
+top: 0 !important;
+left: 0 !important;
+width: 100% !important;
+height: 100% !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+.siteseo-modal .ui-dialog.ui-widget.ui-widget-content.ui-corner-all{
+width: 95% !important;
+max-width: none !important;
+margin: 10px !important;
+}
+}
+
+.siteseo-edit-schema,
+.siteseo-delete-schema{
+cursor: pointer;
+}
+
+.siteseo-action label{
+cursor: pointer;
+display: inline-block; /* makes cursor apply correctly */
+margin-right: 15px; /* reset any weird spacing */
+}
+
+.siteseo-add-schema-rule,
+.siteseo-remove-schema-rule{
+cursor:pointer;
+color:#1d2327;
+}
+
+.siteseo-schema-rule-container select{
+margin-bottom:10px;	
+}
+
+.siteseo-schema-rule-container select{
+margin-right: 5px;
+}
+
+.siteseo-add-schema-rule{
+cursor: pointer;
+margin-left: 8px;
+}
+.siteseo-remove-schema-rule{
+cursor: pointer;
+color: #d63638;
+}
+
+.siteseo-loading-text{
+margin-left:150px;
+font-weight:bold;
+}
+
+.siteseo-modal-loads-data{
+display:none;	
+}
+
+/* UTILITY CLASSES 
+   NOTE: WRITE ALL YOUR CSS ABOVE THIS
+*/
+.siteseo-flex{
+display:flex;
+}
+
+.siteseo-justify-center{
+justify-content:center;
+}
+
+.siteseo-direction-column{
+flex-direction:column;
+}
+
+.siteseo-spin-animation{
+animation: siteseo-spin 2s linear infinite;
+}
+
+@keyframes siteseo-spin {
+from {
+transform: rotate(0deg);
+}
+to {
+transform: rotate(360deg);
+}
+}
+
+/* Schema Import modal */
+#siteseo-schema-option,
+#siteseo-select-control-select,
+#siteseo-schema-input-url,
+.siteseo-input-url{
+width: 100%;
+}
+
+#siteseo-select-control-select,
+#siteseo-text-control-url{
+max-width: 100%;
+}
+
+.siteseo-code-output{
+background: #283142;
+color: #fff;
+padding: 15px;
+border-radius:0 0 0.5rem 0.5rem;
+font-size: 14px;
+overflow-x: auto;
+}
+
+.siteseo-language-javascript{
+background: #283142;
+}
+
+.siteseo-schema-section-title{
+font-size: 14px;
+}
+
+.siteseo-modal {
+position: fixed !important;
+top: 50% !important;
+left: 50% !important;
+transform: translate(-50%, -50%) !important;
+max-height: 90vh !important;
+overflow-y: auto !important;
+}
+
+#siteseo-auto-schema-modal-import *{
+box-sizing:border-box;
+}
+
+#siteseo-auto-schema-modal-import .siteseo-inner-tab-content{
+padding: 3px;
+}
+
+#siteseo-auto-schema-modal-import .siteseo-inner-tab-content label{
+display:flex;
+flex-direction:column;
+gap:4px;
+font-weight:500;
+font-size:0.8rem;
+}
+
+.siteseo-schema{
+margin: 0px 0px 15px 0px;
+border-radius:0.5rem;
+border:1px solid #bebebe;
+}
+
+.siteseo-schema-import-code-header{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding: 15px 15px;
+}
+
+.siteseo-si-action-btns{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+.siteseo-schema .siteseo-code-output{
+margin:0;
+}
+
+#siteseo-schema-count{
+font-weight:500;
+font-size:1.2rem;
+}
+
+#siteseo-schema-count .dashicons{
+color:#10b981;
+margin-right:5px;
+font-size:1.2rem;
+}
+
+.siteseo-schema h4{
+margin: 0px;
+}
+
+.siteseo-schema-btn{
+display:flex;
+gap:10px;
+} 
+
+.siteseo-schema-btn button{
+padding:0.5rem 0.75rem;
+font-size: 0.875rem;
+line-height: 1.25rem;
+border-radius: 0.5rem;
+transition: 0.2s;
+cursor:pointer;
+font-weight:500;
+}
+
+.siteseo-schema-btn button.siteseo-copy-schema-btn{
+background-color: #ffffff;	
+border:1px solid #d1d5db;
+}
+
+.siteseo-schema-btn button.siteseo-schema-test-btn{
+background-color: #eff6ff;
+color:#1d4ed8;
+border:1px solid #bfdbfe;
+}
+
+.siteseo-schema-btn button:hover{
+background-color:#031b4d;
+color: #fff;
+}
+
+.siteseo-textarea-control-input{
+width: 100%;
+}
+
+/* DO NOT WRITE ANY CSS AFTER THIS */

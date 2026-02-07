@@ -1,0 +1,28 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "siteseo/breadcrumbs",
+  "version": "1.0.0",
+  "title": "Breadcrumbs",
+  "category": "widgets",
+  "description": "Breadcrumbs help you track you location on the website.",
+  "supports": {
+    "html": false,
+    "align": true,
+    "spacing": {
+      "padding": true,
+      "margin": true
+    },
+    "multiple": false,
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true
+    },
+    "color": {
+      "link": true
+    }
+  },
+  "textdomain": "siteseo",
+  "editorScript": "file:./index.js",
+  "editorStyle": "file:./style-index.css"
+}

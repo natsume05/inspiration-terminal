@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>深空日志 | 内部归档</title>
+    <style>
+        /* --- 核心样式 (复用之前的星际拓荒风格) --- */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #080a10;
+            color: #d4e0e8;
+            font-family: 'Courier New', Courier, monospace;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* 锁定层 (密码门禁) */
+        #lock-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #080a10;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1s;
+        }
+        
+        .access-input {
+            background: transparent;
+            border: 2px solid #5c6bc0;
+            color: #f2a25c;
+            padding: 10px;
+            font-family: inherit;
+            font-size: 1.2rem;
+            text-align: center;
+            outline: none;
+            margin-bottom: 20px;
+            width: 200px;
+        }
+
+        /* 页面主体 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            opacity: 0; /* 默认隐藏，解锁后显示 */
+            transition: opacity 1s;
+        }
+
+        /* 全局通知栏 */
+        .notice-board {
+            border: 1px dashed #f2a25c;
+            padding: 15px;
+            margin-bottom: 40px;
+            text-align: center;
+            color: #f2a25c;
+            background: rgba(242, 162, 92, 0.1);
+        }
+
+        /* 帖子卡片样式 */
+        .post-card {
+            background: rgba(20, 24, 35, 0.8);
+            border: 1px solid #5c6bc0;
+            margin-bottom: 30px;
+            padding: 25px;
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .post-title {
+            color: #81d4fa;
+            font-size: 1.5rem;
+            margin-top: 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+
+        .post-meta {
+            font-size: 0.8rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .post-content {
+            line-height: 1.8;
+            color: #aabccd;
+        }
+        
+        .post-content img {
+            max-width: 100%;
+            border: 2px solid #5c6bc0;
+            margin: 10px 0;
+        }
+
+        /* 底部互动区 */
+        .post-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+        }
+
+        .action-btn {
+            cursor: pointer;
+            margin-right: 15px;
+            color: #666;
+            transition: color 0.3s;
+        }
+
+        .action-btn:hover, .action-btn.active {
+            color: #f2a25c;
+        }
+
+        .stats {
+            color: #444;
+            font-size: 0.8rem;
+        }
+
+        /* 音乐播放器样式 */
+        .music-player {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px dashed #5c6bc0;
+            background: rgba(92, 107, 192, 0.1);
+            text-align: center;
+        }
+        
+        audio { width: 100%; height: 30px; outline: none; }
+
+
+        /* 背景动画 */
+        .stars {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            background-image: radial-gradient(2px 2px at 20px 30px, #eee, rgba(0,0,0,0)), radial-gradient(2px 2px at 90px 40px, #fff, rgba(0,0,0,0));
+            background-repeat: repeat;
+            background-size: 200px 200px;
+            opacity: 0.4;
+            z-index: -1;
+        }
+        
+        /* --- 弹窗样式 --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 10000; /* 保证在最上层 */
+            display: none; /* 默认隐藏 */
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-box {
+            background: rgba(20, 24, 35, 0.95);
+            border: 2px solid #f2a25c;
+            width: 90%; max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(242, 162, 92, 0.3);
+            animation: popIn 0.5s ease;
+        }
+        .modal-header {
+            padding: 15px; border-bottom: 1px dashed #5c6bc0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h3 { margin: 0; color: #f2a25c; }
+        .close-btn { font-size: 28px; cursor: pointer; color: #888; }
+        .modal-content { padding: 20px; color: #d4e0e8; line-height: 1.6; }
+        .modal-footer { padding: 15px; text-align: center; }
+        .confirm-btn {
+            background: transparent; border: 1px solid #5c6bc0; color: #5c6bc0;
+            padding: 8px 25px; cursor: pointer; transition: 0.3s;
+        }
+        .confirm-btn:hover { background: #5c6bc0; color: #fff; }
+        @keyframes popIn { from {opacity: 0; transform: scale(0.8);} to {opacity: 1; transform: scale(1);} }
+                
+    </style>
+</head>
+<body>
+
+    <div class="stars"></div>
+    
+    <div id="announcement-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>📡 信号塔广播</h3>
+            <span class="close-btn" onclick="closeModal()">×</span>
+        </div>
+        <div class="modal-content">
+            <p><strong>亲爱的观测者：</strong></p>
+            <p>欢迎来到灵感传输终端。</p>
+            <p>当前站点处于 <span style="color: #f2a25c;">试运行阶段</span>。请在篝火旁稍作休息。</p>
+            <p style="font-size: 0.9em; color: #81d4fa; margin-top: 15px;">>> 管理员 MingMo 留言</p>
+        </div>
+        <div class="modal-footer">
+            <button class="confirm-btn" onclick="closeModal()">收到信号</button>
+        </div>
+    </div>
+    </div>
+
+    <div id="lock-screen">
+        <h2 style="color: #5c6bc0;">⚠ 访问限制：机密档案</h2>
+        <input type="password" id="passwordInput" class="access-input" placeholder="输入访问密钥">
+        <button onclick="checkPass()" style="background:#5c6bc0; color:#fff; border:none; padding:10px 20px; cursor:pointer;">验证</button>
+        <p id="error-msg" style="color: red; display: none; margin-top: 10px;">密钥错误，连接拒绝。</p>
+    </div>
+
+    <div class="container" id="main-content">
+        
+        <div class="notice-board">
+            🔔 <strong>舰长广播：</strong> 欢迎来到 2.0 版深空日志。当前系统运行正常。
+        </div>
+
+        <article class="post-card" id="post-3">
+            <h2 class="post-title">记录一下自己手敲的第一个帖子，简单调试中</h2>
+            <div class="post-meta">发布时间：2026-02-06 | 分类：建站日志</div>
+            
+            <div class="post-content">
+                <p>总之岁月漫长，然而值得等待。</p>
+                <blockquote>“谁终将声震人间，必长久深自缄默。谁终将点燃闪电，必长久如云漂泊”</blockquote>
+                <img src="星际拓荒_0001.jpg" alt="太阳系全貌">
+                点击这里访问 <a href="https://www.bilibili.com" target="_blank" style="color:#f2a25c;">哔哩哔哩</a>
+                
+                <div class="post-card" style="border-color: #f2a25c;">
+                    <h2 class="post-title" style="color: #f2a25c;">🧩 挪麦石碑谜题</h2>
+                    <div class="post-content">
+                        <p>石碑上刻着一行古老的文字：</p>
+                        <p><strong>“构建万维网的基石，不仅是超文本，更是标记的艺术。”</strong></p>
+                        <p>请问：HTML 的全称中文翻译是什么？</p>
+                        
+                        <div style="margin-top: 20px; display: flex; gap: 10px;">
+                            <input type="text" id="quiz-input" class="access-input" style="width: 200px; margin:0; font-size: 1rem;" placeholder="输入答案...">
+                            <button onclick="checkAnswer()" class="confirm-btn">解读</button>
+                        </div>
+                        <p id="quiz-feedback" style="margin-top: 10px; font-size: 0.9em;"></p>
+                    </div>
+                </div>
+                <canvas id="fireworks" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999;"></canvas>
+                
+            </div>
+
+            <div class="music-player">
+                <p style="font-size: 0.8em; margin-bottom: 5px;">♫ 正在播放背景波段</p>
+                <audio controls loop>
+                    <source src="travelers.mp3" type="audio/mpeg">
+                    您的浏览器不支持音频元素。
+                </audio>
+            </div>
+
+
+            <div class="post-footer">
+                <div class="actions">
+                    <span class="action-btn" onclick="toggleLike('post-3')">❤ 点赞 (<span id="like-count-post-1">0</span>)</span>
+                    <span class="action-btn" onclick="sharePost('post-3')">🔗 分享</span>
+                </div>
+                <div class="stats">阅读量: <span id="view-count-post-3">1042</span></div>
+            </div>
+        </article>
+
+
+        <article class="post-card" id="post-1">
+            <h2 class="post-title">第一次接触：你好，367588.xyz</h2>
+            <div class="post-meta">发布时间：2026-02-04 | 分类：建站日志</div>
+            
+            <div class="post-content">
+                <p>这是我发布的第一篇正式日志。今天我在 Spaceship 上购买了这个域名，虽然只有几块钱，但感觉像是买下了一颗星星。</p>
+                <p>我也曾迷茫于复杂的代码，但现在我已经能够手写出这样一篇日志了。</p>
+                <blockquote>“宇宙是巨大的，我们只是在篝火旁取暖的旅人。”</blockquote>
+            </div>
+
+            <div class="post-footer">
+                <div class="actions">
+                    <span class="action-btn" onclick="toggleLike('post-1')">❤ 点赞 (<span id="like-count-post-1">0</span>)</span>
+                    <span class="action-btn" onclick="sharePost('post-1')">🔗 分享</span>
+                </div>
+                <div class="stats">阅读量: <span id="view-count-post-1">1042</span></div>
+            </div>
+        </article>
+
+        <article class="post-card" id="post-2">
+            <h2 class="post-title">观测记录：哈斯人的合影</h2>
+            <div class="post-meta">发布时间：2026-02-05 | 分类：星际拓荒</div>
+            
+            <div class="post-content">
+                <p>今天整理文件时，翻到了那张令人感动的合影。</p>
+                <img src="星际拓荒_0000.jpg" alt="合影">
+                <p>跨越 22 分钟的循环，我们终将在眼之彼端相遇。</p>
+            </div>
+
+            <div class="post-footer">
+                <div class="actions">
+                    <span class="action-btn" onclick="toggleLike('post-2')">❤ 点赞 (<span id="like-count-post-2">12</span>)</span>
+                    <span class="action-btn" onclick="sharePost('post-2')">🔗 分享</span>
+                </div>
+                <div class="stats">阅读量: <span id="view-count-post-2">305</span></div>
+            </div>
+        </article>
+
+    </div>
+
+    <script>
+        // --- 1. 密码验证逻辑 (已移除自动登录) ---
+        function checkPass() {
+            const input = document.getElementById('passwordInput').value;
+            const correct = "112345Q"; // 你的密码
+            
+            if(input === correct) {
+                // A. 隐藏锁屏，显示主内容
+                document.getElementById('lock-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('lock-screen').style.display = 'none';
+                    document.getElementById('main-content').style.opacity = '1';
+                }, 1000);
+    
+                // B. 【关键】这里不再保存 localStorage (删除了记住密码代码)
+    
+                // C. 【关键】验证成功后，立刻检查是否需要弹窗
+                checkAnnouncement(); 
+    
+            } else {
+                // 密码错误的提示
+                document.getElementById('error-msg').style.display = 'block';
+                // 增加一个小动画：让输入框抖动一下（可选优化）
+                document.getElementById('passwordInput').style.borderColor = "red";
+            }
+        }
+    
+        // --- ⚠️ 注意：我删除了“检查是否已经登录过”的那段 if 代码 ---
+        // 这样每次刷新页面，你都必须重新输入密码。
+    
+        // --- 2. 点赞功能 (本地模拟) ---
+        function toggleLike(postId) {
+            const countSpan = document.getElementById(`like-count-${postId}`);
+            let current = parseInt(countSpan.innerText);
+            
+            if(localStorage.getItem(`liked-${postId}`)) {
+                alert("你已经点过赞了！(同一个人不能重复点赞哦)");
+            } else {
+                current++;
+                countSpan.innerText = current;
+                localStorage.setItem(`liked-${postId}`, 'true');
+                // 找到点击的那个按钮，变色
+                // event.target 可能点到图标，所以我们要找最近的 .action-btn
+                event.currentTarget.classList.add('active'); 
+            }
+        }
+    
+        // --- 3. 分享功能 ---
+        function sharePost(postId) {
+            const url = window.location.href.split('#')[0] + "#" + postId;
+            navigator.clipboard.writeText(url).then(() => {
+                alert("帖子链接已复制！");
+            });
+        }
+    
+        // --- 4. 随机阅读量 ---
+        document.querySelectorAll('[id^="view-count-"]').forEach(span => {
+            let views = parseInt(span.innerText);
+            views += Math.floor(Math.random() * 5) + 1;
+            span.innerText = views;
+        });
+    
+        // --- 5. 弹窗逻辑 (修复版) ---
+        function checkAnnouncement() {
+            // 为了方便你测试，我把 sessionStorage 改成了 'false'
+            // 如果你想“每次刷新都弹窗”，把下面这个 if 判断删掉，只保留 setTimeout 里的代码即可
+            
+            if (!sessionStorage.getItem('hasSeenNotice')) {
+                setTimeout(() => {
+                    const modal = document.getElementById('announcement-modal');
+                    if(modal) {
+                        modal.style.display = 'flex';
+                    }
+                }, 1200); // 稍微晚一点弹出来（等锁屏动画结束）
+            }
+        }
+    
+        function closeModal() {
+            document.getElementById('announcement-modal').style.display = 'none';
+            sessionStorage.setItem('hasSeenNotice', 'true'); // 标记为本次会话已读
+        }
+    
+        // --- 6. 答题与烟花逻辑 (保持不变) ---
+        function checkAnswer() {
+            const input = document.getElementById('quiz-input').value.trim();
+            const feedback = document.getElementById('quiz-feedback');
+            
+            if (input === "超文本标记语言") {
+                feedback.style.color = "#f2a25c";
+                feedback.innerHTML = "✨ 解读成功！量子波函数已坍缩。";
+                triggerFireworks();
+            } else {
+                feedback.style.color = "red";
+                feedback.innerHTML = "❌ 解读失败，石碑毫无反应。";
+            }
+        }
+    
+        function triggerFireworks() {
+            const canvas = document.getElementById('fireworks');
+            if(!canvas) return; // 防止找不到画布报错
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            let particles = [];
+            
+            function createExplosion(x, y) {
+                for (let i = 0; i < 50; i++) {
+                    particles.push({
+                        x: x, y: y,
+                        vx: (Math.random() - 0.5) * 10,
+                        vy: (Math.random() - 0.5) * 10,
+                        alpha: 1,
+                        color: `hsl(${Math.random() * 360}, 100%, 50%)`
+                    });
+                }
+            }
+    
+            createExplosion(window.innerWidth / 2, window.innerHeight / 2);
+            setTimeout(() => createExplosion(window.innerWidth / 3, window.innerHeight / 3), 300);
+            setTimeout(() => createExplosion(window.innerWidth / 1.5, window.innerHeight / 1.5), 600);
+    
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let i = 0; i < particles.length; i++) {
+                    let p = particles[i];
+                    p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.alpha -= 0.02;
+                    ctx.globalAlpha = p.alpha;
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                    if (p.alpha <= 0) { particles.splice(i, 1); i--; }
+                }
+                if (particles.length > 0) requestAnimationFrame(animate);
+                else ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>

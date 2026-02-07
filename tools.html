@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提瓦特百宝箱 | 367588.XYZ</title>
+    <style>
+        /* --- 原神风格基础设定 --- */
+        :root {
+            --bg-color: #ece5d8; /* 米哈游祖传米白色背景 */
+            --text-dark: #3b4255; /* 深灰色主文本 */
+            --text-light: #8e8e8e; /* 浅灰色描述 */
+            --accent-gold: #d3bc8e; /* 摩拉金 */
+            --item-bg: #e3ddd1; /* 卡片背景 */
+            --menu-active: #383b40; /* 选中状态深色 */
+            --menu-text-active: #ece5d8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            font-family: "Microsoft YaHei", "Heiti SC", sans-serif;
+            /* 模拟游戏内的背景纹理 */
+            background-image: radial-gradient(circle at 50% 50%, #f7f3eb 0%, #ece5d8 100%);
+            min-height: 100vh;
+        }
+
+        /* 顶部标题区 */
+        header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--text-dark);
+            text-shadow: 0 2px 0 rgba(255,255,255,0.5);
+        }
+
+        .intro-text {
+            max-width: 700px;
+            margin: 0 auto;
+            color: #6a6f7d;
+            font-style: italic;
+            line-height: 1.6;
+            border-bottom: 2px solid var(--accent-gold);
+            padding-bottom: 20px;
+        }
+
+        /* 导航菜单 (模仿背包分类) */
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-radius: 50px;
+            padding: 10px 25px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: var(--text-dark);
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.5);
+            border-color: var(--accent-gold);
+        }
+
+        .nav-btn.active {
+            background: var(--menu-active);
+            color: var(--menu-text-active);
+            border-color: var(--menu-active);
+            box-shadow: 0 4px 10px rgba(56, 59, 64, 0.3);
+        }
+
+        /* 内容展示区 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .section {
+            display: none; /* 默认隐藏 */
+            animation: fadeIn 0.5s ease;
+        }
+
+        .section.active {
+            display: grid; /* 激活时显示为网格 */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        /* 网站卡片 (模仿物品详情) */
+        .site-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            text-decoration: none;
+            color: var(--text-dark);
+            border: 1px solid #dcdcdc;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .site-card::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: var(--accent-gold);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .site-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .site-card:hover::before {
+            opacity: 1;
+        }
+
+        .site-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .site-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            line-height: 1.4;
+        }
+
+        /* 图标点缀 */
+        .icon { font-size: 1.2em; }
+
+        /* 返回主页按钮 */
+        .back-home {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: var(--menu-active);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-size: 24px;
+            transition: transform 0.3s;
+        }
+        .back-home:hover { transform: rotate(-90deg); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>💎 提瓦特百宝箱</h1>
+        <p class="intro-text">
+            “旅行者，这里收录了来自异世界的智慧结晶。无论是修改法则的禁忌之术，还是记录万象的虚空终端，都已为你整理归档。”
+        </p>
+    </header>
+
+    <nav class="nav-bar">
+        <button class="nav-btn active" onclick="showSection('game')">🎮 游戏 (Game)</button>
+        <button class="nav-btn" onclick="showSection('tools')">🛠️ 工具 (Tools)</button>
+        <button class="nav-btn" onclick="showSection('life')">🍵 生活 (Life)</button>
+        <button class="nav-btn" onclick="showSection('impression')">🌌 印象 (Impression)</button>
+    </nav>
+
+    <div class="container">
+        
+        <div id="game" class="section active">
+            <a href="https://flingtrainer.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">⚔️</span> 风灵月影 (Fling)</div>
+                <div class="site-desc">修改世界的法则，让旅途不再艰难。</div>
+            </a>
+            <a href="https://www.nexusmods.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">📦</span> Nexus Mods</div>
+                <div class="site-desc">最大的模组圣地，给你的游戏换个新画风。</div>
+            </a>
+            <a href="https://game.hullqin.cn/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🃏</span> 联机桌游合集</div>
+                <div class="site-desc">随时随地，与好友来一局无需下载的博弈。</div>
+            </a>
+            <a href="https://www.ra2web.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">☢️</span> 红色警戒网页版</div>
+                <div class="site-desc">在浏览器中重温童年的钢铁洪流。</div>
+            </a>
+            <a href="https://h.juij.fun/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🕹️</span> H5小游戏站</div>
+                <div class="site-desc">消磨碎片时间的最佳去处。</div>
+            </a>
+            <a href="https://keylol.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">💬</span> 其乐 Keylol</div>
+                <div class="site-desc">蒸汽动力论坛，游戏喜加一情报中心。</div>
+            </a>
+            <a href="https://steamdb.info/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">📊</span> SteamDB</div>
+                <div class="site-desc">洞察G胖的钱包收割计划，查询历史最低价。</div>
+            </a>
+            <a href="https://howlongtobeat.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">⏳</span> HowLongToBeat</div>
+                <div class="site-desc">查询通关一款游戏究竟需要献祭多少肝。</div>
+            </a>
+        </div>
+
+        <div id="tools" class="section">
+            <a href="https://github.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🐙</span> GitHub</div>
+                <div class="site-desc">全球最大的开源军火库，程序员的虚空终端。</div>
+            </a>
+            <a href="https://it-tools.tech/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🧰</span> IT-Tools</div>
+                <div class="site-desc">开发者的瑞士军刀，集合了所有你需要的转换器。</div>
+            </a>
+            <a href="https://convertio.co/zh/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🔄</span> Convertio</div>
+                <div class="site-desc">万能格式转换，解决所有“打不开”的文件。</div>
+            </a>
+            <a href="https://www.ilovepdf.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">📄</span> iLovePDF</div>
+                <div class="site-desc">PDF的救星，合并、拆分、压缩一键搞定。</div>
+            </a>
+            <a href="https://motrix.app/zh-CN/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">⬇️</span> Motrix</div>
+                <div class="site-desc">全能下载神器，清爽无广告的极速体验。</div>
+            </a>
+            <a href="https://www.voidtools.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🔍</span> Everything</div>
+                <div class="site-desc">光速搜索，在硬盘的深渊中瞬间定位文件。</div>
+            </a>
+             <a href="https://www.hibitsoft.ir/Uninstaller.html" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🗑️</span> HiBit Uninstaller</div>
+                <div class="site-desc">强力卸载工具，连根拔起不留任何残留。</div>
+            </a>
+            <a href="https://zh.z-lib.work/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">📚</span> Z-Library</div>
+                <div class="site-desc">人类知识的宝库，也是禁忌知识的避难所。</div>
+            </a>
+             <a href="https://code.visualstudio.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">💻</span> VS Code</div>
+                <div class="site-desc">宇宙第一编辑器，插件万能。</div>
+            </a>
+            <a href="https://typora.io/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">📝</span> Typora</div>
+                <div class="site-desc">所见即所得，优雅地撰写你的冒险日志。</div>
+            </a>
+            <a href="https://excalidraw.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">✏️</span> Excalidraw</div>
+                <div class="site-desc">手绘风格白板，整理思绪的炼金台。</div>
+            </a>
+            <a href="https://squoosh.app/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🖼️</span> Squoosh</div>
+                <div class="site-desc">谷歌出品的图片压缩神器，在浏览器中完成瘦身。</div>
+            </a>
+        </div>
+
+        <div id="life" class="section">
+            <a href="https://www.bilibili.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">📺</span> Bilibili</div>
+                <div class="site-desc">崩坏与干货共存，年轻人的赛博聚集地。</div>
+            </a>
+            <a href="https://chat.openai.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🤖</span> ChatGPT</div>
+                <div class="site-desc">来自未来的机械智慧，有问必答的随身派蒙。</div>
+            </a>
+            <a href="https://www.wolframalpha.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">📐</span> WolframAlpha</div>
+                <div class="site-desc">计算知识引擎，阿贝多老师的炼金笔记。</div>
+            </a>
+             <a href="https://www.pixiv.net/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🎨</span> Pixiv</div>
+                <div class="site-desc">插画艺术的圣地，二次元的灵感源泉。</div>
+            </a>
+            <a href="https://kazumi.blog/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🧭</span> Kazumi Navi</div>
+                <div class="site-desc">一个干净纯粹的导航站。</div>
+            </a>
+            <a href="https://musclewiki.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">💪</span> MuscleWiki</div>
+                <div class="site-desc">哪里想练点哪里，可视化的健身百科。</div>
+            </a>
+            <a href="https://coolors.co/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🌈</span> Coolors</div>
+                <div class="site-desc">极速配色生成器，为你的设计寻找色彩灵感。</div>
+            </a>
+        </div>
+
+        <div id="impression" class="section">
+            <a href="https://neal.fun/deep-sea/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🌊</span> The Deep Sea</div>
+                <div class="site-desc">指尖滑动下潜，探索深海一万米的幽静恐惧。</div>
+            </a>
+            <a href="https://www.cbaigui.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">👺</span> 知妖 (ZhiYao)</div>
+                <div class="site-desc">收集中国古籍中妖怪的百科全书，光怪陆离。</div>
+            </a>
+            <a href="https://new.shuge.org/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">📜</span> 书格 (ShuGe)</div>
+                <div class="site-desc">在线古籍图书馆，欣赏旧时光里的文字之美。</div>
+            </a>
+            <a href="https://window-swap.com/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🪟</span> WindowSwap</div>
+                <div class="site-desc">打开窗户，随机看一眼世界某个陌生角落的风景。</div>
+            </a>
+            <a href="http://radio.garden/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">📻</span> Radio Garden</div>
+                <div class="site-desc">转动地球，收听来自世界各地角落的实时广播。</div>
+            </a>
+             <a href="https://eyes.nasa.gov/" target="_blank" class="site-card">
+                <div class="site-title"><span class="icon">🛰️</span> NASA Eyes</div>
+                <div class="site-desc">透过NASA的眼睛，实时观测真实的太阳系。</div>
+            </a>
+        </div>
+
+    </div>
+
+    <a href="index.html" class="back-home" title="返回首页">↩</a>
+
+    <script>
+        function showSection(sectionId) {
+            // 1. 隐藏所有板块
+            document.querySelectorAll('.section').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // 2. 取消所有按钮激活状态
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // 3. 激活选中的板块和按钮
+            document.getElementById(sectionId).classList.add('active');
+            
+            // 找到点击的那个按钮并添加 active 样式
+            // (这里为了简化，通过遍历匹配文字或者onclick事件来处理CSS类更严谨，
+            // 但简单的写法是直接在onclick里传this，下面是通用逻辑)
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>灵感传输终端</title>
+    <style>
+        /* Google Fonts & Reset */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', 'Microsoft YaHei', sans-serif;
+            background-color: #ffffff;
+            color: #202124;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* 标题区域 */
+        .logo-area {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin: 0;
+            letter-spacing: -1px;
+        }
+        
+        /* 谷歌配色文字 */
+        .g-blue { color: #4285F4; }
+        .g-red { color: #EA4335; }
+        .g-yellow { color: #FBBC05; }
+        .g-green { color: #34A853; }
+
+        .subtitle {
+            margin-top: 15px;
+            color: #5f6368;
+            font-size: 1.1rem;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        /* 卡片容器 */
+        .card-container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* 功能卡片 */
+        .card {
+            width: 280px;
+            padding: 30px;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+            text-align: center;
+            cursor: pointer;
+            text-decoration: none; /* 去掉下划线 */
+            color: inherit;
+            border-top: 4px solid transparent;
+        }
+
+        .card:hover {
+            box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+            transform: translateY(-5px);
+        }
+
+        .card h2 { margin-top: 0; font-weight: 500; }
+        .card p { color: #5f6368; font-size: 0.9rem; }
+
+        /* 卡片顶部颜色条 */
+        .card-blog { border-color: #4285F4; }    /* 蓝色 - 星际拓荒 */
+        .card-tools { border-color: #34A853; }   /* 绿色 - 原神草元素感 */
+        .card-community { border-color: #EA4335; } /* 红色 - 空洞骑士噩梦感 */
+
+        /* 图标模拟 */
+        .icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        footer {
+            margin-top: 50px;
+            font-size: 0.8rem;
+            color: #9aa0a6;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo-area">
+        <h1>
+            <span class="g-blue">In</span><span class="g-red">spi</span><span class="g-yellow">ra</span><span class="g-blue">ti</span><span class="g-green">on</span>
+            <span class="g-red">T</span>erminal
+        </h1>
+        <p class="subtitle">
+            这里是灵感的传输终端。连接宇宙深处的信号，聚合实用主义的工具，或是记录虚空中的低语。
+        </p>
+    </div>
+
+    <div class="card-container">
+        <a href="blog.html" class="card card-blog">
+            <span class="icon">🚀</span>
+            <h2>深空日志</h2>
+            <p>Admin的私人观测站。星际拓荒风格，记录思维的波形与宇宙的余晖。</p>
+        </a>
+
+        <a href="tools.html" class="card card-tools">
+            <span class="icon">🧩</span>
+            <h2>提瓦特百宝箱</h2>
+            <p>实用工具聚合。原神UI风格，分区收录Motrix、Everything等冒险家必备道具。</p>
+        </a>
+
+        <a href="community.php" class="card card-community">
+            <span class="icon">🦋</span>
+            <h2>虚空梦语</h2>
+            <p>用户交流与灵感记录。空洞骑士风格，在圣巢的石碑上刻下你的记忆（需登录）。</p>
+        </a>
+    </div>
+
+    <footer>
+        &copy; 2026 灵感传输终端 | Power by Spaceship
+    </footer>
+
+</body>
+</html>
