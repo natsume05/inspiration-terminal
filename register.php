@@ -1,6 +1,5 @@
 <?php
-require 'db.php'; // 引入数据库连接
-
+require 'includes/db.php';
 $msg = "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // 1. 简单的图形验证逻辑 (这里用数学题代替图片，更简单且不需要库)

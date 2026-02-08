@@ -1,0 +1,160 @@
+/* assets/css/tools.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap');
+
+body {
+    margin: 0; padding: 0;
+    font-family: 'Roboto', 'Microsoft YaHei', sans-serif;
+    background-color: #f5f5f7; /* 米游社/原神风格的浅灰背景 */
+    color: #333;
+    display: flex; flex-direction: column; align-items: center;
+    min-height: 100vh;
+}
+
+/* 头部介绍区域 */
+header {
+    margin-top: 40px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+.intro-text { 
+    color: #888; 
+    font-style: italic; 
+    text-align: center; 
+    max-width: 800px; 
+    margin: 0 auto 30px auto; 
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* 导航条 (胶囊按钮风格) */
+.nav-bar {
+    display: flex; 
+    justify-content: center; 
+    gap: 15px; 
+    margin-bottom: 40px; 
+    flex-wrap: wrap;
+}
+
+.nav-btn {
+    padding: 10px 25px;
+    border: none; 
+    border-radius: 50px; /* 完全圆角 */
+    background: #fff; 
+    color: #666;
+    font-size: 1rem; 
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* 轻微阴影 */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    font-weight: 500;
+}
+
+.nav-btn:hover { 
+    transform: translateY(-2px); 
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+    color: #333;
+}
+
+/* 激活状态：模仿原神草元素绿，或者你可以改回深灰色 */
+.nav-btn.active {
+    background: #333; /* 选中变黑 */
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* --- 核心修复区：卡片样式 --- */
+
+/* 1. 容器 */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    padding-bottom: 60px;
+}
+
+/* 2. 分区显示逻辑 */
+.section { display: none; animation: fadeIn 0.4s ease-up; }
+.section.active { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+
+/* 3. 卡片本体 (修复方框消失和蓝色字体) */
+.tool-card {
+    /* 布局：使用 Flex 让图标在左，文字在右 */
+    display: flex;
+    align-items: center; /* 垂直居中 */
+    
+    /* 大小 */
+    width: 280px; 
+    height: 80px; /* 固定高度让排版更整齐 */
+    padding: 15px 20px;
+    
+    /* 盒子样式 (修复看不见的问题) */
+    background: #fff; 
+    border-radius: 12px;
+    border: 1px solid transparent; /* 预留边框位置 */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    
+    /* 字体样式 (修复蓝色下划线) */
+    text-decoration: none !important; /* 强制去掉下划线 */
+    color: #333; /* 强制变黑 */
+    
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 悬停效果 */
+.tool-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    border-color: rgba(0,0,0,0.1); /* 悬停时显示浅浅边框 */
+}
+
+/* 图标样式 */
+.tool-icon {
+    font-size: 2.2rem; /* 图标放大 */
+    margin-right: 18px; /* 图标和文字的间距 */
+    flex-shrink: 0; /* 防止图标被挤压 */
+    line-height: 1;
+}
+
+/* 文字信息容器 */
+.tool-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: left; /* 强制左对齐 */
+    overflow: hidden; /* 防止文字溢出 */
+}
+
+/* 标题 */
+.tool-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #2c3e50; /* 深色标题 */
+}
+
+/* 描述文字 */
+.tool-info p {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #999; /* 浅灰描述 */
+    white-space: nowrap;      /* 强制不换行 */
+    overflow: hidden;         /* 超出隐藏 */
+    text-overflow: ellipsis;  /* 超出显示省略号... */
+    width: 100%;
+}
+
+/* 动画 */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* 针对不同分区的微调 (可选) */
+#game .tool-card:hover { border-bottom: 3px solid #6c5ce7; } /* 游戏紫 */
+#tools .tool-card:hover { border-bottom: 3px solid #00b894; } /* 工具绿 */
+#life .tool-card:hover { border-bottom: 3px solid #ff7675; }  /* 生活红 */
+#impression .tool-card:hover { border-bottom: 3px solid #0984e3; } /* 印象蓝 */

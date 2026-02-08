@@ -1,6 +1,5 @@
 <?php
-require 'db.php';
-
+require 'includes/db.php';
 // 必须登录才能看
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");

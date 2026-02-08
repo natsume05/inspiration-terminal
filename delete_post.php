@@ -1,6 +1,5 @@
 <?php
-require 'db.php';
-
+require 'includes/db.php';
 // 只有管理员能执行
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
     die("❌ 权限不足：你不是圣巢的管理者。");

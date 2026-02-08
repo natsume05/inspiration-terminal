@@ -1,6 +1,5 @@
 <?php
-require 'db.php';
-
+require 'includes/db.php';
 header('Content-Type: application/json'); // 告诉浏览器返回的是JSON数据
 
 // 必须登录才能点赞

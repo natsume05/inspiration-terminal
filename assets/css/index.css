@@ -1,0 +1,44 @@
+/* assets/css/index.css */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap');
+
+body {
+    margin: 0; padding: 0;
+    font-family: 'Roboto', 'Microsoft YaHei', sans-serif;
+    background-color: #ffffff;
+    color: #202124;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    min-height: 100vh;
+}
+
+/* 标题区域 */
+.logo-area { text-align: center; margin-bottom: 40px; }
+h1 { font-size: 3rem; margin: 0; letter-spacing: -1px; }
+
+/* 谷歌配色文字 */
+.g-blue { color: #4285F4; }
+.g-red { color: #EA4335; }
+.g-yellow { color: #FBBC05; }
+.g-green { color: #34A853; }
+
+.subtitle { margin-top: 15px; color: #5f6368; font-size: 1.1rem; max-width: 600px; line-height: 1.6; }
+
+/* 卡片容器 */
+.card-container { display: flex; gap: 30px; flex-wrap: wrap; justify-content: center; padding: 20px; }
+.card {
+    width: 280px; padding: 30px; border-radius: 8px; background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+    transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+    text-align: center; cursor: pointer; text-decoration: none; color: inherit;
+    border-top: 4px solid transparent;
+}
+.card:hover { box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22); transform: translateY(-5px); }
+.card h2 { margin-top: 0; font-weight: 500; }
+.card p { color: #5f6368; font-size: 0.9rem; }
+
+/* 卡片顶部颜色条 */
+.card-blog { border-color: #4285F4; }
+.card-tools { border-color: #34A853; }
+.card-community { border-color: #EA4335; }
+
+.icon { font-size: 40px; margin-bottom: 15px; display: block; }
+footer { margin-top: 50px; font-size: 0.8rem; color: #9aa0a6; }

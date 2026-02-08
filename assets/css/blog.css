@@ -1,0 +1,66 @@
+/* assets/css/blog.css - 星际拓荒风格 */
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime&display=swap');
+
+body {
+    background-color: #080a10;
+    color: #d4e0e8;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* 顶部与容器 */
+.blog-header { text-align: center; margin-top: 40px; margin-bottom: 40px; }
+.blog-header h1 { color: #f2a25c; font-size: 2rem; text-shadow: 0 0 10px rgba(242, 162, 92, 0.5); margin: 0; }
+.blog-header p { color: #81d4fa; font-size: 0.9rem; margin-top: 10px; }
+
+.container { max-width: 800px; margin: 0 auto; padding: 20px; }
+
+/* 博客卡片 */
+.blog-card {
+    background: rgba(20, 24, 35, 0.6);
+    border: 1px solid #5c6bc0;
+    margin-bottom: 40px;
+    padding: 0; /* 图片要贴边 */
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.3s;
+}
+.blog-card:hover { transform: translateY(-2px); border-color: #f2a25c; }
+
+/* 封面图 */
+.blog-cover { width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid #5c6bc0; display: block; }
+
+.blog-body { padding: 25px; }
+
+.blog-title {
+    color: #81d4fa; font-size: 1.4rem; margin-top: 0; margin-bottom: 10px;
+    text-shadow: 0 0 5px rgba(129, 212, 250, 0.3);
+}
+
+.blog-meta { font-size: 0.8rem; color: #666; margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 10px; }
+
+.blog-content { line-height: 1.8; color: #aabccd; font-size: 1rem; }
+.blog-content img { max-width: 100%; border-radius: 4px; margin: 10px 0; border: 1px solid #444; }
+.blog-content blockquote { border-left: 3px solid #f2a25c; margin: 10px 0; padding-left: 15px; color: #f2a25c; font-style: italic; background: rgba(242, 162, 92, 0.1); padding: 5px 15px; }
+
+/* 互动区 */
+.blog-footer {
+    margin-top: 20px; padding-top: 15px; border-top: 1px dashed #333;
+    display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem;
+}
+.actions { display: flex; gap: 15px; }
+.action-btn { cursor: pointer; color: #666; transition: color 0.3s; display: flex; align-items: center; gap: 5px; }
+.action-btn:hover, .action-btn.active { color: #f2a25c; }
+
+/* 评论区 (默认隐藏，点击展开) */
+.comments-box { background: rgba(0,0,0,0.3); padding: 15px; display: none; border-top: 1px solid #333; }
+.comment-item { border-bottom: 1px solid #333; padding: 10px 0; font-size: 0.9rem; }
+.comment-user { color: #f2a25c; font-weight: bold; margin-right: 5px; }
+.comment-form { display: flex; gap: 10px; margin-top: 15px; }
+.comment-input { flex: 1; background: rgba(0,0,0,0.5); border: 1px solid #5c6bc0; color: #fff; padding: 8px; border-radius: 4px; }
+.comment-submit { background: #5c6bc0; color: #fff; border: none; padding: 8px 15px; cursor: pointer; border-radius: 4px; }
+
+/* 粒子背景占位 */
+#particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.6; }
