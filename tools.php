@@ -49,6 +49,11 @@ if ($result->num_rows > 0) {
         <button class="nav-btn" onclick="showSection('impression', this)">🌌 印象 (Impression)</button>
     </nav>
 
+    <div style="text-align: center; margin: 20px 0;">
+        <input type="text" id="elemental-sight" placeholder="👁️ 开启元素视野 (搜索工具...)" 
+            style="padding: 10px 20px; width: 60%; border-radius: 25px; border: 2px solid #ddd; outline: none; transition: 0.3s;">
+    </div>
+
     <?php 
     // 定义每个分区的 ID
     $sections = ['game', 'tools', 'life', 'impression'];
@@ -99,6 +104,24 @@ function showSection(sectionId, btnElement) {
     document.getElementById(sectionId).classList.add('active');
     btnElement.classList.add('active');
 }
+
+document.getElementById('elemental-sight').addEventListener('input', function(e) {
+    let term = e.target.value.toLowerCase();
+    let cards = document.querySelectorAll('.tool-card');
+
+    cards.forEach(card => {
+        let title = card.querySelector('h3').innerText.toLowerCase();
+        let desc = card.querySelector('p').innerText.toLowerCase();
+
+        // 如果标题或描述里包含关键词，就显示，否则隐藏
+        if (title.includes(term) || desc.includes(term)) {
+            card.style.display = 'flex'; // 保持 flex 布局
+            card.style.animation = 'fadeIn 0.5s';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+});
 </script>
 
 <?php include 'includes/footer.php'; ?>

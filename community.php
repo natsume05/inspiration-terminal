@@ -1,5 +1,6 @@
 <?php
 require 'includes/db.php';
+require_once 'includes/image_helper.php';
 
 // 1. 登出逻辑
 if (isset($_GET['action']) && $_GET['action'] == 'logout') {
@@ -13,9 +14,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_post'])) {
     if (!isset($_SESSION['user_id'])) die("请先登录！");
     $author = $_SESSION['username']; 
     $content = $conn->real_escape_string($_POST['content']);
-    $sql = "INSERT INTO posts (author, content) VALUES ('$author', '$content')";
-    if ($conn->query($sql)) {
+
+    // 🟢 新增：图片处理
+    $image_path = NULL;
+    if (isset($_FILES['post_image']) && $_FILES['post_image']['error'] == 0) {
+        // 定义基础文件名 (不要后缀)
+        $base_name = "post_" . time() . "_" . rand(100,999);
+        // 定义目标文件夹路径 (不带文件名)
+        $target_dir = "assets/uploads/community/";
+        
+        // 🔥 调用加工厂！
+        // 参数：临时文件, 目标路径+文件名(无后缀), 最大宽度1000px, 质量75
+        $processed_name = upload_and_compress_webp(
+            $_FILES['post_image']['tmp_name'], 
+            $target_dir . $base_name, 
+            1000, 
+            75
+        );
+
+        if ($processed_name) {
+            $image_path = $processed_name; // 数据库里存的是 xxx.webp
+        }
+    }
+
+    // 🟢 修改 SQL：插入 image 字段
+    $sql = "INSERT INTO posts (author, content, image) VALUES ('$author', '$content', '$image_path')";
+    
+    if ($conn->query($sql) === TRUE) {
         header("Location: community.php"); exit();
+    } else {
+        echo "Error: " . $conn->error;
     }
 }
 
@@ -47,8 +75,17 @@ include 'includes/header.php';
         
         <?php if(isset($_SESSION['user_id'])): ?>
             <div class="input-card">
-                <form action="community.php" method="POST">
+                <form action="community.php" method="POST" enctype="multipart/form-data">
                     <textarea name="content" placeholder="在这里挥动梦之钉，留下你的低语..." required></textarea>
+                    
+                    <div style="margin-top: 10px;">
+                        <label style="cursor: pointer; color: #66fcf1; font-size: 0.9rem;">
+                            📷 添加图片
+                            <input type="file" name="post_image" accept="image/*" style="display:none;" onchange="document.getElementById('file-name').innerText = this.files[0].name">
+                        </label>
+                        <span id="file-name" style="color: #666; font-size: 0.8rem; margin-left: 10px;"></span>
+                    </div>
+
                     <div class="input-actions">
                         <span style="font-size:0.8rem; color:#666;">支持 Markdown 语法</span>
                         <button type="submit" name="submit_post" class="dream-btn">✨ 刻录石碑</button>
@@ -105,6 +142,11 @@ include 'includes/header.php';
                     </div>
 
                     <div class="post-content"><?php echo nl2br(htmlspecialchars($row["content"])); ?></div>
+                    <?php if (!empty($row['image'])): ?>
+                        <div class="post-image" style="margin-top: 10px; margin-bottom: 15px;">
+                            <img src="assets/uploads/community/<?php echo $row['image']; ?>" style="max-width: 100%; border-radius: 8px; border: 1px solid #333; max-height: 400px; object-fit: contain;">
+                        </div>
+                    <?php endif; ?>
 
                     <div class="post-actions">
                         <div class="action-item <?php echo $liked_class; ?>" onclick="toggleLike(<?php echo $pid; ?>, this)">
@@ -179,10 +221,58 @@ include 'includes/header.php';
 
         <div class="side-card notice-corner">
             <h4>📢 虚空广播</h4>
-            <p style="font-size:0.85rem; color:#888;">这里将显示最新公告...</p>
+                
+                <?php
+                // 查询最新一条活跃公告
+                $notice_sql = "SELECT * FROM announcements WHERE is_active = 1 ORDER BY id DESC LIMIT 1";
+                $notice_res = $conn->query($notice_sql);
+                
+                if ($notice_res && $notice_res->num_rows > 0):
+                    $notice = $notice_res->fetch_assoc();
+                ?>
+                    <div style="font-size: 0.95rem; color: #ddd; line-height: 1.6; margin-bottom: 10px;">
+                        <?php echo $notice['content']; ?>
+                    </div>
+                    <div style="font-size: 0.8rem; color: #666; text-align: right;">
+                        发布于: <?php echo date('m-d H:i', strtotime($notice['created_at'])); ?>
+                    </div>
+                <?php else: ?>
+                    <p style="font-size:0.85rem; color:#888;">当前频段一片寂静...</p>
+                <?php endif; ?>
         </div>
 
     </div>
 </div>
 
 <?php include 'includes/footer.php'; ?>
+
+<div id="lightbox" onclick="closeLightbox()" style="
+    display: none; 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(0,0,0,0.9); z-index: 10000; 
+    justify-content: center; align-items: center; 
+    cursor: zoom-out;">
+    <img id="lightbox-img" src="" style="max-width: 90%; max-height: 90%; border-radius: 5px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+</div>
+
+<script>
+// 1. 给所有帖子里的图片加点击事件
+document.addEventListener("DOMContentLoaded", function() {
+    let postImages = document.querySelectorAll('.post-image img');
+    postImages.forEach(img => {
+        img.style.cursor = 'zoom-in'; // 鼠标变成放大镜
+        img.onclick = function() {
+            openLightbox(this.src);
+        };
+    });
+});
+
+function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').style.display = 'flex';
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').style.display = 'none';
+}
+</script>

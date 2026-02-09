@@ -2,6 +2,7 @@
 // admin/index.php - 完整修复版
 session_start();
 require '../includes/db.php';
+require_once '../includes/image_helper.php'; // 注意路径是 ../
 
 $allowed_user = 'MingMo'; // 记得确认这里是你的用户名
 if (!isset($_SESSION['user_id']) || $_SESSION['username'] !== $allowed_user) {
@@ -34,29 +35,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_blog'])) {
 
     // 图片上传逻辑
     if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == 0) {
-        $target_dir = "../assets/images/";
-        // 确保文件名安全
-        $filename = time() . "_" . preg_replace("/[^a-zA-Z0-9.]/", "", basename($_FILES["cover_image"]["name"]));
-        $target_file = $target_dir . $filename;
-        if (move_uploaded_file($_FILES["cover_image"]["tmp_name"], $target_file)) {
-            $cover_path = "assets/images/" . $filename;
-        }
+    $base_name = time() . "_blog";
+    $target_dir = "../assets/images/"; // 注意后台上传到 assets 要加 ../
+
+    // 🔥 调用加工厂
+    $processed_name = upload_and_compress_webp(
+        $_FILES["cover_image"]["tmp_name"], 
+        $target_dir . $base_name, 
+        1200, 
+        80
+    );
+
+    if ($processed_name) {
+        // 存入数据库时，要把 ../ 去掉，变成相对路径
+        $cover_path = "assets/images/" . $processed_name;
     }
+}
 
     $sql = "INSERT INTO blog_posts (title, content, cover_image, tags) VALUES ('$title', '$content', '$cover_path', '$tags')";
     if ($conn->query($sql)) $message = "✅ 博客发布成功！";
     else $message = "❌ 发布失败：" . $conn->error;
-
+}
     // --- 逻辑 C: 发布/管理公告 ---
     // 1. 发布新公告
-    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_notice'])) {
-        $content = $conn->real_escape_string($_POST['notice_content']);
-        // 先把旧的都停掉 (保证同一时间只有一个活跃广播)
-        $conn->query("UPDATE announcements SET is_active = 0");
-        // 插入新的
-        $sql = "INSERT INTO announcements (content, is_active) VALUES ('$content', 1)";
-        if ($conn->query($sql)) $message = "✅ 全域广播已发射！";
-        else $message = "❌ 发射失败：" . $conn->error;
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_notice'])) {
+    $content = $conn->real_escape_string($_POST['notice_content']);
+    // 先把旧的都停掉 (保证同一时间只有一个活跃广播)
+    $conn->query("UPDATE announcements SET is_active = 0");
+    // 插入新的
+    $sql = "INSERT INTO announcements (content, is_active) VALUES ('$content', 1)";
+    if ($conn->query($sql)) $message = "✅ 全域广播已发射！";
+    else $message = "❌ 发射失败：" . $conn->error;
     }
 
     // 2. 停止所有广播
@@ -64,7 +73,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_blog'])) {
         $conn->query("UPDATE announcements SET is_active = 0");
         $message = "🛑 广播信号已切断，静默模式开启。";
     }
-}
+
 ?>
 
 <!DOCTYPE html>
@@ -136,8 +145,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_blog'])) {
 
         <form method="POST">
             <label style="display:block; margin-bottom:5px; color:#666;">广播内容 (支持 HTML):</label>
-            <textarea name="notice_content" placeholder="例如：本站已更新 2.0 版本，新增了树洞功能..." style="height: 150px;" required></textarea>
-            
+            <textarea name="notice_content" placeholder="例如：本站已更新 2.0 版本，新增了树洞功能..." style="height: 150px;" required></textarea>          
             <button type="submit" name="publish_notice" style="background: #e67e22;">📡 发射信号</button>
         </form>
 

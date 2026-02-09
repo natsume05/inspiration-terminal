@@ -1,6 +1,7 @@
 <?php
 session_start();
 require 'includes/db.php';
+require_once 'includes/image_helper.php';
 
 // 必须登录
 if (!isset($_SESSION['user_id'])) {
@@ -21,26 +22,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // 2. 上传头像
-    if (isset($_FILES['avatar_file']) && $_FILES['avatar_file']['error'] == 0) {
-        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
-        $filename = $_FILES['avatar_file']['name'];
-        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-        
-        if (in_array($ext, $allowed)) {
-            // 生成唯一文件名：user_ID_时间戳.jpg
-            $new_name = "user_" . $user_id . "_" . time() . "." . $ext;
-            $target = "assets/uploads/avatars/" . $new_name;
-            
-            if (move_uploaded_file($_FILES['avatar_file']['tmp_name'], $target)) {
-                // 更新数据库
-                $conn->query("UPDATE users SET avatar = '$new_name' WHERE id = $user_id");
-                $msg = "✅ 头像更换成功！";
-            } else {
-                $msg = "❌ 上传失败，请检查文件夹权限。";
-            }
-        } else {
-            $msg = "❌ 仅支持 JPG, PNG, GIF 格式。";
-        }
+    if (in_array($ext, $allowed)) {
+    // 准备名字 (不带后缀)
+    $base_name = "user_" . $user_id . "_" . time();
+    $target_dir = "assets/uploads/avatars/";
+
+    // 🔥 调用加工厂！
+    // 头像限制宽度 250px，质量 80
+    $processed_name = upload_and_compress_webp(
+        $_FILES['avatar_file']['tmp_name'],
+        $target_dir . $base_name,
+        250, 
+        80
+    );
+    
+    if ($processed_name) {
+        // 更新数据库 (注意：这里存进去的就是 .webp 了)
+        $conn->query("UPDATE users SET avatar = '$processed_name' WHERE id = $user_id");
+        $msg = "✅ 头像更换成功！";
+    } else {
+        $msg = "❌ 图片处理失败。";
+    }
     }
 }
 

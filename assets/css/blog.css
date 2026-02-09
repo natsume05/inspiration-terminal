@@ -41,9 +41,17 @@ body {
 }
 .blog-body { padding: 25px; }
 
-.blog-title {
-    color: #81d4fa; font-size: 1.4rem; margin-top: 0; margin-bottom: 10px;
-    text-shadow: 0 0 5px rgba(129, 212, 250, 0.3);
+/* 让标题链接平时是白色的，鼠标悬停变蓝 */
+.blog-title a {
+    color: #e0e0e0 !important; /* 强制浅灰白 */
+}
+.blog-title a:hover {
+    color: #66fcf1 !important; /* 悬停变灵魂蓝 */
+}
+
+/* 修复阅读全文按钮的文字颜色 */
+.dream-btn {
+    color: #526ede !important; /* 确保按钮文字是深色（因为背景是亮色渐变） */
 }
 
 .blog-meta { font-size: 0.8rem; color: #666; margin-bottom: 15px; border-bottom: 1px dashed #333; padding-bottom: 10px; }
@@ -104,4 +112,21 @@ body {
     background: rgba(92, 107, 192, 0.5);
     transform: translateY(-2px);
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* 信号锁定特效 */
+.signal-locked {
+    animation: signalPulse 1.5s ease-in-out infinite; /* 呼吸灯动画 */
+    border: 1px solid #66fcf1 !important; /* 强制变蓝 */
+    box-shadow: 0 0 30px rgba(102, 252, 241, 0.4); /* 蓝色光晕 */
+    transform: scale(1.02); /* 微微放大 */
+    z-index: 10; /* 浮在最上层 */
+    transition: all 0.5s;
+}
+
+/* 定义呼吸动画 */
+@keyframes signalPulse {
+    0% { box-shadow: 0 0 10px rgba(102, 252, 241, 0.2); border-color: rgba(102, 252, 241, 0.5); }
+    50% { box-shadow: 0 0 40px rgba(102, 252, 241, 0.6); border-color: #66fcf1; }
+    100% { box-shadow: 0 0 10px rgba(102, 252, 241, 0.2); border-color: rgba(102, 252, 241, 0.5); }
 }

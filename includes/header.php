@@ -19,17 +19,14 @@
         }
     </script>
 
-    <?php if (isset($style) && $style == 'index'): ?>
-        <link rel="stylesheet" href="assets/css/index.css">
+    <link rel="stylesheet" href="assets/css/index.css?v=<?php echo time(); ?>">
 
+    <?php if (isset($style) && $style == 'tools'): ?>
+        <link rel="stylesheet" href="assets/css/tools.css?v=<?php echo time(); ?>">
     <?php elseif (isset($style) && $style == 'blog'): ?>
-        <link rel="stylesheet" href="assets/css/blog.css">
-    
+        <link rel="stylesheet" href="assets/css/blog.css?v=<?php echo time(); ?>">
     <?php elseif (isset($style) && $style == 'community'): ?>
-        <link rel="stylesheet" href="assets/css/community.css">
-    
-    <?php elseif (isset($style) && $style == 'tools'): ?>
-        <link rel="stylesheet" href="assets/css/tools.css">
+        <link rel="stylesheet" href="assets/css/community.css?v=<?php echo time(); ?>">
     <?php endif; ?>
 
 </head>
