@@ -1,11 +1,41 @@
 <?php
+require 'includes/db.php';
+
 // 下达命令：我是主页，不用导航栏
 $page_title = "灵感传输终端";
 $style = "index"; 
 $show_nav = false; 
 
 include 'includes/header.php'; 
+
+// 🟢 1. 查询是否有正在进行的广播
+$notice_sql = "SELECT * FROM announcements WHERE is_active = 1 ORDER BY id DESC LIMIT 1";
+$notice_res = $conn->query($notice_sql);
+$active_notice = null;
+if ($notice_res && $notice_res->num_rows > 0) {
+    $active_notice = $notice_res->fetch_assoc();
+}
 ?>
+
+<?php if ($active_notice): ?>
+<div id="global-modal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>📡 灵感终端广播</h3>
+            <span class="close-btn" onclick="closeNotice()">×</span>
+        </div>
+        <div class="modal-content">
+            <?php echo $active_notice['content']; ?>
+            <div style="margin-top: 15px; font-size: 0.85rem; color: #999;">
+                发布于: <?php echo date('Y-m-d H:i', strtotime($active_notice['created_at'])); ?>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="confirm-btn" onclick="markAsRead(<?php echo $active_notice['id']; ?>)">收到信号</button>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <div class="logo-area">
     <h1>
@@ -36,5 +66,31 @@ include 'includes/header.php';
         <p>用户交流与灵感记录。空洞骑士风格，在圣巢的石碑上刻下你的记忆（需登录）。</p>
     </a>
 </div>
+
+<script>
+// --- 弹窗逻辑 ---
+<?php if ($active_notice): ?>
+document.addEventListener("DOMContentLoaded", function() {
+    const noticeId = "<?php echo $active_notice['id']; ?>"; // 当前公告的唯一ID
+    
+    // 检查本地存储：用户是否看过这个ID的公告？
+    if (!localStorage.getItem('read_notice_' + noticeId)) {
+        // 没看过 -> 显示弹窗
+        document.getElementById('global-modal').style.display = 'flex';
+    }
+});
+
+function markAsRead(id) {
+    // 1. 记在小本本上：这个ID我看过了
+    localStorage.setItem('read_notice_' + id, 'true');
+    // 2. 关闭弹窗
+    closeNotice();
+}
+
+function closeNotice() {
+    document.getElementById('global-modal').style.display = 'none';
+}
+<?php endif; ?>
+</script>
 
 <?php include 'includes/footer.php'; ?>

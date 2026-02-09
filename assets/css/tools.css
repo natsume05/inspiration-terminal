@@ -115,11 +115,14 @@ h1 {
 }
 
 /* 图标样式 */
-.tool-icon {
-    font-size: 2.2rem; /* 图标放大 */
-    margin-right: 18px; /* 图标和文字的间距 */
-    flex-shrink: 0; /* 防止图标被挤压 */
-    line-height: 1;
+.tool-icon-img {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px; /* 圆角 */
+    margin-right: 15px;
+    object-fit: contain; /* 保持图片比例 */
+    flex-shrink: 0; /* 防止被挤压 */
+    background-color: #fff; /* 防止透明图标在深色背景看不清 */
 }
 
 /* 文字信息容器 */

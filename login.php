@@ -17,6 +17,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $_SESSION['user_id'] = $row['id'];
             $_SESSION['username'] = $user;
             $_SESSION['role'] = $row['role']; // 记住身份
+            $_SESSION['avatar'] = $row['avatar'];
             header("Location: community.php");
             exit();
         } else {

@@ -65,7 +65,7 @@ if ($result->num_rows > 0) {
                 foreach($tools_by_category[$sec] as $item): 
             ?>
                 <a href="<?php echo htmlspecialchars($item['url']); ?>" target="_blank" class="tool-card">
-                    <div class="tool-icon"><?php echo $item['icon']; ?></div>
+                    <img src="https://www.google.com/s2/favicons?domain=<?php echo parse_url($item['url'], PHP_URL_HOST); ?>&sz=128" class="tool-icon-img" alt="icon" onerror="this.src='assets/images/default_icon.png'">
                     <div class="tool-info">
                         <h3><?php echo htmlspecialchars($item['title']); ?></h3>
                         <p><?php echo htmlspecialchars($item['description']); ?></p>

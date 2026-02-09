@@ -1,117 +1,104 @@
 <?php
+session_start();
 require 'includes/db.php';
-// 必须登录才能看
+
+// 必须登录
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
+    header("Location: login.php"); exit();
 }
 
 $user_id = $_SESSION['user_id'];
 $msg = "";
 
-// --- 处理：更新个人信息 ---
-if (isset($_POST['update_profile'])) {
-    $age = intval($_POST['age']);
-    $bio = $conn->real_escape_string($_POST['bio']);
-    $email = $conn->real_escape_string($_POST['email']);
+// --- 处理表单提交 ---
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
-    // SQL 更新语句
-    $sql = "UPDATE users SET age=$age, bio='$bio', email='$email' WHERE id=$user_id";
-    if ($conn->query($sql)) {
-        $msg = "✅ 档案已更新";
-    } else {
-        $msg = "更新失败: " . $conn->error;
+    // 1. 修改签名
+    if (isset($_POST['update_profile'])) {
+        $bio = $conn->real_escape_string($_POST['bio']);
+        $conn->query("UPDATE users SET bio = '$bio' WHERE id = $user_id");
+        $msg = "✅ 签名已更新！";
+    }
+
+    // 2. 上传头像
+    if (isset($_FILES['avatar_file']) && $_FILES['avatar_file']['error'] == 0) {
+        $allowed = ['jpg', 'jpeg', 'png', 'gif'];
+        $filename = $_FILES['avatar_file']['name'];
+        $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+        
+        if (in_array($ext, $allowed)) {
+            // 生成唯一文件名：user_ID_时间戳.jpg
+            $new_name = "user_" . $user_id . "_" . time() . "." . $ext;
+            $target = "assets/uploads/avatars/" . $new_name;
+            
+            if (move_uploaded_file($_FILES['avatar_file']['tmp_name'], $target)) {
+                // 更新数据库
+                $conn->query("UPDATE users SET avatar = '$new_name' WHERE id = $user_id");
+                $msg = "✅ 头像更换成功！";
+            } else {
+                $msg = "❌ 上传失败，请检查文件夹权限。";
+            }
+        } else {
+            $msg = "❌ 仅支持 JPG, PNG, GIF 格式。";
+        }
     }
 }
 
-// --- 处理：添加私人笔记 ---
-if (isset($_POST['add_note'])) {
-    $note = $conn->real_escape_string($_POST['note_content']);
-    if (!empty($note)) {
-        $conn->query("INSERT INTO private_notes (user_id, content) VALUES ($user_id, '$note')");
-        $msg = "🔒 笔记已加密封存";
-    }
+// 获取最新用户信息
+$res = $conn->query("SELECT * FROM users WHERE id = $user_id");
+$user = $res->fetch_assoc();
+
+// 处理头像路径 (如果没有上传过，就用默认图)
+$avatar_url = "assets/images/default.png"; // 默认图路径
+if ($user['avatar'] != 'default.png') {
+    $avatar_url = "assets/uploads/avatars/" . $user['avatar'];
 }
 
-// --- 读取：获取用户信息 ---
-$user_sql = "SELECT * FROM users WHERE id=$user_id";
-$user_info = $conn->query($user_sql)->fetch_assoc();
-
-// --- 读取：获取笔记列表 ---
-$notes_sql = "SELECT * FROM private_notes WHERE user_id=$user_id ORDER BY created_at DESC";
-$notes = $conn->query($notes_sql);
+$page_title = "个人档案";
+$style = "community"; 
+include 'includes/header.php'; 
 ?>
 
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <title>个人档案 | 虚空终端</title>
-    <style>
-        /* 复用之前的 CSS 变量 */
-        :root { --void-bg: #0b0c10; --pale-text: #c5c6c7; --soul-blue: #66fcf1; --stone-border: #45a29e; }
-        body { background: var(--void-bg); color: var(--pale-text); font-family: 'Georgia', serif; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; display: flex; gap: 20px; }
+<div class="container" style="max-width: 600px; margin-top: 50px;">
+    
+    <div class="post-card user-card" style="text-align: center;">
+        <h2 style="color: #66fcf1;">📂 个人档案 / Profile</h2>
         
-        /* 左侧：档案卡片 */
-        .profile-card { flex: 1; background: rgba(31,40,51,0.5); padding: 20px; border: 1px solid var(--stone-border); border-radius: 8px; }
-        /* 右侧：笔记区域 */
-        .notes-area { flex: 2; }
-        
-        input, textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--stone-border); color: var(--soul-blue); padding: 10px; margin-bottom: 10px; box-sizing: border-box; }
-        button { background: var(--stone-border); color: #000; border: none; padding: 8px 15px; cursor: pointer; }
-        button:hover { background: var(--soul-blue); }
-        
-        .note-item { background: rgba(255,255,255,0.05); padding: 15px; margin-bottom: 10px; border-left: 3px solid var(--soul-blue); }
-        .timestamp { font-size: 0.8rem; color: #666; display: block; margin-top: 5px; }
-        
-        h2 { border-bottom: 1px dashed var(--stone-border); padding-bottom: 10px; }
-        .msg { color: #ffae42; margin-bottom: 10px; }
-    </style>
-</head>
-<body>
-
-    <a href="community.php" style="position:fixed; top:20px; right:20px; color:var(--soul-blue); text-decoration:none;">↩ 返回社区</a>
-
-    <div class="msg"><?php echo $msg; ?></div>
-
-    <div class="container">
-        <div class="profile-card">
-            <h2>👤 容器档案</h2>
-            <form method="POST">
-                <label>代号</label>
-                <input type="text" value="<?php echo htmlspecialchars($user_info['username']); ?>" disabled style="opacity:0.5">
-                
-                <label>邮箱</label>
-                <input type="email" name="email" value="<?php echo htmlspecialchars($user_info['email']); ?>" placeholder="Email">
-                
-                <label>存在时长 (Age)</label>
-                <input type="number" name="age" value="<?php echo $user_info['age']; ?>">
-                
-                <label>个性签名</label>
-                <textarea name="bio" rows="4"><?php echo htmlspecialchars($user_info['bio']); ?></textarea>
-                
-                <button type="submit" name="update_profile">更新档案</button>
-            </form>
-        </div>
-
-        <div class="notes-area">
-            <h2>📓 虚空笔记 (仅自己可见)</h2>
-            <form method="POST" style="margin-bottom: 20px;">
-                <textarea name="note_content" placeholder="记录下只有你知道的秘密..." required></textarea>
-                <button type="submit" name="add_note">加密保存</button>
-            </form>
-
-            <div class="notes-list">
-                <?php while($note = $notes->fetch_assoc()): ?>
-                    <div class="note-item">
-                        <?php echo nl2br(htmlspecialchars($note['content'])); ?>
-                        <span class="timestamp">记录于: <?php echo time_ago($note['created_at']); ?></span>
-                    </div>
-                <?php endwhile; ?>
+        <?php if($msg): ?>
+            <div style="background:rgba(102, 252, 241, 0.1); color:#66fcf1; padding:10px; border-radius:5px; margin-bottom:20px;">
+                <?php echo $msg; ?>
             </div>
+        <?php endif; ?>
+
+        <div style="position: relative; width: 100px; height: 100px; margin: 0 auto 20px;">
+            <img src="<?php echo $avatar_url; ?>" style="width:100%; height:100%; object-fit:cover; border-radius:50%; border:3px solid #45a29e; box-shadow: 0 0 15px rgba(102, 252, 241, 0.3);">
+            
+            <?php if($user['username'] == 'MingMo'): // 舰长专属特效 ?>
+                <div style="position:absolute; bottom:0; right:0; background:#FFD700; color:#000; padding:2px 6px; border-radius:10px; font-size:0.7rem; font-weight:bold;">👑</div>
+            <?php endif; ?>
         </div>
+
+        <h3 style="margin:0;"><?php echo htmlspecialchars($user['username']); ?></h3>
+        <p style="color:#888; font-size:0.9rem;">UID: <?php echo $user['id']; ?> | 加入于 <?php echo isset($user['created_at']) ? date('Y-m-d', strtotime($user['created_at'])) : '未知时间'; ?>
+
+        <hr style="border:0; border-top:1px dashed #444; margin: 30px 0;">
+
+        <form method="POST" enctype="multipart/form-data" style="text-align: left;">
+            
+            <label style="display:block; margin-bottom:10px; color:#ccc;">📝 个性签名</label>
+            <input type="text" name="bio" value="<?php echo htmlspecialchars($user['bio']); ?>" 
+                   style="width:100%; padding:10px; background:rgba(0,0,0,0.3); border:1px solid #444; color:#fff; border-radius:5px; margin-bottom:20px;">
+            
+            <label style="display:block; margin-bottom:10px; color:#ccc;">🖼️ 更换头像</label>
+            <input type="file" name="avatar_file" accept="image/*" style="margin-bottom:20px; color:#888;">
+
+            <button type="submit" name="update_profile" class="dream-btn" style="width:100%;">💾 保存更改</button>
+        </form>
+
+        <br>
+        <a href="community.php" style="color:#666; font-size:0.9rem;">← 返回社区</a>
     </div>
 
-</body>
-</html>
+</div>
+
+<?php include 'includes/footer.php'; ?>

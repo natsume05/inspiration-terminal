@@ -30,8 +30,15 @@ body {
 .blog-card:hover { transform: translateY(-2px); border-color: #f2a25c; }
 
 /* 封面图 */
-.blog-cover { width: 100%; height: 200px; object-fit: cover; border-bottom: 1px solid #5c6bc0; display: block; }
-
+.blog-cover { 
+    width: 100%; 
+    height: auto;             /* 🟢 改动：高度自适应 */
+    max-height: 600px;        /* 🟢 改动：防止竖图太长霸屏 */
+    object-fit: contain;      /* 🟢 改动：保证图片完整显示，不裁切 */
+    display: block; 
+    background-color: #000;   /* 补黑边，防止 contain 留白太难看 */
+    border-bottom: 1px solid #5c6bc0; 
+}
 .blog-body { padding: 25px; }
 
 .blog-title {
@@ -64,3 +71,37 @@ body {
 
 /* 粒子背景占位 */
 #particles { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; opacity: 0.6; }
+
+/* 新增：元数据行 */
+.blog-meta-row {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 10px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+.meta-item { display: flex; align-items: center; gap: 4px; }
+
+/* 新增：标签样式 */
+.blog-tags {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.tag {
+    background: rgba(92, 107, 192, 0.2); /* 淡紫色背景 */
+    color: #81d4fa;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid rgba(92, 107, 192, 0.3);
+}
+.tag:hover {
+    background: rgba(92, 107, 192, 0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
