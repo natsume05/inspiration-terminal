@@ -2,6 +2,7 @@
 // community.php - 虚空梦语 3.0 (分区+表情版)
 require 'includes/db.php';
 require_once 'includes/image_helper.php'; // 引入图片处理工厂
+require 'includes/csrf.php'; // 引入安全卫士
 
 // 页面配置
 $page_title = "虚空梦语";
@@ -9,11 +10,18 @@ $style = "community";
 include 'includes/header.php'; 
 
 // --- 1. 处理发帖逻辑 ---
+
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_post'])) {
     if (!isset($_SESSION['user_id'])) {
         header("Location: login.php"); exit();
     }
     
+    // 🟢 新增：检查 CSRF Token (暗号对不对？)
+    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
+        die("🛑 发帖失败：非法请求 (CSRF Error)");
+    }
+
     $content = $conn->real_escape_string($_POST['content']);
     $author = $_SESSION['username'];
     $tag = isset($_POST['tag']) ? $conn->real_escape_string($_POST['tag']) : 'daily'; // 获取标签
@@ -102,13 +110,26 @@ function parseEmojis($text) {
         <?php if(isset($_SESSION['username'])): ?>
         <div class="side-card user-card">
             <div class="user-info-mini">
-                <img src="assets/uploads/avatars/<?php echo $_SESSION['avatar'] ? $_SESSION['avatar'] : 'default.png'; ?>" class="avatar-circle">
-                <div>
-                    <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>
-                    <div style="font-size:0.8rem; color:#666;">信号稳定</div>
+                <img src="assets/uploads/avatars/<?php echo $_SESSION['avatar'] ? $_SESSION['avatar'] : 'default.png'; ?>" class="avatar-small">
+                <div style="flex-grow:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong>
+                        <span id="stardust-display" style="font-size:0.8rem; color:#f6d365;">
+                            ✨ <?php 
+                                // 临时查一下当前积分 (为了实时性)
+                                $uid_temp = $_SESSION['user_id'];
+                                $u_res = $conn->query("SELECT stardust FROM users WHERE id=$uid_temp");
+                                echo $u_res->fetch_assoc()['stardust'];
+                            ?>
+                        </span>
+                    </div>
+                    <button id="checkin-btn" onclick="dailyCheckIn()" class="dream-btn small" style="width:100%; margin-top:8px; padding:4px 0; font-size:0.8rem; background: rgba(102, 252, 241, 0.15);">
+                        🎁 领取今日补给
+                    </button>
                 </div>
             </div>
-            <div class="user-actions">
+            
+            <div class="user-actions" style="margin-top:10px;">
                 <a href="profile.php" class="btn-outline">📂 档案</a>
                 <a href="logout.php" class="btn-outline red">断开</a>
             </div>
@@ -121,7 +142,7 @@ function parseEmojis($text) {
         <div class="post-box">
             <?php if(isset($_SESSION['username'])): ?>
                 <form action="community.php" method="POST" enctype="multipart/form-data">
-                    
+                    <?php echo csrf_field(); ?>
                     <textarea id="post-content" name="content" placeholder="在此刻刻下你的思想..." required></textarea>
                     
                     <div class="post-toolbar">
@@ -187,9 +208,13 @@ function parseEmojis($text) {
                 <div class="post-card fade-in">
                     <div class="post-header">
                         <div class="author-box">
-                            <img src="assets/uploads/avatars/<?php echo $row['avatar'] ? $row['avatar'] : 'default.png'; ?>" class="avatar-small">
-                            <div class="author-info">
-                                <span class="username"><?php echo htmlspecialchars($row['username']); ?></span>
+                                <img src="assets/uploads/avatars/<?php echo !empty($row['avatar']) ? $row['avatar'] : 'default.png'; ?>" class="avatar-small">                            <div class="author-info">
+                                <span class="username">
+                                    <?php 
+                                    // 如果用户名存在，就显示；如果不存在(NULL)，就显示"虚空游侠"
+                                    echo htmlspecialchars($row['username'] ?? '虚空游侠'); 
+                                    ?>
+                                </span>
                                 
                                 <?php if (!empty($row['custom_title'])): ?>
                                     <span class="custom-title-badge"><?php echo htmlspecialchars($row['custom_title']); ?></span>
@@ -212,12 +237,24 @@ function parseEmojis($text) {
                     <?php endif; ?>
 
                     <div class="post-footer">
-                        <span class="action-btn" onclick="toggleLike(<?php echo $row['id']; ?>, this)">
-                            <?php echo ($row['is_liked'] > 0) ? '❤️' : '🤍'; ?> 
-                            <span class="count"><?php echo $row['like_count']; ?></span>
-                        </span>
-                        <span class="action-btn">💬 评论</span>
-                        <span class="action-btn">🔗 分享</span>
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <span class="action-btn" onclick="toggleLike(<?php echo $row['id']; ?>, this)">
+                                <?php echo ($row['is_liked'] > 0) ? '❤️' : '🤍'; ?> 
+                                <span class="count"><?php echo $row['like_count']; ?></span>
+                            </span>
+                            <span class="action-btn">💬 评论</span>
+                            <span class="action-btn" onclick="sharePost(<?php echo $row['id']; ?>)">🔗 分享</span>
+                        </div>
+
+                        <?php if(isset($_SESSION['user_id']) && $_SESSION['user_id'] == 1): ?>
+                            <form method="POST" action="delete_post.php" style="display:inline;" onsubmit="return confirm('⚠️ 舰长指令：确认删除？');">
+        
+                                <?php echo csrf_field(); ?>
+                                
+                                <input type="hidden" name="post_id" value="<?php echo $row['id']; ?>">
+                                <button type="submit" ...>🗑️ 删除</button>
+                            </form>
+                        <?php endif; ?>
                     </div>
                 </div>
             <?php 
@@ -286,6 +323,41 @@ function openLightbox(src) {
 }
 function closeLightbox() {
     document.getElementById('lightbox').style.display = 'none';
+}
+
+// 每日签到功能
+function dailyCheckIn() {
+    const btn = document.getElementById('checkin-btn');
+    const stardustDisplay = document.getElementById('stardust-display');
+    
+    // 1. 禁用按钮防止重复点击
+    btn.disabled = true;
+    btn.innerHTML = '⏳ 通讯中...';
+
+    // 2. 发起请求
+    fetch('api_checkin.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                // A. 成功：播放特效，更新数字
+                alert(data.msg); // 或者用更优雅的 toast 提示
+                stardustDisplay.innerHTML = '✨ ' + data.new_balance;
+                btn.innerHTML = '✅ 已领取';
+                btn.style.background = '#30363d';
+                btn.style.color = '#888';
+            } else {
+                // B. 失败 (通常是已签到)
+                alert(data.msg);
+                btn.innerHTML = '📅 明日再来';
+                btn.disabled = false; // 如果是报错，可以恢复按钮
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('❌ 信号丢失，请检查网络');
+            btn.disabled = false;
+            btn.innerHTML = '🎁 领取今日补给';
+        });
 }
 </script>
 
