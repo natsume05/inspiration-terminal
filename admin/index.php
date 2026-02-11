@@ -4,6 +4,27 @@ session_start();
 require '../includes/db.php';
 require_once '../includes/image_helper.php'; // 注意路径是 ../
 
+// --- 🟢 新增：处理称号颁发 ---
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['grant_title'])) {
+    $target_user = $conn->real_escape_string($_POST['target_username']);
+    $new_title = $conn->real_escape_string($_POST['title_text']);
+    
+    // 如果标题留空，就是撤销
+    if (empty($new_title)) {
+        $sql = "UPDATE users SET custom_title = NULL WHERE username = '$target_user'";
+        $msg = "🗑️ 已撤销 [$target_user] 的称号。";
+    } else {
+        $sql = "UPDATE users SET custom_title = '$new_title' WHERE username = '$target_user'";
+        $msg = "🎖️ 已授予 [$target_user] 称号: $new_title";
+    }
+    
+    if ($conn->query($sql)) {
+        echo "<script>alert('$msg');</script>";
+    } else {
+        echo "<script>alert('操作失败: " . $conn->error . "');</script>";
+    }
+}
+
 $allowed_user = 'MingMo'; // 记得确认这里是你的用户名
 if (!isset($_SESSION['user_id']) || $_SESSION['username'] !== $allowed_user) {
     die("⛔ 权限不足 <a href='../login.php'>登录</a>");
@@ -106,6 +127,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_notice'])) {
         <button class="tab-btn active" onclick="switchTab('tool')">🔧 加工具</button>
         <button class="tab-btn" onclick="switchTab('blog')">📝 写日志</button>
         <button class="tab-btn" onclick="switchTab('notice')">📢 发广播</button>
+        <button class="tab-btn" onclick="switchTab('users')">👥 人员管理</button>
     </div>
 
     <div id="form-tool" class="form-section active">
@@ -154,6 +176,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_notice'])) {
         <form method="POST" onsubmit="return confirm('确定要关闭当前正在播放的公告吗？');">
             <button type="submit" name="stop_notice" style="background: #666;">🔕 停止所有广播</button>
         </form>
+    </div>
+
+    <div id="form-users" class="form-section">
+        <h3>👥 人员与称号管理</h3>
+        <form method="POST" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 8px;">
+            <div class="form-group">
+                <label>目标用户名 (User)</label>
+                <input type="text" name="target_username" placeholder="输入要操作的用户名..." required>
+            </div>
+            
+            <div class="form-group">
+                <label>授予称号 (Title)</label>
+                <input type="text" name="title_text" placeholder="例如：🎮 游戏大神 (留空则为撤销称号)">
+                <small style="color:#aaa; display:block; margin-top:5px;">支持 Emoji，例如：🔥 圣堂之光</small>
+            </div>
+
+            <button type="submit" name="grant_title" class="submit-btn" style="background: linear-gradient(135deg, #f6d365, #fda085); color:#333; font-weight:bold;">
+                🎖️ 颁发 / 撤销
+            </button>
+        </form>
+        
+        <div style="margin-top: 30px;">
+            <h4>🏆 荣誉榜</h4>
+            <ul style="color: #ccc; font-size: 0.9rem; line-height: 1.8;">
+                <?php
+                $u_sql = "SELECT username, custom_title FROM users WHERE custom_title IS NOT NULL";
+                $u_res = $conn->query($u_sql);
+                while($u = $u_res->fetch_assoc()) {
+                    echo "<li><strong>{$u['username']}</strong>: <span style='color:#f6d365; border:1px solid #f6d365; padding:0 4px; border-radius:4px;'>{$u['custom_title']}</span></li>";
+                }
+                ?>
+            </ul>
+        </div>
     </div>
 </div>
 

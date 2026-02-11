@@ -56,9 +56,6 @@ function upload_and_compress_webp($source_path, $target_path, $max_width = 1200,
     // 保存 (imagewebp 是 PHP 内置函数)
     imagewebp($new_image, $final_filename, $quality);
 
-    // 8. 清理内存
-    imagedestroy($image);
-    imagedestroy($new_image);
 
     // 返回生成的文件名 (比如 post_123.webp)
     return basename($final_filename);

@@ -165,3 +165,183 @@ textarea:focus { border-color: var(--soul-blue); }
 .comment-user { color: var(--soul-blue); font-weight: bold; margin-right: 5px; }
 .comment-input { width: 70%; padding: 8px; border-radius: 4px; border: 1px solid #444; background: rgba(0,0,0,0.5); color: white; }
 .comment-submit { padding: 8px 15px; background: #333; color: white; border: 1px solid #555; cursor: pointer; border-radius: 4px; }
+
+/* --- 虚空梦语 3.0 新增样式 --- */
+
+/* 三栏布局 */
+.community-layout {
+    display: grid;
+    grid-template-columns: 220px 1fr 240px; /* 左侧栏 中间流 右侧栏 */
+    gap: 25px;
+    align-items: start;
+    margin-top: 30px;
+}
+
+/* 侧边栏通用卡片 */
+.side-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+.side-card h4 {
+    margin: 0 0 15px 0;
+    color: #e0e0e0;
+    font-size: 1rem;
+    border-bottom: 1px solid #30363d;
+    padding-bottom: 10px;
+}
+
+/* 频道导航 */
+.channel-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+.channel-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    color: #8b949e;
+    text-decoration: none;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+.channel-item:hover {
+    background: rgba(255,255,255,0.05);
+    color: #fff;
+}
+.channel-item.active {
+    background: rgba(102, 252, 241, 0.1);
+    color: #66fcf1;
+    border-left: 3px solid #66fcf1;
+}
+.c-icon { margin-right: 10px; font-size: 1.1rem; }
+
+/* 迷你用户信息 */
+.user-info-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.avatar-small {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #333;
+}
+.user-actions {
+    display: flex;
+    gap: 10px;
+}
+.btn-outline {
+    flex: 1;
+    text-align: center;
+    padding: 5px 0;
+    border: 1px solid #30363d;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #aaa;
+    text-decoration: none;
+    transition: 0.2s;
+}
+.btn-outline:hover { border-color: #888; color: #fff; }
+.btn-outline.red:hover { border-color: #ff6b6b; color: #ff6b6b; }
+
+/* 发帖框工具栏 */
+.post-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    border-top: 1px dashed #333;
+    padding-top: 10px;
+}
+.tools-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.channel-select {
+    background: #0d1117;
+    color: #c9d1d9;
+    border: 1px solid #30363d;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    outline: none;
+}
+.tool-btn {
+    background: none;
+    border: none;
+    color: #8b949e;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: 0.2s;
+}
+.tool-btn:hover { color: #66fcf1; }
+
+/* 表情面板 */
+.emoji-panel {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 5px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+    position: absolute; /* 如果需要悬浮可调这里 */
+    z-index: 100;
+    max-height: 200px;
+    overflow-y: auto; /* 表情太多时可以滚动 */
+}
+.emoji-panel span {
+    font-size: 1.5rem;
+    cursor: pointer;
+    text-align: center;
+    padding: 5px;
+    border-radius: 4px;
+}
+.emoji-panel span:hover { background: rgba(255,255,255,0.1); }
+
+/* 帖子内的标签徽章 */
+.tag-badge {
+    background: rgba(255, 255, 255, 0.05);
+    color: #888;
+    border: 1px solid #444;
+    font-size: 0.75rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 8px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .community-layout {
+        grid-template-columns: 1fr; /* 手机端变为单列 */
+    }
+    .sidebar-left, .sidebar-right {
+        order: -1; /* 让导航排在最前面，或者放到底部 */
+        display: none; /* 手机端暂时隐藏侧边栏，简化复杂度，或者做成折叠菜单 */
+    }
+    /* 为了手机端体验，你可以把侧边栏改为顶部横向滚动菜单，这里先简单处理 */
+}
+
+/* 自定义称号 (金色传说风格) */
+.custom-title-badge {
+    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    color: #333;
+    font-weight: bold;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 12px; /* 圆角更大 */
+    margin-left: 8px;
+    box-shadow: 0 2px 5px rgba(246, 211, 101, 0.3);
+    border: 1px solid rgba(255,255,255,0.3);
+    display: inline-block;
+    vertical-align: middle;
+}
