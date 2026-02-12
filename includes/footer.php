@@ -7,12 +7,17 @@
 <footer style="margin-top: 50px; padding: 40px 20px; background: #0b0c10; border-top: 1px solid #1f2937; text-align: center; color: #6b7280; font-size: 0.85rem;">
     
     <div style="max-width: 800px; margin: 0 auto;">
-        <p>&copy; <?php echo date("Y"); ?> 提瓦特百宝箱 (Teyvat Box). All rights reserved.</p>
+        
+        <p id="copyright-text" style="cursor: pointer; user-select: none; transition: color 0.2s;">
+            &copy; <?php echo date("Y"); ?> 提瓦特百宝箱 (Teyvat Box). All rights reserved.
+        </p>
         
         <p style="margin: 10px 0;">
             <a href="terms.php" style="color: #6b7280; text-decoration: none; margin: 0 10px;">用户协议</a> | 
+            
             <a href="privacy.php" style="color: #6b7280; text-decoration: none; margin: 0 10px;">隐私政策</a> | 
-            <a href="mailto:contact@367588.xyz" style="color: #6b7280; text-decoration: none; margin: 0 10px;">侵权投诉 / 联系舰长</a>
+            
+            <a href="mailto:contact@367588.xyz?subject=侵权投诉&body=尊敬的管理员，我发现以下内容涉嫌侵权..." style="color: #6b7280; text-decoration: none; margin: 0 10px;">侵权投诉 / 联系舰长</a>
         </p>
 
         <p style="font-size: 0.75rem; opacity: 0.7; line-height: 1.5;">
@@ -25,48 +30,40 @@
 </footer>
 
 <script>
-        // 1. 修改后的切换逻辑：默认是显示的，所以点击是“隐藏”
-        function toggleComments(id) {
-            var el = document.getElementById('comments-' + id);
-            // 如果已经是隐藏的，则显示；否则隐藏
-            if (el.style.display === 'none') {
-                el.style.display = 'block';
-            } else {
-                el.style.display = 'none';
-            }
-        }
+    (function() {
+        let clickCount = 0;
+        let clickTimer;
+        const target = document.getElementById('copyright-text');
 
-        // 2. 分享功能
-        function sharePost(id) {
-            var url = window.location.origin + window.location.pathname + "#post-" + id;
-            navigator.clipboard.writeText(url).then(function() {
-                alert('链接已复制到剪贴板！');
-            });
-        }
+        if(target) {
+            target.addEventListener('click', function() {
+                clickCount++;
+                
+                // 视觉反馈：点击变色
+                this.style.color = '#66fcf1'; // 变亮青色
+                setTimeout(() => this.style.color = '#6b7280', 150); // 变回去
 
-        // 3. 点赞功能
-        function toggleLike(postId, btn) {
-            fetch('like_action.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ post_id: postId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    btn.querySelector('.count').innerText = data.count;
-                    if (data.action === 'like') {
-                        btn.classList.add('liked');
-                    } else {
-                        btn.classList.remove('liked');
-                    }
-                } else {
-                    if(data.msg === '请先登录') window.location.href = 'login.php';
-                    else alert(data.msg);
+                // 第 5 次提示
+                if (clickCount === 5) {
+                    // 使用 console.log 防止弹窗太烦人，或者你可以做一个小的 toast 提示
+                    console.log('🔒 检测到异常敲击... 再敲 5 次试试？');
                 }
+                
+                // 第 10 次触发
+                if (clickCount >= 10) {
+                    if(confirm('🚀 身份确认：舰长。正在前往开发者密室...')) {
+                        window.location.href = 'blog.php'; // 传送门：去你的博客
+                    }
+                    clickCount = 0; // 重置
+                }
+                
+                // 2秒不点就重置，防止误触
+                clearTimeout(clickTimer);
+                clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
             });
         }
-    </script>
+    })();
+</script>
+
 </body>
 </html>
-

@@ -1,73 +1,114 @@
 /* =========================================================
-   虚空梦语 3.0 社区样式表 (Community Stylesheet) - 最终完整版
+   虚空梦语 3.0 社区样式表 (Community Stylesheet) - 修复版
    ========================================================= */
 
-/* --- 1. 基础环境定义 --- */
+/* --- 1. 基础环境 --- */
 :root {
-    --void-bg: #0b0c10;         /* 深邃黑背景 */
-    --pale-text: #c5c6c7;       /* 苍白文字 */
-    --soul-blue: #66fcf1;       /* 灵魂蓝 (高亮) */
-    --stone-border: #45a29e;    /* 石碑青 (边框) */
-    --card-bg: rgba(22, 27, 34, 0.7); /* 卡片半透明黑 */
-}
-
-/* --- 补充：通用按钮样式 (找回丢失的按钮颜值) --- */
-.dream-btn {
-    display: inline-block;
-    padding: 10px 25px;
-    color: #fff !important; /* 强制白字 */
-    background: linear-gradient(90deg, #66fcf1, #45a29e); /* 默认青色渐变 */
-    border: none;
-    border-radius: 25px; /* 胶囊圆角 */
-    text-decoration: none;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    text-align: center;
-    box-shadow: 0 4px 15px rgba(102, 252, 241, 0.3); /* 发光效果 */
-}
-
-.dream-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 252, 241, 0.5);
-}
-
-.dream-btn.small {
-    padding: 5px 15px;
-    font-size: 0.85rem;
-}
-
-/* 树洞按钮专用的全宽样式 */
-.full-width {
-    display: block;
-    width: 100%;
-    box-sizing: border-box; /* 防止padding撑破宽度 */
+    --void-bg: #0b0c10;
+    --pale-text: #c5c6c7;
+    --soul-blue: #66fcf1;
+    --stone-border: #45a29e;
+    --card-bg: rgba(22, 27, 34, 0.7);
 }
 
 body {
     background-color: var(--void-bg);
     color: var(--pale-text);
     font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    margin: 0; padding: 0;
+    overflow-x: hidden; /* 🛑 防止横向滚动条出现 */
 }
 
-/* --- 2. 桌面端布局 (默认) --- */
+/* --- 2. 布局系统 (核心修复) --- */
+.container { padding: 0 20px; box-sizing: border-box; }
+
 .community-layout {
     display: grid;
-    grid-template-columns: 220px 1fr 260px; /* 左侧栏 中间流 右侧栏 */
+    grid-template-columns: 240px 1fr 240px; /* 左 中 右 */
     gap: 25px;
     align-items: start;
     margin-top: 30px;
-    max-width: 1200px;
+    max-width: 1280px;
     margin-left: auto;
     margin-right: auto;
+    width: 100%;
+    /* 🛑 关键修复：防止 grid 容器被子元素撑爆 */
+    min-width: 0; 
 }
 
-/* 通用容器修复 */
-.container {
-    padding: 0 20px;
+/* --- 3. 帖子内容区域 (Markdown 约束) --- */
+.post-card {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    
+    /* 🛑 核心修复点：卡片内部也要约束 */
+    max-width: 100%;
+    box-sizing: border-box; 
+    overflow-wrap: break-word; /* 强制长单词换行 */
 }
 
-/* --- 3. 侧边栏与卡片 --- */
+/* Markdown 内容本体 */
+.markdown-body {
+    width: 100%; /* 占满卡片 */
+    max-width: 100%;
+    line-height: 1.6;
+    font-size: 1rem;
+    overflow-wrap: break-word; /* 再次确保换行 */
+}
+
+/* 🛑 核心修复点：图片限制 */
+.markdown-body img {
+    display: block;
+    max-width: 100%;    /* 绝不比父容器宽 */
+    height: auto;       /* 高度自动，防止变形 */
+    max-height: 500px;  /* 限制最大高度 */
+    object-fit: contain;
+    border-radius: 6px;
+    margin: 10px 0;
+    border: 1px solid #30363d;
+}
+
+/* 🛑 核心修复点：代码块限制 */
+.markdown-body pre {
+    background: #282c34;
+    border-radius: 6px;
+    padding: 12px;
+    margin: 10px 0;
+    border: 1px solid #30363d;
+    
+    /* 关键：代码太长时，显示横向滚动条，而不是撑开页面 */
+    max-width: 100%; 
+    overflow-x: auto; 
+    white-space: pre; 
+}
+
+.markdown-body code {
+    font-family: 'Consolas', monospace;
+    font-size: 0.9rem;
+}
+
+/* 引用块 */
+.markdown-body blockquote {
+    border-left: 4px solid #66fcf1;
+    padding: 8px 12px;
+    color: #8b949e;
+    margin: 10px 0;
+    background: rgba(102, 252, 241, 0.05);
+}
+
+/* 标题优化 */
+.markdown-body h1, .markdown-body h2 {
+    border-bottom: 1px solid #30363d;
+    padding-bottom: .3em;
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-size: 1.5em;
+}
+
+/* --- 4. 侧边栏与组件 --- */
 .side-card {
     background: #161b22;
     border: 1px solid #30363d;
@@ -78,303 +119,90 @@ body {
 .side-card h4 {
     margin: 0 0 15px 0;
     color: #e0e0e0;
-    font-size: 1rem;
     border-bottom: 1px solid #30363d;
     padding-bottom: 10px;
 }
 
-/* 频道导航 */
-.channel-nav {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-.channel-item {
-    display: flex;
-    align-items: center;
-    padding: 10px 12px;
-    color: #8b949e;
+/* 按钮美化 */
+.dream-btn {
+    display: inline-block;
+    padding: 10px 8px;
+    color: #fff !important;
+    background: linear-gradient(90deg, #66fcf1, #45a29e);
+    border: none;
+    border-radius: 25px;
     text-decoration: none;
-    border-radius: 6px;
-    transition: all 0.2s;
-}
-.channel-item:hover {
-    background: rgba(255,255,255,0.05);
-    color: #fff;
-}
-.channel-item.active {
-    background: rgba(102, 252, 241, 0.1);
-    color: #66fcf1;
-    border-left: 3px solid #66fcf1;
-}
-.c-icon { margin-right: 10px; font-size: 1.1rem; }
-
-/* 用户信息卡片 */
-.user-info-mini {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-.avatar-small {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #333;
-}
-.user-actions {
-    display: flex;
-    gap: 10px;
-}
-.btn-outline {
-    flex: 1;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
     text-align: center;
-    padding: 5px 0;
-    border: 1px solid #30363d;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    color: #aaa;
-    text-decoration: none;
-    transition: 0.2s;
+    box-shadow: 0 4px 15px rgba(102, 252, 241, 0.3);
 }
-.btn-outline:hover { border-color: #888; color: #fff; }
+.dream-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102, 252, 241, 0.5); }
+.dream-btn.small { padding: 5px 15px; font-size: 0.85rem; }
+.full-width { display: block; width: 100%; }
+
+/* --- 5. 辅助样式 --- */
+.channel-nav { display: flex; flex-direction: column; gap: 5px; }
+.channel-item { display: flex; align-items: center; padding: 10px; color: #8b949e; text-decoration: none; border-radius: 6px; }
+.channel-item:hover { background: rgba(255,255,255,0.05); color: #fff; }
+.channel-item.active { background: rgba(102, 252, 241, 0.1); color: #66fcf1; border-left: 3px solid #66fcf1; }
+.c-icon { margin-right: 10px; }
+
+/* 发帖区 */
+.post-box { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 15px; margin-bottom: 25px; }
+#post-content { width: 100%; height: 100px; background: #0d1117; border: 1px solid #30363d; color: #e6edf3; padding: 10px; border-radius: 4px; resize: vertical; box-sizing: border-box; }
+.post-toolbar { display: flex; justify-content: space-between; margin-top: 10px; padding-top: 10px; border-top: 1px dashed #333; }
+.tools-left { display: flex; align-items: center; gap: 10px; }
+.channel-select { background: #0d1117; color: #c9d1d9; border: 1px solid #30363d; padding: 5px; border-radius: 4px; }
+.tool-btn { background: none; border: none; color: #8b949e; cursor: pointer; }
+
+/* 底部区域 */
+.post-footer { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid #30363d; }
+.action-btn { color: #8b949e; cursor: pointer; display: flex; gap: 5px; }
+.action-btn:hover { color: #66fcf1; }
+
+.user-info-mini { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
+.avatar-small { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+.btn-outline { flex: 1; text-align: center; padding: 5px; border: 1px solid #333; border-radius: 4px; color: #aaa; text-decoration: none; margin-right: 5px;}
 .btn-outline.red:hover { border-color: #ff6b6b; color: #ff6b6b; }
 
-/* --- 4. 发帖区域 --- */
-.post-box {
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 25px;
-}
-#post-content {
-    width: 100%;
-    height: 100px;
-    background: #0d1117;
-    border: 1px solid #30363d;
-    color: #e6edf3;
-    padding: 10px;
-    border-radius: 4px;
-    resize: vertical;
-    box-sizing: border-box; /* 防止撑破 */
-}
-
-/* 发帖工具栏 */
-.post-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 10px;
-    border-top: 1px dashed #333;
-    padding-top: 10px;
-}
-.tools-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.channel-select {
-    background: #0d1117;
-    color: #c9d1d9;
-    border: 1px solid #30363d;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 0.85rem;
-    outline: none;
-}
-.tool-btn {
-    background: none;
-    border: none;
-    color: #8b949e;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: 0.2s;
-}
-.tool-btn:hover { color: #66fcf1; }
-
-/* --- 5. 表情面板 --- */
-.emoji-panel {
-    display: grid;
-    grid-template-columns: repeat(8, 1fr);
-    gap: 5px;
-    background: #161b22;
-    border: 1px solid #30363d;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 10px;
-    max-height: 200px;
-    overflow-y: auto;
-}
-.emoji-panel span {
-    font-size: 1.5rem;
-    cursor: pointer;
-    text-align: center;
-    padding: 5px;
-    border-radius: 4px;
-}
-.emoji-panel span:hover { background: rgba(255,255,255,0.1); }
-
-/* --- 6. 帖子列表与卡片 --- */
-.post-card {
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    animation: fadeIn 0.5s ease;
-}
-.post-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 15px;
-}
-.author-box {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.username {
-    font-weight: bold;
-    color: #e6edf3;
-}
-.post-time {
-    font-size: 0.8rem;
-    color: #8b949e;
-}
-
-/* 标签与称号 */
-.custom-title-badge {
-    background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
-    color: #333;
-    font-weight: bold;
-    font-size: 0.75rem;
-    padding: 2px 8px;
-    border-radius: 12px;
-    margin-left: 8px;
-    display: inline-block;
-}
-.tag-badge {
-    background: rgba(255, 255, 255, 0.05);
-    color: #888;
-    font-size: 0.75rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-left: 8px;
-    border: 1px solid #444;
-}
-
-.post-content {
-    color: #c9d1d9;
-    line-height: 1.6;
-    margin-bottom: 15px;
-    font-size: 1rem;
-    word-wrap: break-word; /* 防止长文字撑破 */
-}
-.post-image img {
-    max-width: 100%;
-    border-radius: 6px;
-    margin-top: 10px;
-    cursor: zoom-in;
-    border: 1px solid #30363d;
-}
-
-.post-footer {
-    display: flex;
-    justify-content: space-between; /* 让左侧按钮和右侧删除按钮分开 */
-    align-items: center;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #30363d;
-}
-.action-btn {
-    color: #8b949e;
-    cursor: pointer;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-.action-btn:hover { color: #66fcf1; }
+/* 表情面板 */
+.emoji-panel { grid-template-columns: repeat(8, 1fr); gap: 5px; background: #161b22; padding: 10px; margin-top: 10px; border-radius: 8px; max-height: 200px; overflow-y: auto; }
+.emoji-panel span { cursor: pointer; text-align: center; padding: 5px; font-size: 1.2rem; }
+.emoji-panel span:hover { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
 
 /* =========================================================
-   📱 移动端“回归本源”适配 (Mobile Simple Stack)
-   逻辑：不隐藏任何东西，从上到下垂直排列，还原你最初看到的模样。
+   📱 移动端适配 (Mobile Stack)
    ========================================================= */
 @media (max-width: 768px) {
-
-    /* 1. 炸掉网格，恢复垂直堆叠 */
     .community-layout {
-        display: block !important; /* 强制变成普通块级元素 */
-        width: 100% !important;
-        margin-top: 0;
-        padding: 0 10px;
+        display: grid;
+        grid-template-columns: 220px 1fr 260px; /* 左 中 右 */
+        gap: 25px;
+        align-items: start;
+        margin-top: 30px;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 100%; /* 确保容器本身不超宽 */
     }
-
-    /* 2. 左侧栏 (频道导航)：强制显示在最上面 */
-    .sidebar-left {
-        display: block !important;
-        width: 100% !important;
-        margin-bottom: 15px;
-    }
+    .sidebar-left { display: block !important; margin-bottom: 15px; }
+    .sidebar-left .nav-card { padding: 10px; }
+    .channel-nav { flex-direction: row; overflow-x: auto; white-space: nowrap; padding-bottom: 5px; }
+    .channel-item { display: inline-flex; margin-right: 10px; background: #161b22; border: 1px solid #30363d; }
+    .sidebar-left .user-card { display: none !important; } /* 隐藏侧边用户信息，防占地 */
     
-    /* 让导航卡片变成横向滚动条 */
-    .sidebar-left .nav-card {
-        margin-bottom: 10px;
-        padding: 10px;
-    }
-    .channel-nav {
-        flex-direction: row; /* 横向排列 */
-        overflow-x: auto;    /* 允许滑动 */
-        white-space: nowrap;
-        padding-bottom: 5px;
-    }
-    .channel-item {
-        display: inline-flex; /* 保持按钮形状 */
-        margin-right: 10px;
-        background: #161b22;
-        border: 1px solid #30363d;
-    }
-    
-    /* 隐藏左侧栏里那个重复的用户卡片(因为底部有了，或者你可以选择不隐藏) */
-    .sidebar-left .user-card {
-        display: none !important; 
-    }
-
-
-    /* 3. 中间 (帖子流)：正常显示 */
     .feed-stream {
-        display: block !important;
-        width: 100% !important;
-        margin-bottom: 30px;
+        min-width: 0; 
+        width: 100%;
+        overflow: hidden; /* 双重保险，防止溢出 */
     }
     
-    /* 修复发帖框挤压 */
     .post-toolbar { flex-wrap: wrap; }
     .tools-left { width: 100%; margin-bottom: 10px; }
-    .post-toolbar .dream-btn { width: 100%; padding: 12px; }
-
-
-    /* 4. 右侧栏 (树洞/广播)：强制找回！并显示在帖子下方 */
-    .sidebar-right {
-        display: block !important; /* 核心：绝不隐藏 */
-        width: 100% !important;
-        margin-top: 30px; /* 和上面帖子拉开距离 */
-        padding-bottom: 20px;
-    }
+    .post-toolbar .dream-btn { width: 100%; padding: 10px; }
     
-    /* 让树洞和广播卡片显眼一点 */
-    .sidebar-right .side-card {
-        border: 1px dashed #444; /* 虚线边框区分 */
-        background: #0d1117;
-    }
-
-
-    /* 5. 底部个人信息补丁 (因为上面隐藏了左侧的用户卡片) */
-    /* 我们在右侧栏底部手动加一个用户区，或者直接依赖底部的大返回按钮 */
-    
-    /* 6. 隐藏不必要的标题，节省空间 */
-    .sidebar-left h4 { display: none; }
+    .sidebar-right { display: block !important; margin-top: 30px; }
 }

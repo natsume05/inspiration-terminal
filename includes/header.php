@@ -27,11 +27,43 @@
         <link rel="stylesheet" href="assets/css/blog.css?v=<?php echo time(); ?>">
     <?php elseif (isset($style) && $style == 'community'): ?>
         <link rel="stylesheet" href="assets/css/community.css?v=<?php echo time(); ?>">
+    <?php elseif (isset($style) && $style == 'steam'): ?>
+        <link rel="stylesheet" href="assets/css/steam.css?v=<?php echo time(); ?>">
     <?php endif; ?>
 
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    
+    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/languages/css.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+
+    <script src="https://cdn.bootcdn.net/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+
+    <script>
+        // 初始化检查
+        document.addEventListener('DOMContentLoaded', () => {
+            if(typeof hljs !== 'undefined') hljs.highlightAll();
+        });
+    </script>
 </head>
 <body>
-    
+    <?php
+    $has_unread = false;
+    if (isset($_SESSION['user_id'])) {
+        $uid = $_SESSION['user_id'];
+        $n_sql = "SELECT COUNT(*) as count FROM notifications WHERE user_id = $uid AND is_read = 0";
+        $n_res = $conn->query($n_sql);
+        if ($n_res && $n_res->fetch_assoc()['count'] > 0) {
+            $has_unread = true;
+        }
+    }
+    ?>
+
     <?php if (isset($show_nav) && $show_nav == true): ?>
         <div id="particles"></div> <header>
             <h1><?php echo $page_title; ?></h1>
@@ -47,7 +79,12 @@
                 ?>
                     <img src="<?php echo $nav_avatar; ?>" style="width:24px; height:24px; border-radius:50%; vertical-align:middle; margin-right:5px; border:1px solid #45a29e;">
                     <span><?php echo htmlspecialchars($_SESSION['username']); ?></span>
-                    <a href="profile.php" style="color: #66fcf1;">[个人中心]</a> 
+                    <a href="profile.php" class="nav-link" style="position:relative;">
+                        个人中心
+                        <?php if ($has_unread): ?>
+                            <span style="position:absolute; top:5px; right:-5px; width:8px; height:8px; background:#ff4d4f; border-radius:50%; box-shadow:0 0 5px #ff4d4f;"></span>
+                        <?php endif; ?>
+                    </a>
                     <a href="community.php?action=logout">断开</a>
                 <?php else: ?>
                     <a href="login.php">登录</a> | <a href="register.php">注册</a>

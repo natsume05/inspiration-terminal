@@ -105,6 +105,44 @@ if ($result->num_rows > 0) {
         </div>
 
     </div>
+
+    <div style="max-width: 800px; margin: 40px auto; text-align: center;">
+        <h3 style="color: #66fcf1; margin-bottom: 20px;">🚀 星际战略中心</h3>
+        
+        <div class="steam-feature-card" style="
+            background: linear-gradient(135deg, #16212e 0%, #0d1117 100%);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: left;
+        ">
+            <div style="flex-shrink: 0; font-size: 3.5rem;">🎮</div>
+            
+            <div style="flex-grow: 1;">
+                <h3 style="margin: 0 0 5px 0; color: #e6edf3; font-size: 1.3rem;">Steam 战略指挥室</h3>
+                <p style="margin: 0; color: #8b949e; font-size: 0.9rem;">
+                    集成全年大促日历、口碑神作榜单与史低价格监控。
+                </p>
+            </div>
+
+            <a href="steam.php" class="dream-btn" style="flex-shrink: 0; padding: 12px 30px;">
+                启动终端
+            </a>
+        </div>
+        
+        <style>
+            @media (max-width: 768px) {
+                .steam-feature-card { flex-direction: column; text-align: center; }
+                .steam-feature-card a { width: 100%; box-sizing: border-box; }
+            }
+        </style>
+    </div>
+
     <nav class="nav-bar">
         <button class="nav-btn active" onclick="showSection('game', this)">🎮 游戏 (Game)</button>
         <button class="nav-btn" onclick="showSection('tools', this)">🛠️ 工具 (Tools)</button>
@@ -142,6 +180,7 @@ if ($result->num_rows > 0) {
             ?>
         </div>
     <?php endforeach; ?>
+
 
 </div>
 

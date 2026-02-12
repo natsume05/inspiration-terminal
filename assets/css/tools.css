@@ -90,6 +90,7 @@ h1 {
     /* 大小 */
     width: 280px; 
     height: 80px; /* 固定高度让排版更整齐 */
+    min-height: 180px;
     padding: 15px 20px;
     
     /* 盒子样式 (修复看不见的问题) */
