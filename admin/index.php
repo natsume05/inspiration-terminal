@@ -1,36 +1,16 @@
 <?php
-// admin/index.php - 完整修复版
+// admin/index.php - 舰长控制台 (完整版：含反馈系统)
 session_start();
 require '../includes/db.php';
-require_once '../includes/image_helper.php'; // 注意路径是 ../
+require_once '../includes/image_helper.php';
 
-// --- 🟢 新增：处理称号颁发 ---
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['grant_title'])) {
-    $target_user = $conn->real_escape_string($_POST['target_username']);
-    $new_title = $conn->real_escape_string($_POST['title_text']);
-    
-    // 如果标题留空，就是撤销
-    if (empty($new_title)) {
-        $sql = "UPDATE users SET custom_title = NULL WHERE username = '$target_user'";
-        $msg = "🗑️ 已撤销 [$target_user] 的称号。";
-    } else {
-        $sql = "UPDATE users SET custom_title = '$new_title' WHERE username = '$target_user'";
-        $msg = "🎖️ 已授予 [$target_user] 称号: $new_title";
-    }
-    
-    if ($conn->query($sql)) {
-        echo "<script>alert('$msg');</script>";
-    } else {
-        echo "<script>alert('操作失败: " . $conn->error . "');</script>";
-    }
-}
-
-$allowed_user = 'MingMo'; // 记得确认这里是你的用户名
+// 🛡️ 权限检查
+$allowed_user = 'MingMo'; 
 if (!isset($_SESSION['user_id']) || $_SESSION['username'] !== $allowed_user) {
     die("⛔ 权限不足 <a href='../login.php'>登录</a>");
 }
 
-$message = "欢迎来到神禁领域";
+$message = "";
 
 // --- 逻辑 A: 添加工具 ---
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_tool'])) {
@@ -38,7 +18,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_tool'])) {
     $url = $conn->real_escape_string($_POST['url']);
     $category = $conn->real_escape_string($_POST['category']);
     $desc = $conn->real_escape_string($_POST['description']);
-    // 图标现在不用填了，前台会自动抓取，这里存空或者默认值
     $sql = "INSERT INTO tools (title, url, icon, description, category) VALUES ('$title', '$url', '', '$desc', '$category')";
     if ($conn->query($sql)) $message = "✅ 工具添加成功！";
     else $message = "❌ 失败：" . $conn->error;
@@ -48,53 +27,57 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_tool'])) {
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_blog'])) {
     $title = $conn->real_escape_string($_POST['blog_title']);
     $content = $conn->real_escape_string($_POST['blog_content']);
-    
-    // 🟢 修复点：这里增加了对 blog_tags 的检查，防止报错
     $tags = isset($_POST['blog_tags']) ? $conn->real_escape_string(str_replace('，', ',', $_POST['blog_tags'])) : '';
-    
     $cover_path = NULL;
-
-    // 图片上传逻辑
     if (isset($_FILES['cover_image']) && $_FILES['cover_image']['error'] == 0) {
-    $base_name = time() . "_blog";
-    $target_dir = "../assets/images/"; // 注意后台上传到 assets 要加 ../
-
-    // 🔥 调用加工厂
-    $processed_name = upload_and_compress_webp(
-        $_FILES["cover_image"]["tmp_name"], 
-        $target_dir . $base_name, 
-        1200, 
-        80
-    );
-
-    if ($processed_name) {
-        // 存入数据库时，要把 ../ 去掉，变成相对路径
-        $cover_path = "assets/images/" . $processed_name;
+        $base_name = time() . "_blog";
+        $processed = upload_and_compress_webp($_FILES["cover_image"]["tmp_name"], "../assets/images/" . $base_name, 1200, 80);
+        if ($processed) $cover_path = "assets/images/" . $processed;
     }
-}
-
     $sql = "INSERT INTO blog_posts (title, content, cover_image, tags) VALUES ('$title', '$content', '$cover_path', '$tags')";
     if ($conn->query($sql)) $message = "✅ 博客发布成功！";
-    else $message = "❌ 发布失败：" . $conn->error;
+    else $message = "❌ 失败：" . $conn->error;
 }
-    // --- 逻辑 C: 发布/管理公告 ---
-    // 1. 发布新公告
+
+// --- 逻辑 C: 广播管理 ---
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_notice'])) {
     $content = $conn->real_escape_string($_POST['notice_content']);
-    // 先把旧的都停掉 (保证同一时间只有一个活跃广播)
     $conn->query("UPDATE announcements SET is_active = 0");
-    // 插入新的
-    $sql = "INSERT INTO announcements (content, is_active) VALUES ('$content', 1)";
-    if ($conn->query($sql)) $message = "✅ 全域广播已发射！";
-    else $message = "❌ 发射失败：" . $conn->error;
-    }
+    $conn->query("INSERT INTO announcements (content, is_active) VALUES ('$content', 1)");
+    $message = "✅ 广播已发射！";
+}
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['stop_notice'])) {
+    $conn->query("UPDATE announcements SET is_active = 0");
+    $message = "🛑 广播已切断。";
+}
 
-    // 2. 停止所有广播
-    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['stop_notice'])) {
-        $conn->query("UPDATE announcements SET is_active = 0");
-        $message = "🛑 广播信号已切断，静默模式开启。";
+// --- 逻辑 D: 称号管理 ---
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['grant_title'])) {
+    $target = $conn->real_escape_string($_POST['target_username']);
+    $new_title = $conn->real_escape_string($_POST['title_text']);
+    if (empty($new_title)) {
+        $sql = "UPDATE users SET custom_title = NULL WHERE username = '$target'";
+        $msg = "🗑️ 已撤销 [$target] 的称号。";
+    } else {
+        $sql = "UPDATE users SET custom_title = '$new_title' WHERE username = '$target'";
+        $msg = "🎖️ 已授予 [$target] 称号: $new_title";
     }
+    if ($conn->query($sql)) echo "<script>alert('$msg');</script>";
+}
 
+// --- 🟢 逻辑 E: 回复反馈 (新增) ---
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['reply_feedback'])) {
+    $fid = intval($_POST['feedback_id']);
+    $reply = $conn->real_escape_string($_POST['reply_content']);
+    
+    $sql = "UPDATE feedback SET admin_reply = '$reply', status = 'replied' WHERE id = $fid";
+    if ($conn->query($sql)) {
+        $message = "✅ 已回复该信号！";
+        // 可选：给用户发通知系统消息 (如果有通知系统的话)
+    } else {
+        $message = "❌ 回复失败：" . $conn->error;
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -104,17 +87,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_notice'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>舰长控制台</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
-        .admin-panel { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px; margin: 0 auto; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        .admin-panel { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; }
         h2 { text-align: center; color: #333; }
-        .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #ddd; }
-        .tab-btn { flex: 1; padding: 15px; text-align: center; cursor: pointer; background: none; border: none; font-size: 1rem; color: #666; }
+        .tabs { display: flex; margin-bottom: 20px; border-bottom: 1px solid #ddd; overflow-x: auto; }
+        .tab-btn { flex: 1; padding: 15px; text-align: center; cursor: pointer; background: none; border: none; font-size: 1rem; color: #666; white-space: nowrap; }
         .tab-btn.active { border-bottom: 3px solid #333; font-weight: bold; color: #333; }
         .form-section { display: none; }
         .form-section.active { display: block; }
         input, textarea, select { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
         button { width: 100%; padding: 15px; background: #333; color: white; border: none; border-radius: 5px; font-size: 1rem; cursor: pointer; }
         .msg { padding: 10px; background: #d4edda; color: #155724; border-radius: 5px; margin-bottom: 15px; text-align: center; }
+        
+        /* 反馈列表样式 */
+        .feedback-item { border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 8px; background: #fafafa; }
+        .fb-header { display: flex; justify-content: space-between; font-size: 0.85rem; color: #666; margin-bottom: 10px; }
+        .fb-content { font-size: 1rem; margin-bottom: 15px; white-space: pre-wrap; color: #333; }
+        .fb-tag { padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; }
+        .tag-bug { background: #fee2e2; color: #991b1b; }
+        .tag-feature { background: #fef3c7; color: #92400e; }
+        .tag-help { background: #dbeafe; color: #1e40af; }
+        .reply-box { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ddd; }
     </style>
 </head>
 <body>
@@ -127,7 +120,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_notice'])) {
         <button class="tab-btn active" onclick="switchTab('tool')">🔧 加工具</button>
         <button class="tab-btn" onclick="switchTab('blog')">📝 写日志</button>
         <button class="tab-btn" onclick="switchTab('notice')">📢 发广播</button>
-        <button class="tab-btn" onclick="switchTab('users')">👥 人员管理</button>
+        <button class="tab-btn" onclick="switchTab('users')">👥 人员</button>
+        <button class="tab-btn" onclick="switchTab('feedback')">📶 反馈</button>
     </div>
 
     <div id="form-tool" class="form-section active">
@@ -135,10 +129,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_notice'])) {
             <input type="text" name="title" placeholder="工具名称" required>
             <input type="url" name="url" placeholder="链接 (https://)" required>
             <select name="category">
-                <option value="tools">🛠️ 工具</option>
-                <option value="game">🎮 游戏</option>
-                <option value="life">🍵 生活</option>
-                <option value="impression">🌌 印象</option>
+                <option value="tools">🛠️ 工具</option><option value="game">🎮 游戏</option>
+                <option value="life">🍵 生活</option><option value="impression">🌌 印象</option>
             </select>
             <textarea name="description" placeholder="一句话描述"></textarea>
             <button type="submit" name="add_tool">归档工具</button>
@@ -148,68 +140,75 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['publish_notice'])) {
     <div id="form-blog" class="form-section">
         <form method="POST" enctype="multipart/form-data">
             <input type="text" name="blog_title" placeholder="日志标题" required>
-            
-            <input type="text" name="blog_tags" placeholder="标签 (用逗号分隔，例如：生活, 星际拓荒)">
-            
-            <textarea name="blog_content" placeholder="正文内容..." style="height: 200px;" required></textarea>
-            
-            <label style="display:block; margin-bottom:5px; color:#666;">📸 封面图 (可选):</label>
-            <input type="file" name="cover_image" accept="image/*">
-            
+            <input type="text" name="blog_tags" placeholder="标签 (逗号分隔)">
+            <textarea name="blog_content" placeholder="正文..." style="height: 200px;" required></textarea>
+            <label>📸 封面图:</label><input type="file" name="cover_image" accept="image/*">
             <button type="submit" name="publish_blog" style="background: #007bff;">发布日志</button>
         </form>
     </div>
 
     <div id="form-notice" class="form-section">
-        <div style="background: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; margin-bottom: 20px; font-size: 0.9rem;">
-            💡 提示：新公告发布后，所有访问主页的用户都会看到弹窗。用户点击“收到”后，该版本公告不再弹出。
-        </div>
-
         <form method="POST">
-            <label style="display:block; margin-bottom:5px; color:#666;">广播内容 (支持 HTML):</label>
-            <textarea name="notice_content" placeholder="例如：本站已更新 2.0 版本，新增了树洞功能..." style="height: 150px;" required></textarea>          
+            <textarea name="notice_content" placeholder="广播内容..." style="height: 150px;" required></textarea>          
             <button type="submit" name="publish_notice" style="background: #e67e22;">📡 发射信号</button>
         </form>
-
-        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
-
-        <form method="POST" onsubmit="return confirm('确定要关闭当前正在播放的公告吗？');">
-            <button type="submit" name="stop_notice" style="background: #666;">🔕 停止所有广播</button>
+        <form method="POST" style="margin-top:20px;" onsubmit="return confirm('关闭当前广播？');">
+            <button type="submit" name="stop_notice" style="background: #666;">🔕 停止广播</button>
         </form>
     </div>
 
     <div id="form-users" class="form-section">
-        <h3>👥 人员与称号管理</h3>
-        <form method="POST" style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 8px;">
-            <div class="form-group">
-                <label>目标用户名 (User)</label>
-                <input type="text" name="target_username" placeholder="输入要操作的用户名..." required>
-            </div>
-            
-            <div class="form-group">
-                <label>授予称号 (Title)</label>
-                <input type="text" name="title_text" placeholder="例如：🎮 游戏大神 (留空则为撤销称号)">
-                <small style="color:#aaa; display:block; margin-top:5px;">支持 Emoji，例如：🔥 圣堂之光</small>
-            </div>
-
-            <button type="submit" name="grant_title" class="submit-btn" style="background: linear-gradient(135deg, #f6d365, #fda085); color:#333; font-weight:bold;">
-                🎖️ 颁发 / 撤销
-            </button>
+        <form method="POST" style="background: #f8f9fa; padding: 20px; border-radius: 8px;">
+            <input type="text" name="target_username" placeholder="目标用户名" required>
+            <input type="text" name="title_text" placeholder="授予称号 (留空撤销)">
+            <button type="submit" name="grant_title" style="background: linear-gradient(135deg, #f6d365, #fda085); color:#333;">🎖️ 执行</button>
         </form>
-        
-        <div style="margin-top: 30px;">
-            <h4>🏆 荣誉榜</h4>
-            <ul style="color: #ccc; font-size: 0.9rem; line-height: 1.8;">
-                <?php
-                $u_sql = "SELECT username, custom_title FROM users WHERE custom_title IS NOT NULL";
-                $u_res = $conn->query($u_sql);
-                while($u = $u_res->fetch_assoc()) {
-                    echo "<li><strong>{$u['username']}</strong>: <span style='color:#f6d365; border:1px solid #f6d365; padding:0 4px; border-radius:4px;'>{$u['custom_title']}</span></li>";
-                }
-                ?>
-            </ul>
-        </div>
     </div>
+
+    <div id="form-feedback" class="form-section">
+        <h3>📶 信号接收塔</h3>
+        <?php
+        // 只显示未处理或最近的反馈
+        $f_sql = "SELECT f.*, u.username FROM feedback f JOIN users u ON f.user_id = u.id ORDER BY f.status ASC, f.created_at DESC LIMIT 20";
+        $f_res = $conn->query($f_sql);
+        
+        if ($f_res && $f_res->num_rows > 0):
+            while($item = $f_res->fetch_assoc()):
+                $tagClass = 'tag-help';
+                if($item['type']=='bug') $tagClass = 'tag-bug';
+                if($item['type']=='feature') $tagClass = 'tag-feature';
+        ?>
+            <div class="feedback-item">
+                <div class="fb-header">
+                    <span>
+                        <span class="fb-tag <?php echo $tagClass; ?>"><?php echo strtoupper($item['type']); ?></span>
+                        <strong><?php echo htmlspecialchars($item['username']); ?></strong>
+                    </span>
+                    <span><?php echo date('m-d H:i', strtotime($item['created_at'])); ?></span>
+                </div>
+                
+                <div class="fb-content"><?php echo htmlspecialchars($item['content']); ?></div>
+                
+                <div class="reply-box">
+                    <?php if($item['status'] == 'replied'): ?>
+                        <div style="color:green; font-size:0.9rem;">✅ 已回复：<?php echo htmlspecialchars($item['admin_reply']); ?></div>
+                    <?php else: ?>
+                        <form method="POST">
+                            <input type="hidden" name="feedback_id" value="<?php echo $item['id']; ?>">
+                            <input type="text" name="reply_content" placeholder="输入回复内容..." required style="margin-bottom:10px;">
+                            <button type="submit" name="reply_feedback" style="padding:10px; background:#28a745;">📨 发送回复</button>
+                        </form>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php 
+            endwhile; 
+        else:
+            echo "<p style='text-align:center; color:#999;'>暂无新信号。</p>";
+        endif; 
+        ?>
+    </div>
+
 </div>
 
 <script>

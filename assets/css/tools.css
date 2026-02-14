@@ -1,164 +1,106 @@
-/* assets/css/tools.css */
+/* assets/css/tools.css - 百宝箱大厅专用样式 (极简版) */
+
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500&display=swap');
 
+/* --- 1. 全局基础 --- */
 body {
     margin: 0; padding: 0;
     font-family: 'Roboto', 'Microsoft YaHei', sans-serif;
-    background-color: #f5f5f7; /* 米游社/原神风格的浅灰背景 */
+    background-color: #f5f5f7; /* 浅灰背景 */
     color: #333;
-    display: flex; flex-direction: column; align-items: center;
     min-height: 100vh;
 }
 
-/* 头部介绍区域 */
-header {
-    margin-top: 40px;
-    margin-bottom: 20px;
-    text-align: center;
+/* 容器限制 */
+.container {
+    padding: 0 20px;
+    box-sizing: border-box;
 }
 
+/* --- 2. 头部区域 --- */
 h1 {
     font-size: 2.5rem;
-    color: #495057;
+    color: #2c3e50;
     margin-bottom: 10px;
+    font-weight: 700;
 }
 
-.intro-text { 
-    color: #888; 
-    font-style: italic; 
-    text-align: center; 
-    max-width: 800px; 
-    margin: 0 auto 30px auto; 
-    font-size: 0.95rem;
+p {
+    font-size: 1rem;
     line-height: 1.6;
 }
 
-/* 导航条 (胶囊按钮风格) */
-.nav-bar {
-    display: flex; 
-    justify-content: center; 
-    gap: 15px; 
-    margin-bottom: 40px; 
-    flex-wrap: wrap;
+/* --- 3. 入口卡片 (Portal Cards) --- */
+/* 这是 tools.php 里那三个大卡片的样式 */
+
+.portal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    text-align: left;
+    margin-bottom: 60px;
 }
 
-.nav-btn {
-    padding: 10px 25px;
-    border: none; 
-    border-radius: 50px; /* 完全圆角 */
-    background: #fff; 
-    color: #666;
-    font-size: 1rem; 
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* 轻微阴影 */
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    font-weight: 500;
-}
-
-.nav-btn:hover { 
-    transform: translateY(-2px); 
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
-    color: #333;
-}
-
-/* 激活状态：模仿原神草元素绿，或者你可以改回深灰色 */
-.nav-btn.active {
-    background: #333; /* 选中变黑 */
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-/* --- 核心修复区：卡片样式 --- */
-
-/* 1. 容器 */
-.container {
-    width: 90%;
-    max-width: 1200px;
-    padding-bottom: 60px;
-}
-
-/* 2. 分区显示逻辑 */
-.section { display: none; animation: fadeIn 0.4s ease-up; }
-.section.active { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
-
-/* 3. 卡片本体 (修复方框消失和蓝色字体) */
-.tool-card {
-    /* 布局：使用 Flex 让图标在左，文字在右 */
-    display: flex;
-    align-items: center; /* 垂直居中 */
-    
-    /* 大小 */
-    width: 280px; 
-    height: 80px; /* 固定高度让排版更整齐 */
-    min-height: 180px;
-    padding: 15px 20px;
-    
-    /* 盒子样式 (修复看不见的问题) */
-    background: #fff; 
-    border-radius: 12px;
-    border: 1px solid transparent; /* 预留边框位置 */
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-    
-    /* 字体样式 (修复蓝色下划线) */
-    text-decoration: none !important; /* 强制去掉下划线 */
-    color: #333; /* 强制变黑 */
-    
-    transition: all 0.3s ease;
+.portal-card {
+    display: block;
+    padding: 40px 30px;
+    border-radius: 16px;
+    color: #fff !important; /* 强制白字 */
+    text-decoration: none;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
     position: relative;
     overflow: hidden;
 }
 
-/* 悬停效果 */
-.tool-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    border-color: rgba(0,0,0,0.1); /* 悬停时显示浅浅边框 */
+/* 悬停特效 */
+.portal-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
 }
 
-/* 图标样式 */
-.tool-icon-img {
-    width: 48px;
-    height: 48px;
-    border-radius: 10px; /* 圆角 */
-    margin-right: 15px;
-    object-fit: contain; /* 保持图片比例 */
-    flex-shrink: 0; /* 防止被挤压 */
-    background-color: #fff; /* 防止透明图标在深色背景看不清 */
+/* 卡片内部元素 */
+.p-icon {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
 }
 
-/* 文字信息容器 */
-.tool-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    text-align: left; /* 强制左对齐 */
-    overflow: hidden; /* 防止文字溢出 */
-}
-
-/* 标题 */
-.tool-info h3 {
-    margin: 0 0 5px 0;
-    font-size: 1.05rem;
+.portal-card h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.5rem;
     font-weight: 600;
-    color: #2c3e50; /* 深色标题 */
+    letter-spacing: 0.5px;
 }
 
-/* 描述文字 */
-.tool-info p {
+.portal-card p {
     margin: 0;
-    font-size: 0.8rem;
-    color: #999; /* 浅灰描述 */
-    white-space: nowrap;      /* 强制不换行 */
-    overflow: hidden;         /* 超出隐藏 */
-    text-overflow: ellipsis;  /* 超出显示省略号... */
-    width: 100%;
+    color: rgba(255,255,255,0.8);
+    font-size: 0.95rem;
+    line-height: 1.5;
 }
 
-/* 动画 */
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* 装饰性背景光晕 (可选，增加高级感) */
+.portal-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+.portal-card:hover::before {
+    opacity: 1;
+}
 
-/* 针对不同分区的微调 (可选) */
-#game .tool-card:hover { border-bottom: 3px solid #6c5ce7; } /* 游戏紫 */
-#tools .tool-card:hover { border-bottom: 3px solid #00b894; } /* 工具绿 */
-#life .tool-card:hover { border-bottom: 3px solid #ff7675; }  /* 生活红 */
-#impression .tool-card:hover { border-bottom: 3px solid #0984e3; } /* 印象蓝 */
+/* --- 4. 移动端适配 --- */
+@media (max-width: 768px) {
+    h1 { font-size: 2rem; }
+    .portal-grid { grid-template-columns: 1fr; } /* 手机端单列 */
+    .portal-card { padding: 30px 20px; }
+}

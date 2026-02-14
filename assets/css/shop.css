@@ -1,0 +1,100 @@
+/* assets/css/shop.css */
+
+.shop-container { max-width: 1100px; margin-top: 40px; color: #e0e0e0; }
+
+/* 头部区域 */
+.shop-header {
+    display: flex; gap: 20px; margin-bottom: 40px;
+    flex-wrap: wrap;
+}
+
+.balance-card {
+    flex: 1; min-width: 200px;
+    background: #121821; border: 1px solid #30363d;
+    padding: 25px; border-radius: 12px;
+    display: flex; flex-direction: column; justify-content: center;
+}
+.balance-card .label { color: #888; font-size: 0.9rem; margin-bottom: 5px; }
+.balance-card .value { font-size: 2.2rem; color: #f6d365; font-weight: bold; text-shadow: 0 0 10px rgba(246, 211, 101, 0.3); }
+
+.gacha-machine {
+    flex: 2; min-width: 300px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    border: 1px solid #45a29e;
+    padding: 25px; border-radius: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+    box-shadow: 0 0 15px rgba(69, 162, 158, 0.2);
+}
+.gacha-btn {
+    background: #45a29e; color: #0b0c10; border: none;
+    padding: 12px 25px; border-radius: 25px; font-weight: bold; cursor: pointer;
+    transition: 0.3s;
+}
+.gacha-btn:hover { background: #66fcf1; box-shadow: 0 0 15px #66fcf1; }
+.gacha-btn:disabled { background: #333; color: #666; cursor: not-allowed; box-shadow: none; }
+
+/* 商品列表 */
+.section-title { 
+    border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; 
+    color: #fff; font-family: serif; letter-spacing: 1px;
+}
+
+.shop-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px;
+}
+
+/* 商品卡片核心 */
+.item-card {
+    background: #0f1216; border: 1px solid #333; border-radius: 8px;
+    padding: 20px; position: relative; transition: all 0.3s;
+    display: flex; flex-direction: column;
+}
+.item-card:hover { transform: translateY(-5px); }
+
+/* 稀有度边框与光效 */
+.rarity-common { border-color: #666; }
+.rarity-rare { border-color: #00b4db; box-shadow: inset 0 0 10px rgba(0, 180, 219, 0.1); }
+.rarity-epic { border-color: #8e44ad; box-shadow: inset 0 0 10px rgba(142, 68, 173, 0.1); }
+.rarity-legendary { border-color: #f39c12; box-shadow: inset 0 0 15px rgba(243, 156, 18, 0.2); animation: glow 2s infinite alternate; }
+
+.item-icon { font-size: 2.5rem; margin-bottom: 15px; text-align: center; }
+.item-info h4 { margin: 0 0 5px 0; color: #fff; }
+.item-type { font-size: 0.7rem; color: #666; margin-bottom: 10px; letter-spacing: 1px; }
+.item-info p { font-size: 0.85rem; color: #aaa; line-height: 1.4; flex-grow: 1; }
+
+.buy-btn {
+    width: 100%; margin-top: 15px; padding: 8px;
+    background: transparent; border: 1px solid #45a29e; color: #45a29e;
+    border-radius: 4px; cursor: pointer; transition: 0.2s;
+}
+.buy-btn:hover { background: #45a29e; color: #000; }
+.buy-btn.disabled { border-color: #333; color: #555; cursor: default; }
+.buy-btn.disabled:hover { background: transparent; }
+
+/* 模态框 */
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center; z-index: 1000;
+}
+.modal-content {
+    background: #161b22; border: 1px solid #45a29e; padding: 40px;
+    border-radius: 16px; text-align: center; min-width: 300px;
+    box-shadow: 0 0 30px rgba(102, 252, 241, 0.3);
+}
+.close { position: absolute; top: 20px; right: 20px; color: #aaa; cursor: pointer; font-size: 2rem; }
+
+@keyframes glow { from { box-shadow: inset 0 0 10px rgba(243, 156, 18, 0.2); } to { box-shadow: inset 0 0 25px rgba(243, 156, 18, 0.5); } }
+
+/* 传说物品掉落动画：震动 + 金光爆发 */
+@keyframes legendary-shake {
+    0% { transform: scale(0.5) rotate(0deg); opacity: 0; }
+    50% { transform: scale(1.2) rotate(-5deg); opacity: 1; }
+    70% { transform: scale(0.9) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg); box-shadow: 0 0 100px gold; }
+}
+
+.anim-legendary-drop {
+    animation: legendary-shake 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    background: radial-gradient(circle, rgba(255,215,0,0.2) 0%, transparent 70%);
+    border-radius: 50%;
+}

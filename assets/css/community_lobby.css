@@ -1,0 +1,78 @@
+/* assets/css/community_lobby.css - 虚空大厅专用 */
+
+body {
+    background-color: #0b0c10;
+    color: #c5c6c7;
+    font-family: 'Segoe UI', sans-serif;
+    min-height: 100vh;
+}
+
+.container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+
+/* 头部用户信息区 */
+.user-dashboard {
+    background: linear-gradient(135deg, #1f2833 0%, #0b0c10 100%);
+    border: 1px solid #45a29e;
+    border-radius: 16px;
+    padding: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 50px;
+    box-shadow: 0 0 20px rgba(102, 252, 241, 0.1);
+}
+
+.user-meta { display: flex; align-items: center; gap: 20px; }
+.avatar-large { 
+    width: 80px; height: 80px; border-radius: 50%; 
+    border: 3px solid #66fcf1; object-fit: cover; 
+}
+.welcome-text h2 { margin: 0 0 5px 0; color: #fff; }
+.welcome-text p { margin: 0; color: #888; font-size: 0.9rem; }
+
+.stardust-box {
+    text-align: right;
+    background: rgba(0,0,0,0.3);
+    padding: 15px 25px;
+    border-radius: 12px;
+    border: 1px solid #333;
+}
+.dust-count { font-size: 2rem; color: #f6d365; font-weight: bold; }
+.dust-label { color: #aaa; font-size: 0.8rem; letter-spacing: 1px; }
+
+/* 入口卡片网格 */
+.lobby-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.lobby-card {
+    display: block;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 16px;
+    padding: 30px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.lobby-card:hover {
+    transform: translateY(-10px);
+    border-color: #66fcf1;
+    box-shadow: 0 10px 30px rgba(102, 252, 241, 0.15);
+}
+
+.card-icon { font-size: 3rem; margin-bottom: 20px; }
+.card-title { font-size: 1.5rem; color: #fff; margin: 0 0 10px 0; font-weight: bold; }
+.card-desc { color: #888; margin: 0; line-height: 1.5; font-size: 0.9rem; }
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .user-dashboard { flex-direction: column; text-align: center; gap: 20px; }
+    .user-meta { flex-direction: column; }
+    .stardust-box { width: 100%; text-align: center; box-sizing: border-box; }
+    .lobby-grid { grid-template-columns: 1fr; }
+}

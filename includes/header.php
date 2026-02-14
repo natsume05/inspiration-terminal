@@ -29,20 +29,26 @@
         <link rel="stylesheet" href="assets/css/community.css?v=<?php echo time(); ?>">
     <?php elseif (isset($style) && $style == 'steam'): ?>
         <link rel="stylesheet" href="assets/css/steam.css?v=<?php echo time(); ?>">
+    <?php elseif (isset($style) && $style == 'tools_sub'): ?>
+        <link rel="stylesheet" href="assets/css/tools_sub.css?v=<?php echo time(); ?>">        
+    <?php elseif (isset($style) && $style == 'lobby'): ?>
+        <link rel="stylesheet" href="assets/css/community_lobby.css?v=<?php echo time(); ?>">    
+    <?php elseif (isset($style) && $style == 'shop'): ?>
+        <link rel="stylesheet" href="assets/css/shop.css?v=<?php echo time(); ?>">    
     <?php endif; ?>
 
-    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <link rel="stylesheet" href="assets/libs/highlight.css">
 
-    <script src="https://cdn.bootcdn.net/ajax/libs/marked/12.0.0/marked.min.js"></script>
+    <script src="assets/libs/marked.min.js"></script>
     
-    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/languages/xml.min.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/languages/javascript.min.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/languages/php.min.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/languages/css.min.js"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/highlight.js/11.9.0/languages/sql.min.js"></script>
+    <script src="assets/libs/highlight.min.js"></script>
+    <script src="assets/libs/xml.min.js"></script>
+    <script src="assets/libs/javascript.min.js"></script>
+    <script src="assets/libs/languages/php.min.js"></script>
+    <script src="assets/libs/css.min.js"></script>
+    <script src="assets/libs/sql.min.js"></script>
 
-    <script src="https://cdn.bootcdn.net/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="assets/libs/purify.min.js"></script>
 
     <script>
         // 初始化检查

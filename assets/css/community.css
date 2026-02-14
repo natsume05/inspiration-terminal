@@ -172,37 +172,69 @@ body {
 .emoji-panel span { cursor: pointer; text-align: center; padding: 5px; font-size: 1.2rem; }
 .emoji-panel span:hover { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
+/* 示例特效：名字光效 */
+.user-effect-glow {
+    text-shadow: 0 0 5px #66fcf1, 0 0 10px #66fcf1;
+    animation: pulse 2s infinite;
+}
+
+/* 示例特效：彩虹名字 */
+.user-effect-rainbow {
+    background: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+/* 示例：头像框 */
+.avatar-frame-fire {
+    border: 3px solid #ff4d4f;
+    box-shadow: 0 0 15px #ff4d4f;
+}
 
 /* =========================================================
    📱 移动端适配 (Mobile Stack)
    ========================================================= */
 @media (max-width: 768px) {
+    /* 1. 强制垂直排列 */
     .community-layout {
-        display: grid;
-        grid-template-columns: 220px 1fr 260px; /* 左 中 右 */
-        gap: 25px;
-        align-items: start;
-        margin-top: 30px;
-        max-width: 1200px;
-        margin-left: auto;
-        margin-right: auto;
-        width: 100%; /* 确保容器本身不超宽 */
+        display: flex !important;
+        flex-direction: column;
+        width: 100% !important;
+        padding: 0 10px;
+        box-sizing: border-box;
     }
     .sidebar-left { display: block !important; margin-bottom: 15px; }
     .sidebar-left .nav-card { padding: 10px; }
-    .channel-nav { flex-direction: row; overflow-x: auto; white-space: nowrap; padding-bottom: 5px; }
-    .channel-item { display: inline-flex; margin-right: 10px; background: #161b22; border: 1px solid #30363d; }
+    /* 3. 细节微调 */
+    .channel-nav { 
+        flex-direction: row; 
+        overflow-x: auto; 
+        white-space: nowrap; 
+        padding-bottom: 5px; 
+    }
+    .channel-item { 
+        display: inline-flex; 
+        margin-right: 10px; 
+        background: #161b22; 
+        border: 1px solid #30363d; 
+    }   
     .sidebar-left .user-card { display: none !important; } /* 隐藏侧边用户信息，防占地 */
     
-    .feed-stream {
-        min-width: 0; 
-        width: 100%;
-        overflow: hidden; /* 双重保险，防止溢出 */
+    .feed-stream { 
+        order: 2; 
+        width: 100% !important; 
+        display: block !important; /* 强制显示 */
+        min-width: 0; /* 防止被撑爆 */
+        margin-bottom: 30px;
     }
     
     .post-toolbar { flex-wrap: wrap; }
     .tools-left { width: 100%; margin-bottom: 10px; }
     .post-toolbar .dream-btn { width: 100%; padding: 10px; }
     
-    .sidebar-right { display: block !important; margin-top: 30px; }
+    .sidebar-right { 
+        order: 3; 
+        width: 100% !important; 
+        display: block !important; /* 强制显示 */
+    }
 }

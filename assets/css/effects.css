@@ -1,0 +1,140 @@
+/* assets/css/effects.css - 虚空特效库 */
+
+/* =========================================
+   1. 名字特效 (Name Effects)
+   对应 type: 'effect'
+   ========================================= */
+
+/* [普通] 苍绿之径 (微弱的自然光) */
+.effect-green-moss {
+    color: #a8e6cf;
+    text-shadow: 0 0 2px #a8e6cf;
+}
+
+/* [稀有] 梦之钉 (粉色梦境光晕) */
+.effect-dream-nail {
+    color: #ff9ff3;
+    text-shadow: 0 0 5px #ff9ff3, 0 0 10px #f368e0;
+    animation: dream-pulse 3s infinite alternate;
+}
+
+/* [稀有] 冲刺大师 (倾斜+速度感) */
+.effect-sprint-master {
+    font-style: italic;
+    background: linear-gradient(90deg, #fff, #bbb);
+    -webkit-background-clip: text;
+    color: transparent;
+    letter-spacing: 1px;
+}
+
+/* [史诗] 苍白矿石 (金属流光) */
+.effect-pale-ore {
+    background: linear-gradient(120deg, #e0e0e0 0%, #ffffff 40%, #a0a0a0 60%, #e0e0e0 100%);
+    background-size: 200% auto;
+    color: #000; /* fallback */
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: metal-shine 3s linear infinite;
+    font-weight: 800;
+}
+
+/* [史诗] 主要核心 (黑客终端绿) */
+.effect-main-core {
+    color: #0f0;
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 5px #0f0;
+}
+
+/* [传说] 辐光之辉 (刺眼金光 + 抖动) */
+.effect-radiance {
+    color: #fffacb;
+    text-shadow: 0 0 5px #ffd700, 0 0 10px #ffaa00, 0 0 20px #ff8800;
+    font-weight: 900;
+    animation: radiance-glow 2s infinite alternate;
+}
+
+/* [传说] 虚空之心 (与背景融合的深邃黑) */
+.effect-void-heart {
+    color: #000;
+    text-shadow: 0 0 2px #666;
+    background: #000;
+    padding: 0 4px;
+    border-radius: 4px;
+    box-shadow: 0 0 10px #000;
+}
+
+/* [传说] 开发者之怒 (燃烧烈火) */
+.effect-dev-fury {
+    color: #ff4d4f;
+    text-shadow: 0 -2px 4px #ff0000, 0 -4px 8px #ff8800;
+    animation: fire-fury 0.1s infinite alternate;
+}
+
+
+/* =========================================
+   2. 头像框特效 (Avatar Frames)
+   对应 type: 'avatar_frame'
+   注意：头像框通常是套在 img 外面的 div
+   ========================================= */
+
+/* [稀有] 编织者之歌 (蜘蛛网边框) */
+.frame-weaver {
+    border: 2px solid #ddd;
+    box-shadow: 0 0 0 2px #333, inset 0 0 10px #000;
+    position: relative;
+}
+
+/* [史诗] 格林剧团 (红色火焰呼吸灯) */
+.frame-grimm {
+    border: 3px solid #ff0000;
+    box-shadow: 0 0 15px #ff0000;
+    animation: grimm-pulse 2s infinite;
+}
+
+/* [史诗] 黑客帝国 (代码雨边框) */
+.frame-matrix {
+    border: 2px solid #0f0;
+    box-shadow: 0 0 10px #0f0, inset 0 0 10px #0f0;
+}
+
+/* [传说] 丝之歌旋律 (RGB 彩虹流光) */
+.frame-silksong {
+    border: 3px solid transparent;
+    background-image: linear-gradient(#161b22, #161b22), linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet); 
+    background-origin: border-box; 
+    background-clip: content-box, border-box;
+    animation: rainbow-spin 2s linear infinite;
+}
+
+/* [传说] 辐光 (神性光辉) */
+.frame-radiance {
+    border: 3px solid #fffacb;
+    box-shadow: 0 0 20px #ffd700, 0 0 40px #ffaa00;
+    animation: radiance-glow 1s infinite alternate;
+}
+
+
+/* =========================================
+   3. 动画关键帧 (Keyframes)
+   ========================================= */
+
+@keyframes metal-shine {
+    to { background-position: 200% center; }
+}
+@keyframes dream-pulse {
+    from { text-shadow: 0 0 5px #ff9ff3; }
+    to { text-shadow: 0 0 20px #f368e0, 0 0 30px #ff9ff3; }
+}
+@keyframes radiance-glow {
+    from { opacity: 0.8; box-shadow: 0 0 15px #ffd700; }
+    to { opacity: 1; box-shadow: 0 0 35px #ffd700, 0 0 5px #fff; }
+}
+@keyframes grimm-pulse {
+    0% { box-shadow: 0 0 5px #ff0000; }
+    50% { box-shadow: 0 0 20px #ff0000, 0 0 5px #800000; }
+    100% { box-shadow: 0 0 5px #ff0000; }
+}
+@keyframes fire-fury {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(1px, -1px); }
+}
