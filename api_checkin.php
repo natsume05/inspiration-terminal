@@ -1,68 +1,56 @@
 <?php
-// --- 🟢 新增：消音器 (禁止报错破坏 JSON) ---
-error_reporting(0);
-ini_set('display_errors', 0);
-
-// api_checkin.php - 处理签到请求
-header('Content-Type: application/json');
+// api_checkin.php - 每日补给接口 (修复版)
 require 'includes/db.php';
-session_start();
+require_once 'includes/level_system.php'; // 确保引入经验系统
+header('Content-Type: application/json');
 
-// 1. 检查是否登录
+// 1. 登录检查
 if (!isset($_SESSION['user_id'])) {
-    echo json_encode(['status' => 'error', 'msg' => '⚠️ 请先接入终端 (登录)']);
-    exit;
+    echo json_encode(['status'=>'error', 'msg'=>'未连接到虚空终端']); exit;
 }
 
 $uid = $_SESSION['user_id'];
 $today = date('Y-m-d');
 
-// 2. 查询用户上次签到时间
-$sql = "SELECT last_checkin_date, stardust, streak_days FROM users WHERE id = $uid";
-$result = $conn->query($sql);
-$user = $result->fetch_assoc();
+try {
+    // 2. 初始化今日记录
+    // 如果今天还没抽过奖也没签到过，这里会创建一行新记录
+    $conn->query("INSERT IGNORE INTO user_daily_limits (user_id, date) VALUES ($uid, '$today')");
 
-// 3. 判断今天是否已签
-if ($user['last_checkin_date'] == $today) {
-    echo json_encode(['status' => 'error', 'msg' => '📅 今日补给已领取，明天再来吧！']);
-    exit;
-}
+    // 3. 检查状态
+    $res = $conn->query("SELECT checkin_status FROM user_daily_limits WHERE user_id=$uid AND date='$today'");
+    $row = $res->fetch_assoc();
 
-// 4. 计算奖励逻辑
-$reward = rand(10, 30); // 基础奖励 10-30 星尘
-$new_streak = 1;
+    if ($row['checkin_status'] == 1) {
+        echo json_encode(['status'=>'error', 'msg'=>'今日补给已领取，明天再来吧！']); exit;
+    }
 
-// 检查是否是连续签到 (上次签到是昨天)
-$yesterday = date('Y-m-d', strtotime('-1 day'));
-if ($user['last_checkin_date'] == $yesterday) {
-    $new_streak = $user['streak_days'] + 1;
-    // 连签奖励：每多连签一天，多给 2 点，上限加 20 点
-    $bonus = min(($new_streak - 1) * 2, 20);
-    $reward += $bonus;
-    $msg = "🎉 连续签到 $new_streak 天！获得 $reward 星尘 (含加成)";
-} else {
-    // 断签了，重置为 1 天
-    $msg = "✅ 补给领取成功！获得 $reward 星尘";
-}
+    // 4. 发放奖励 (开启事务)
+    $conn->begin_transaction();
 
-// 5. 更新数据库
-$update_sql = "UPDATE users SET 
-               stardust = stardust + $reward, 
-               last_checkin_date = '$today', 
-               streak_days = $new_streak 
-               WHERE id = $uid";
+    $stardust_reward = rand(20, 50); // 随机星尘
+    $exp_reward = 20; // 固定经验
 
-if ($conn->query($update_sql)) {
-    // 更新 Session 里的数据，方便前端读取 (如果有存的话)
-    // $_SESSION['stardust'] = ... (可选)
+    // 更新用户余额
+    $conn->query("UPDATE users SET stardust = stardust + $stardust_reward, exp = exp + $exp_reward WHERE id=$uid");
+    
+    // 标记已签到
+    $conn->query("UPDATE user_daily_limits SET checkin_status = 1 WHERE user_id=$uid AND date='$today'");
+
+    $conn->commit();
+    
+    // 5. 返回最新数据
+    $new_data = $conn->query("SELECT stardust FROM users WHERE id=$uid")->fetch_assoc();
     
     echo json_encode([
-        'status' => 'success', 
-        'msg' => $msg, 
-        'new_balance' => $user['stardust'] + $reward,
-        'new_streak' => $new_streak
+        'status'=>'success', 
+        'msg'=>"签到成功！\n获得：{$stardust_reward} 星尘, {$exp_reward} 经验",
+        'new_balance' => $new_data['stardust'] // 注意：前端这里可能叫 new_stardust，要对应
     ]);
-} else {
-    echo json_encode(['status' => 'error', 'msg' => '数据库写入失败']);
+
+} catch (Exception $e) {
+    $conn->rollback();
+    // 调试模式：把具体错误发回去（生产环境通常不这么做）
+    echo json_encode(['status'=>'error', 'msg'=>'系统故障: ' . $e->getMessage()]);
 }
 ?>

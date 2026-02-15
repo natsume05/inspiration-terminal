@@ -113,6 +113,202 @@
     animation: radiance-glow 1s infinite alternate;
 }
 
+/* --- 🚀 星际拓荒 (Outer Wilds) --- */
+/* [史诗] 量子卫星: 间歇性透明 */
+.effect-quantum {
+    animation: quantum-blink 4s infinite step-end;
+    color: #a29bfe;
+}
+@keyframes quantum-blink {
+    0%, 100% { opacity: 1; text-shadow: 0 0 5px #a29bfe; }
+    50% { opacity: 0; } /* 观测消失 */
+    52% { opacity: 1; transform: translateX(2px); } /* 重新出现 */
+}
+
+/* [传说] 宇宙之眼: 星云漩涡 */
+.frame-eye-universe {
+    border: 3px solid #6c5ce7;
+    box-shadow: 0 0 20px #6c5ce7, inset 0 0 20px #000;
+    background: radial-gradient(circle, #000 40%, #6c5ce7 150%);
+    animation: eye-pulse 4s infinite ease-in-out;
+}
+
+/* --- 🌾 星露谷 (Stardew Valley) --- */
+/* [传说] 五彩碎片: RGB 柔光 */
+.effect-prismatic {
+    background: linear-gradient(to right, #ff7675, #fab1a0, #ffeaa7, #55efc4, #74b9ff, #a29bfe);
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: rainbow-spin 3s linear infinite;
+    font-weight: bold;
+}
+@keyframes rainbow-spin { to { background-position: 300% center; } }
+
+/* [稀有] 蓝鸡: 蓝色羽毛边框 */
+.frame-blue-chicken {
+    border: 3px solid #0984e3;
+    box-shadow: 0 0 10px #74b9ff;
+    border-radius: 50% 50% 0 50%; /* 像个鸡形? */
+}
+
+/* --- 🐵 黑神话 (Black Myth) --- */
+/* [传说] 大圣归来: 烈火金睛 */
+.effect-wukong {
+    color: #ffcc00;
+    text-shadow: 0 0 5px #ff4500, 2px 2px 0px #8b0000;
+    font-family: 'LiSu', serif; /* 隶书更有中国风 */
+    animation: fire-fury 0.2s infinite;
+}
+
+/* --- 🃏 杀戮尖塔 (Slay the Spire) --- */
+/* [史诗] 心脏跳动: 模拟心跳 */
+.effect-spire-heart {
+    color: #d63031;
+    display: inline-block;
+    animation: heartbeat 1.5s infinite;
+}
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    15% { transform: scale(1.1); text-shadow: 0 0 10px red; }
+    30% { transform: scale(1); }
+    45% { transform: scale(1.1); text-shadow: 0 0 10px red; }
+    100% { transform: scale(1); }
+}
+
+/* --- 🕺 极乐迪斯科 (Disco Elysium) --- */
+/* [史诗] 苍白: 故障风 */
+.effect-pale-glitch {
+    color: #b2bec3;
+    text-shadow: 2px 0 #ff0000, -2px 0 #0000ff;
+    animation: glitch-skew 1s infinite linear alternate-reverse;
+}
+@keyframes glitch-skew {
+    0% { transform: skew(0deg); }
+    20% { transform: skew(-2deg); opacity: 0.8; }
+    40% { transform: skew(2deg); }
+    80% { transform: skew(0deg); opacity: 1; }
+}
+/* [稀有] 金的夹克: 橙色警戒 */
+.effect-kim-jacket {
+    color: #e17055;
+    border-bottom: 2px solid #e17055;
+    padding-bottom: 1px;
+}
+
+/* --- ⚖️ 逆转裁判 (Ace Attorney) --- */
+/* [史诗] 异议！: 锯齿文字 + 剧烈震动 */
+.effect-objection {
+    color: #ff3f34;
+    font-weight: 900;
+    font-family: 'Arial Black', sans-serif;
+    text-transform: uppercase;
+    display: inline-block;
+    animation: shake-hard 0.2s infinite;
+    text-shadow: 2px 2px 0 #000;
+}
+@keyframes shake-hard {
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    10% { transform: translate(-1px, -2px) rotate(-1deg); }
+    20% { transform: translate(-3px, 0px) rotate(1deg); }
+    30% { transform: translate(3px, 2px) rotate(0deg); }
+    40% { transform: translate(1px, -1px) rotate(1deg); }
+    50% { transform: translate(-1px, 2px) rotate(-1deg); }
+    60% { transform: translate(-3px, 1px) rotate(0deg); }
+    70% { transform: translate(3px, 1px) rotate(-1deg); }
+    80% { transform: translate(-1px, -1px) rotate(1deg); }
+    90% { transform: translate(1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, -2px) rotate(-1deg); }
+}
+
+/* --- 🌌 原神 (Genshin Impact) --- */
+/* [稀有] 风元素: 青色气流 */
+.effect-anemo {
+    color: #74ebd5;
+    text-shadow: 0 0 5px #74ebd5;
+    animation: float-wind 2s ease-in-out infinite alternate;
+}
+@keyframes float-wind { from { transform: translateY(0); } to { transform: translateY(-3px); } }
+
+/* [稀有] 雷元素: 紫色闪电 */
+.effect-electro {
+    color: #a29bfe;
+    text-shadow: 0 0 5px #6c5ce7;
+    animation: electro-flicker 0.1s infinite;
+}
+@keyframes electro-flicker { 0% { opacity: 1; } 50% { opacity: 0.8; } 100% { opacity: 1; } }
+
+/* [史诗] 岩王帝君: 沉稳金岩 */
+.effect-geo-lord {
+    background: linear-gradient(to bottom, #f1c40f, #b7950b);
+    -webkit-background-clip: text;
+    color: transparent;
+    font-weight: bold;
+    border-bottom: 2px solid #b7950b;
+}
+
+/* [史诗] 天空岛头像框 */
+.frame-celestia {
+    border: 3px solid #fff;
+    box-shadow: 0 0 15px #fff, inset 0 0 10px #74ebd5;
+    border-radius: 50%;
+}
+
+/* --- 🐺 巫师 3 (Witcher) --- */
+/* [史诗] 狩魔猎人感官: 黄色脉冲 */
+.effect-witcher-sense {
+    color: #ffd700;
+    animation: witcher-pulse 2s infinite;
+}
+@keyframes witcher-pulse {
+    0% { text-shadow: 0 0 0 rgba(255, 215, 0, 0); }
+    50% { text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); }
+    100% { text-shadow: 0 0 0 rgba(255, 215, 0, 0); }
+}
+/* [稀有] 银剑: 金属锋利感 */
+.effect-silver-sword {
+    color: #bdc3c7;
+    text-shadow: 1px 1px 0 #2c3e50;
+    font-style: italic;
+}
+
+/* --- 📦 死亡搁浅 (Death Stranding) --- */
+/* [史诗] 奥卓德克: 扫描网格 */
+.effect-odradek {
+    color: #0984e3;
+    background: repeating-linear-gradient(45deg, transparent, transparent 2px, #0984e3 2px, #0984e3 3px);
+    -webkit-background-clip: text;
+    /* 注意：background-clip text 在某些复杂背景下可能显示不佳，这里做简易版 */
+    text-shadow: 0 0 5px #0984e3;
+}
+/* [史诗] BB: 橙色气泡框 */
+.frame-bb-pod {
+    border: 3px solid #e17055;
+    box-shadow: 0 0 15px #e17055, inset 0 0 10px #e17055;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), transparent);
+    animation: bb-float 3s ease-in-out infinite;
+}
+@keyframes bb-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+
+/* --- ⚔️ 武侠 (Wandering Sword) --- */
+/* [史诗] 天外飞仙: 云雾 */
+.effect-flying-fairy {
+    color: #fff;
+    text-shadow: 0 0 10px #fff, 0 0 20px #81ecec;
+    opacity: 0.9;
+}
+/* [史诗] 武林盟主: 金色龙纹框 */
+.frame-dragon-lord {
+    border: 4px double #f1c40f;
+    box-shadow: 0 0 10px #f39c12;
+}
+
+/* --- 🌲 奥日 (Ori) --- */
+/* [史诗] 灵树之光 */
+.frame-spirit-tree {
+    border: 2px solid #fff;
+    box-shadow: 0 0 20px #fff, 0 0 40px #74ebd5;
+}
 
 /* =========================================
    3. 动画关键帧 (Keyframes)

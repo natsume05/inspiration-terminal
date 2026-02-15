@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // 2. 检查用户名是否已存在
         $check = $conn->query("SELECT id FROM users WHERE username='$user'");
         if ($check->num_rows > 0) {
-            $msg = "⚠️ 该代号已被其他流浪者占用。";
+            $msg = "⚠️ 该代号已被其他旅行者占用。";
         } else {
             // 3. 密码加密 (Hash) - 绝不能存明文！
             $hashed_pass = password_hash($pass, PASSWORD_DEFAULT);

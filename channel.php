@@ -107,14 +107,37 @@ $channels = [
                     <button type="submit" name="submit_post" class="dream-btn small">✨ 发送</button>
                 </div>
                 <div id="emoji-panel" class="emoji-panel" style="display:none;">
-                    <span onclick="insertEmoji('[s:smile]')">🙂</span><span onclick="insertEmoji('[s:joy]')">😂</span>
-                    <span onclick="insertEmoji('[s:lol]')">🤣</span><span onclick="insertEmoji('[s:love]')">😍</span>
-                    <span onclick="insertEmoji('[s:cool]')">😎</span><span onclick="insertEmoji('[s:thinking]')">🤔</span>
-                    <span onclick="insertEmoji('[s:cry]')">😭</span><span onclick="insertEmoji('[s:scared]')">😱</span>
-                    <span onclick="insertEmoji('[s:clown]')">🤡</span><span onclick="insertEmoji('[s:ghost]')">👻</span>
-                    <span onclick="insertEmoji('[s:thumbsup]')">👍</span><span onclick="insertEmoji('[s:heart]')">❤️</span>
-                    <span onclick="insertEmoji('[s:fire]')">🔥</span><span onclick="insertEmoji('[s:star]')">✨</span>
-                    <span onclick="insertEmoji('[s:dog]')">🐶</span><span onclick="insertEmoji('[s:cat]')">🐱</span>
+                    <span onclick="insertEmoji('[s:smile]')">🙂</span>
+                    <span onclick="insertEmoji('[s:joy]')">😂</span>
+                    <span onclick="insertEmoji('[s:lol]')">🤣</span>
+                    <span onclick="insertEmoji('[s:love]')">😍</span>
+                    <span onclick="insertEmoji('[s:cool]')">😎</span>
+                    <span onclick="insertEmoji('[s:cry]')">😭</span>
+                    <span onclick="insertEmoji('[s:angry]')">😡</span>
+                    <span onclick="insertEmoji('[s:clown]')">🤡</span>
+                    <span onclick="insertEmoji('[s:thumbsup]')">👍</span>
+                    <span onclick="insertEmoji('[s:ok]')">👌</span>
+                    <span onclick="insertEmoji('[s:heart]')">❤️</span>
+                    <span onclick="insertEmoji('[s:broken]')">💔</span>
+                    <span onclick="insertEmoji('[s:ghost]')">👻</span>
+                    <span onclick="insertEmoji('[s:alien]')">👽</span>
+                    <span onclick="insertEmoji('[s:robot]')">🤖</span>
+                    <span onclick="insertEmoji('[s:fire]')">🔥</span>
+                    <span onclick="insertEmoji('[s:star]')">✨</span>
+                    <span onclick="insertEmoji('[s:rocket]')">🚀</span>
+                    <span onclick="insertEmoji('[s:moon]')">🌙</span>
+                    <span onclick="insertEmoji('[s:game]')">🎮</span>
+                    <span onclick="insertEmoji('[s:cat]')">🐱</span>
+                    <span onclick="insertEmoji('[s:dog]')">🐶</span>
+                    <span onclick="insertEmoji('[s:fox]')">🦊</span>
+                    <span onclick="insertEmoji('[s:bug]')">🐞</span>
+                    <span onclick="insertEmoji('[s:paimon]')" title="应急食品">🥘</span>
+                    <span onclick="insertEmoji('[s:primogem]')" title="原石">💎</span>
+                    <span onclick="insertEmoji('[s:gwent]')" title="昆特牌">🃏</span>
+                    <span onclick="insertEmoji('[s:sword]')" title="剑">⚔️</span>
+                    <span onclick="insertEmoji('[s:objection]')" title="异议">👉</span>
+                    <span onclick="insertEmoji('[s:tree]')" title="灵树">🌳</span>
+                    <span onclick="insertEmoji('[s:dragon]')" title="龙">🐉</span>
                 </div>
             </form>
         </div>
@@ -132,14 +155,18 @@ $channels = [
                 <div class="post-card fade-in" id="post-<?php echo $row['id']; ?>">
                     <div class="post-header">
                         <div class="author-box">
-                            <div class="avatar-wrapper <?php echo $decor['avatar_class']; ?>" style="border-radius:50%; display:inline-block; padding:2px;">
-                                <img src="assets/uploads/avatars/<?php echo !empty($row['avatar']) ? $row['avatar'] : 'default.png'; ?>" class="avatar-small">
-                            </div>
+                            <a href="profile.php?id=<?php echo $author_id; ?>" style="text-decoration: none;">
+                                <div class="avatar-wrapper <?php echo $decor['avatar_class']; ?>" style="border-radius:50%; display:inline-block; padding:2px; transition: transform 0.2s;">
+                                    <img src="assets/uploads/avatars/<?php echo !empty($row['avatar']) ? $row['avatar'] : 'default.png'; ?>" class="avatar-small">
+                                </div>
+                            </a>
                             
                             <div class="author-info">
-                                <span class="username <?php echo $decor['name_class']; ?>">
-                                    <?php echo htmlspecialchars($row['username'] ?? '虚空游侠'); ?>
-                                </span>
+                                <a href="profile.php?id=<?php echo $author_id; ?>" style="text-decoration: none;">
+                                    <span class="username <?php echo $decor['name_class']; ?>">
+                                        <?php echo htmlspecialchars($row['username'] ?? '虚空游侠'); ?>
+                                    </span>
+                                </a>
                                 
                                 <?php if(!empty($decor['badge_icon'])): ?>
                                     <span title="徽章" style="cursor:help; margin-left:5px;"><?php echo $decor['badge_icon']; ?></span>
@@ -174,7 +201,7 @@ $channels = [
                             <span class="action-btn" onclick="sharePost(<?php echo $row['id']; ?>)"><span class="icon">🔗</span> 分享</span>
                         </div>
                         <?php if($_SESSION['user_id'] == 1): ?>
-                            <form method="POST" action="delete_post.php" onsubmit="return confirm('删？');" style="display:inline;">
+                            <form method="POST" action="delete_post.php" onsubmit="return confirm('是否确认删除这条帖子？');" style="display:inline;">
                                 <?php echo csrf_field(); ?><input type="hidden" name="post_id" value="<?php echo $row['id']; ?>"><button class="tool-btn" style="color:red;">🗑️</button>
                             </form>
                         <?php endif; ?>
@@ -228,7 +255,31 @@ function submitComment(id) {
     let fd=new FormData(); fd.append('post_id',id); fd.append('content',v);
     fetch('api_comment.php',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{alert(d.msg); if(d.success){i.value=''; loadComments(id);}});
 }
-function parseEmojisJS(t){if(!t)return'';const m={'\\[s:smile\\]':'🙂','\\[s:joy\\]':'😂','\\[s:ghost\\]':'👻'};for(let k in m)t=t.replace(new RegExp(k,'g'),m[k]);return t;}
+function parseEmojisJS(t){
+    if(!t)return'';
+    const m ={
+        // 必须转义方括号 \[ \]
+        '\\[s:smile\\]':'🙂', '\\[s:joy\\]':'😂', '\\[s:lol\\]':'🤣', '\\[s:love\\]':'😍', 
+        '\\[s:cool\\]':'😎', '\\[s:thinking\\]':'🤔', '\\[s:cry\\]':'😭', '\\[s:scared\\]':'😱', 
+        '\\[s:angry\\]':'😡', '\\[s:clown\\]':'🤡', '\\[s:vomit\\]':'🤮', '\\[s:shhh\\]':'🤫',
+        
+        '\\[s:thumbsup\\]':'👍', '\\[s:ok\\]':'👌', '\\[s:heart\\]':'❤️', '\\[s:broken\\]':'💔',
+        '\\[s:fire\\]':'🔥', '\\[s:star\\]':'✨', '\\[s:poop\\]':'💩',
+        
+        '\\[s:ghost\\]':'👻', '\\[s:alien\\]':'👽', '\\[s:robot\\]':'🤖', 
+        '\\[s:rocket\\]':'🚀', '\\[s:moon\\]':'🌙', '\\[s:game\\]':'🎮',
+        
+        '\\[s:cat\\]':'🐱', '\\[s:dog\\]':'🐶', '\\[s:fox\\]':'🦊', '\\[s:bug\\]':'🐞',
+        // 🆕 新增游戏 Emoji
+        '\\[s:paimon\\]': '🥘',
+        '\\[s:primogem\\]': '💎',
+        '\\[s:gwent\\]': '🃏',
+        '\\[s:sword\\]': '⚔️',
+        '\\[s:objection\\]': '👉',
+        '\\[s:tree\\]': '🌳',
+        '\\[s:dragon\\]': '🐉',
+    };
+    for(let k in m)t=t.replace(new RegExp(k,'g'),m[k]);return t;}
 function toggleEmojiPanel(){let p=document.getElementById('emoji-panel');p.style.display=p.style.display=='none'?'grid':'none';}
 function insertEmoji(c){document.getElementById('post-content').value+=c;toggleEmojiPanel();}
 function showFileName(i){document.getElementById('file-name').innerText=i.files[0].name;}
