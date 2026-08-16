@@ -6,6 +6,8 @@ require_once __DIR__ . '/includes/level_system.php';
 $uid = require_login();
 
 $page_title = "虚空枢纽";
+$page_description = "虚空枢纽——用户交流与灵感记录社区，匿名发帖、点赞评论、星尘交易所。";
+$page_keywords = "社区,匿名交流,灵感记录";
 $style = "lobby";
 
 include __DIR__ . '/includes/header.php';

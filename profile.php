@@ -85,6 +85,9 @@ $stmt->close();
 $decor = get_user_decorations($conn, $target_id);
 $avatar_url = get_avatar_url($user['avatar']);
 
+$page_title = "个人档案";
+$page_description = "个人档案——管理通讯ID、头像数据与历史记录。";
+$page_keywords = "个人档案,用户中心,资料";
 $style = "community";
 
 include __DIR__ . '/includes/header.php';

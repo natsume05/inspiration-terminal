@@ -70,6 +70,8 @@ $channels = [
 ];
 
 $page_title = "深空频道";
+$page_description = "深空频道——浏览思想碎片，发布观察日志，支持 Markdown 与图片。";
+$page_keywords = "深空频道,发帖,讨论";
 $style = "community";
 
 include __DIR__ . '/includes/header.php';

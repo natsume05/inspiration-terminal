@@ -22,6 +22,8 @@ function renderGitHubCard($repo)
 }
 
 $page_title = "GitHub 探索";
+$page_description = "GitHub 开源猎手——浏览全球热门项目趋势，发现技术宝藏。";
+$page_keywords = "GitHub,开源,项目搜索";
 $style = "tools_sub";
 
 include __DIR__ . '/includes/header.php';

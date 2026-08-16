@@ -27,6 +27,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_blog_comment']
 }
 
 $page_title = "深空日志";
+$page_description = "深空日志——个人博客，记录技术思考、项目复盘与灵感片段。";
+$page_keywords = "深空日志,博客,技术笔记";
 $style = "blog";
 
 include __DIR__ . '/includes/header.php';

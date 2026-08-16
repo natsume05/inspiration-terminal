@@ -3,6 +3,8 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 
 $page_title = "提瓦特百宝箱";
+$page_description = "提瓦特百宝箱——实用工具导航聚合，GitHub 开源猎手与 Steam 指挥室。";
+$page_keywords = "工具箱,效率工具,导航";
 $style = "tools";
 
 include __DIR__ . '/includes/header.php';

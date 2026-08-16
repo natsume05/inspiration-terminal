@@ -3,6 +3,8 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 
 $page_title = "星际公约";
+$page_description = "星际公约——用户协议与言论规范。";
+$page_keywords = "用户协议,条款";
 $style = "community";
 
 include __DIR__ . '/includes/header.php';

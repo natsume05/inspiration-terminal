@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($page_title) ? e($page_title) : '灵感传输终端'; ?></title>
+    <?php page_meta(); ?>
 
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0c10">
@@ -19,6 +19,7 @@
         }
     </script>
 
+    <link rel="stylesheet" href="assets/css/base.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="assets/css/index.css?v=<?php echo time(); ?>">
 
     <?php
@@ -54,6 +55,8 @@
     </script>
 </head>
 <body>
+    <a class="skip-link" href="#main-content">跳到主内容</a>
+
     <?php
     $nav_uid = current_user_id();
     $has_unread = false;
@@ -71,24 +74,26 @@
 
     <?php if (!empty($show_nav)): ?>
         <div id="particles"></div>
-        <header>
+        <header class="site-header">
             <h1><?php echo e($page_title); ?></h1>
             <p class="subtitle">“在此刻下你的思想，也许会有回响……”</p>
 
-            <div class="user-bar" style="margin-top:10px;">
+            <nav class="user-bar" aria-label="用户导航">
                 <?php if ($nav_uid > 0): ?>
-                    <img src="<?php echo e(get_avatar_url(isset($_SESSION['avatar']) ? $_SESSION['avatar'] : '')); ?>" style="width:24px; height:24px; border-radius:50%; vertical-align:middle; margin-right:5px; border:1px solid #45a29e;">
+                    <img src="<?php echo e(get_avatar_url(isset($_SESSION['avatar']) ? $_SESSION['avatar'] : '')); ?>" alt="头像" style="width:24px; height:24px; border-radius:50%; vertical-align:middle; margin-right:5px; border:1px solid #45a29e;">
                     <span><?php echo e($_SESSION['username']); ?></span>
-                    <a href="profile.php" class="nav-link" style="position:relative;">
+                    <a href="profile.php" class="nav-link" title="查看个人档案" style="position:relative;">
                         个人中心
                         <?php if ($has_unread): ?>
                             <span style="position:absolute; top:5px; right:-5px; width:8px; height:8px; background:#ff4d4f; border-radius:50%; box-shadow:0 0 5px #ff4d4f;"></span>
                         <?php endif; ?>
                     </a>
-                    <a href="community.php?action=logout">断开</a>
+                    <a href="community.php?action=logout" title="退出登录">断开</a>
                 <?php else: ?>
-                    <a href="login.php">登录</a> | <a href="register.php">注册</a>
+                    <a href="login.php" title="登录账号">登录</a> | <a href="register.php" title="注册新账号">注册</a>
                 <?php endif; ?>
-            </div>
+            </nav>
         </header>
     <?php endif; ?>
+
+    <main id="main-content">

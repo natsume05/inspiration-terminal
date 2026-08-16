@@ -22,6 +22,8 @@ $row = $result->fetch_assoc();
 $stmt->close();
 
 $page_title = $row['title'];
+$page_description = $row['title'] . '——深空日志文章。';
+$page_keywords = '博客,文章,日志';
 $style = "blog";
 
 include __DIR__ . '/includes/header.php';

@@ -3,6 +3,8 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 
 $page_title = "星际导航终端";
+$page_description = "星际导航终端——常用开发、设计与生活工具链接索引。";
+$page_keywords = "导航,工具链接,资源";
 $style = "tools_sub";
 
 include __DIR__ . '/includes/header.php';

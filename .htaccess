@@ -181,3 +181,6 @@ Options All -Indexes
 Header always unset X-Powered-By
 Header unset X-Powered-By
 # END Security Block
+
+# 自定义 404 页面
+ErrorDocument 404 /404.php

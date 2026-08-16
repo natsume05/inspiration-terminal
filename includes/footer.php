@@ -1,28 +1,57 @@
-<div class="mobile-footer-nav" style="margin-top: 40px; padding: 20px; text-align: center; border-top: 1px solid #30363d;">
-    <a href="index.php" class="dream-btn" style="display: block; width: 100%; max-width: 300px; margin: 0 auto; text-align: center;">
+    </main>
+
+<nav class="mobile-footer-nav" aria-label="快捷导航">
+    <a href="index.php" class="dream-btn" title="返回首页">
         🏠 返回星际枢纽 (Home)
     </a>
-</div>
+</nav>
 
-<footer style="margin-top: 50px; padding: 40px 20px; background: #0b0c10; border-top: 1px solid #1f2937; text-align: center; color: #6b7280; font-size: 0.85rem;">
-    <div style="max-width: 800px; margin: 0 auto;">
-        <p id="copyright-text" style="cursor: pointer; user-select: none; transition: color 0.2s;">
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <nav class="footer-links" aria-label="页脚导航">
+            <a href="index.php" title="返回首页">首页</a>
+            <a href="blog.php" title="浏览博客">深空日志</a>
+            <a href="tools.php" title="打开工具箱">百宝箱</a>
+            <a href="community.php" title="进入社区">虚空梦语</a>
+        </nav>
+
+        <p id="copyright-text">
             &copy; <?php echo date("Y"); ?> 提瓦特百宝箱 (Teyvat Box). All rights reserved.
         </p>
 
-        <p style="margin: 10px 0;">
-            <a href="terms.php" style="color: #6b7280; text-decoration: none; margin: 0 10px;">用户协议</a> |
-            <a href="privacy.php" style="color: #6b7280; text-decoration: none; margin: 0 10px;">隐私政策</a> |
-            <a href="mailto:contact@367588.xyz?subject=侵权投诉&body=尊敬的管理员，我发现以下内容涉嫌侵权..." style="color: #6b7280; text-decoration: none; margin: 0 10px;">侵权投诉 / 联系舰长</a>
-        </p>
+        <nav class="footer-policy" aria-label="政策链接">
+            <a href="terms.php" title="查看用户协议">用户协议</a>
+            <span aria-hidden="true">|</span>
+            <a href="privacy.php" title="查看隐私政策">隐私政策</a>
+            <span aria-hidden="true">|</span>
+            <a href="mailto:contact@367588.xyz?subject=侵权投诉&body=尊敬的管理员，我发现以下内容涉嫌侵权..." title="邮件联系站长">侵权投诉 / 联系舰长</a>
+        </nav>
 
-        <p style="font-size: 0.75rem; opacity: 0.7; line-height: 1.5;">
+        <p class="footer-disclaimer">
             免责声明：本站大部分内容由 GitHub API 自动抓取或用户生成。
             本站不存储任何 GitHub 项目源码，所有链接均指向官方仓库。
             若发现内容侵犯了您的权益，请发送邮件至 contact@367588.xyz，我们将于 24 小时内处理。
         </p>
     </div>
 </footer>
+
+<button class="back-to-top" id="back-to-top" aria-label="返回顶部" title="返回顶部">↑</button>
+
+<script>
+    // 返回顶部：滚动超过一屏后显示按钮。
+    (function () {
+        const button = document.getElementById('back-to-top');
+        if (!button) return;
+
+        const toggleVisibility = () => {
+            button.classList.toggle('visible', window.scrollY > window.innerHeight);
+        };
+
+        window.addEventListener('scroll', toggleVisibility, { passive: true });
+        button.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+        toggleVisibility();
+    })();
+</script>
 
 <script>
     (function () {

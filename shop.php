@@ -5,6 +5,8 @@ require_once __DIR__ . '/includes/helpers.php';
 $uid = require_login();
 
 $page_title = "星尘交易所";
+$page_description = "星尘交易所——消耗星尘兑换遗物与装扮，每日虚空低语抽奖。";
+$page_keywords = "星尘交易所,商店,抽奖";
 $style = "shop";
 
 include __DIR__ . '/includes/header.php';

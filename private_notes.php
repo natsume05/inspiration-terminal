@@ -5,6 +5,8 @@ require_once __DIR__ . '/includes/helpers.php';
 require_login();
 
 $page_title = "私密笔记";
+$page_description = "私密树洞——记录不想公开的秘密。";
+$page_keywords = "私密笔记,树洞";
 $style = "community";
 
 include __DIR__ . '/includes/header.php';

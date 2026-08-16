@@ -27,6 +27,8 @@ if (isset($_GET['del'])) {
 }
 
 $page_title = "思维殿堂";
+$page_description = "思维殿堂——只属于你的私密笔记空间。";
+$page_keywords = "思维殿堂,私密空间";
 $style = "community";
 
 include __DIR__ . '/includes/header.php';

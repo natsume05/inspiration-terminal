@@ -3,6 +3,8 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 
 $page_title = "灵感传输终端";
+$page_description = "灵感传输终端——集深空日志、提瓦特百宝箱与虚空梦语社区于一体的个人门户网站。";
+$page_keywords = "灵感传输终端,个人网站,博客,工具箱,匿名社区";
 $style = "index";
 $show_nav = false;
 
@@ -39,33 +41,33 @@ $stmt->close();
 </div>
 <?php endif; ?>
 
-<div class="logo-area">
+<section class="logo-area" aria-label="站点介绍">
     <h1>
         <span class="g-blue">In</span><span class="g-red">spi</span><span class="g-yellow">ra</span><span class="g-blue">ti</span><span class="g-green">on</span>
         <span class="g-red">T</span>erminal
     </h1>
     <p class="subtitle">
-        这里是灵感的传输终端。连接宇宙深处的信号，聚合实用主义的工具，或是记录虚空中的低语。
+        一个以「深空日志、实用工具箱、匿名社区」为核心的个人门户，记录灵感、连接思想、沉淀创作。
     </p>
-</div>
+</section>
 
 <div class="card-container">
-    <a href="blog.php" class="card card-blog">
+    <a href="blog.php" class="card card-blog card-hover" title="进入深空日志">
         <span class="icon"> 🚀 </span>
         <h2>深空日志</h2>
-        <p>Admin的私人观测站。星际拓荒风格，记录思维的波形与宇宙的余晖。</p>
+        <p>个人博客与观测笔记，记录技术思考、项目复盘与灵感片段。</p>
     </a>
 
-    <a href="tools.php" class="card card-tools">
+    <a href="tools.php" class="card card-tools card-hover" title="打开提瓦特百宝箱">
         <span class="icon"> 🧩 </span>
         <h2>提瓦特百宝箱</h2>
-        <p>实用工具聚合。原神UI风格，分区收录Motrix、Everything等冒险家必备道具。</p>
+        <p>聚合开发与效率工具：GitHub 开源猎手、Steam 史低监控等实用模块。</p>
     </a>
 
-    <a href="community.php" class="card card-community">
+    <a href="community.php" class="card card-community card-hover" title="进入虚空梦语社区">
         <span class="icon"> 🦋 </span>
         <h2>虚空梦语</h2>
-        <p>用户交流与灵感记录。空洞骑士风格，在圣巢的石碑上刻下你的记忆（需登录）。</p>
+        <p>匿名交流与灵感记录社区，写下你的思考，也能点亮他人的回响。</p>
     </a>
 </div>
 

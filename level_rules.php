@@ -3,6 +3,8 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 
 $page_title = "虚空等级协议";
+$page_description = "虚空等级协议——了解等级体系与经验获取规则。";
+$page_keywords = "等级,经验,规则";
 $style = "community";
 
 include __DIR__ . '/includes/header.php';

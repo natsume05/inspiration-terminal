@@ -3,6 +3,8 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 
 $page_title = "Steam 战略指挥室";
+$page_description = "Steam 战略指挥室——史低价格监控、大促日历与口碑榜单。";
+$page_keywords = "Steam,游戏,折扣,史低";
 $style = "steam";
 
 include __DIR__ . '/includes/header.php';

@@ -3,6 +3,8 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 
 $page_title = "隐私政策";
+$page_description = "隐私政策——了解信息收集、数据安全与 Cookie 使用。";
+$page_keywords = "隐私政策,数据安全";
 $style = "community";
 
 include __DIR__ . '/includes/header.php';

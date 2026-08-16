@@ -137,3 +137,31 @@ function get_text($key, $default = '')
 {
     return isset($_GET[$key]) ? trim((string) $_GET[$key]) : $default;
 }
+
+/**
+ * 输出 SEO 友好的 <title> 与 meta 信息。
+ * 页面可设置 $page_title / $page_description / $page_keywords 覆盖默认值。
+ */
+function page_meta()
+{
+    global $page_title, $page_description, $page_keywords;
+
+    $site_name = defined('SITE_NAME') ? SITE_NAME : '灵感传输终端';
+    $title = (!empty($page_title) && $page_title !== $site_name)
+        ? $page_title . ' - ' . $site_name
+        : $site_name;
+    $description = !empty($page_description)
+        ? $page_description
+        : '灵感传输终端——集博客、工具箱与匿名社区于一体的个人门户网站。';
+    $keywords = !empty($page_keywords)
+        ? $page_keywords
+        : '灵感传输终端,个人网站,博客,工具箱,社区';
+
+    echo '<title>' . e($title) . '</title>' . "\n";
+    echo '<meta name="description" content="' . e($description) . '">' . "\n";
+    echo '<meta name="keywords" content="' . e($keywords) . '">' . "\n";
+    echo '<meta name="author" content="MingMo">' . "\n";
+    echo '<meta property="og:title" content="' . e($title) . '">' . "\n";
+    echo '<meta property="og:description" content="' . e($description) . '">' . "\n";
+    echo '<meta property="og:type" content="website">' . "\n";
+}

@@ -5,6 +5,8 @@ require_once __DIR__ . '/includes/helpers.php';
 $uid = require_login();
 
 $page_title = "信号塔";
+$page_description = "信号塔——提交 Bug、功能建议或寻求舰桥协助。";
+$page_keywords = "反馈,建议,帮助";
 $style = "community";
 
 include __DIR__ . '/includes/header.php';

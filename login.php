@@ -38,6 +38,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="登录灵感传输终端，进入个人中心与社区。">
     <title>登录 | 虚空终端</title>
     <style>
         body { background: #0b0c10; color: #c5c6c7; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }

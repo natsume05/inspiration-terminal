@@ -45,6 +45,7 @@ $_SESSION['captcha_answer'] = $num1 + $num2;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="注册灵感传输终端账号，加入虚空梦语社区。">
     <title>注册 | 虚空终端</title>
     <style>
         body { background: #0b0c10; color: #c5c6c7; font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }

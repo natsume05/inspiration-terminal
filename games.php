@@ -3,6 +3,8 @@ require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/helpers.php';
 
 $page_title = "娱乐终端";
+$page_description = "娱乐终端——虚空中的游乐场，探索未知，赢取星尘。";
+$page_keywords = "游戏,娱乐,解谜";
 $style = "community";
 
 include __DIR__ . '/includes/header.php';
