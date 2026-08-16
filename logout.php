@@ -1,11 +1,10 @@
 <?php
-// logout.php - 安全登出
-session_start();
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
 
-// 1. 清除所有 Session 变量
-$_SESSION = array();
+// 清空会话数据。
+$_SESSION = [];
 
-// 2. 如果有 Cookie，也顺便清理掉 (彻底断开)
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,
@@ -14,10 +13,6 @@ if (ini_get("session.use_cookies")) {
     );
 }
 
-// 3. 销毁 Session
 session_destroy();
 
-// 4. 跳转回登录页 (而不是服务器根目录)
-header("Location: login.php");
-exit();
-?>
+redirect('login.php');

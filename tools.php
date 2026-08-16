@@ -1,18 +1,19 @@
 <?php
-$page_title = "提瓦特百宝箱";
-$style = "tools"; // 还是用原来的 tools.css，我们去把它精简一下
-include 'includes/header.php'; 
-?>
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
 
+$page_title = "提瓦特百宝箱";
+$style = "tools";
+
+include __DIR__ . '/includes/header.php';
+?>
 <div class="container" style="max-width: 1000px; margin-top: 60px; text-align: center;">
-    
     <h1>💎 提瓦特百宝箱</h1>
     <p style="color:#888; margin-bottom: 60px; font-style: italic;">
         “旅行者，请选择你要接入的终端模块。”
     </p>
 
     <div class="portal-grid">
-        
         <a href="tools_github.php" class="portal-card" style="background: linear-gradient(135deg, #24292e, #1b1f23);">
             <div class="p-icon">🐙</div>
             <h3>GitHub 开源猎手</h3>
@@ -30,12 +31,10 @@ include 'includes/header.php';
             <h3>星际导航终端</h3>
             <p>常用开发工具与生活站点索引。</p>
         </a>
-
     </div>
 </div>
 
 <style>
-/* 简单的入口卡片样式 */
 .portal-card {
     display: block; padding: 40px 30px; border-radius: 16px;
     color: #fff; text-decoration: none; transition: transform 0.3s, box-shadow 0.3s;
@@ -47,4 +46,4 @@ include 'includes/header.php';
 .portal-card p { margin: 0; color: rgba(255,255,255,0.7); line-height: 1.5; }
 </style>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

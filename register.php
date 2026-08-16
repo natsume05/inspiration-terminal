@@ -1,39 +1,45 @@
 <?php
-require 'includes/db.php';
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
+
 $msg = "";
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // 1. 简单的图形验证逻辑 (这里用数学题代替图片，更简单且不需要库)
-    if ($_POST['captcha'] != $_SESSION['captcha_answer']) {
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $username = post_text('username');
+    $password = (string) ($_POST['password'] ?? '');
+    $captcha_answer = (int) ($_POST['captcha'] ?? 0);
+
+    if ((int) ($_SESSION['captcha_answer'] ?? 0) !== $captcha_answer) {
         $msg = "❌ 验证码错误，你可能是机器人？";
+    } elseif ($username === '' || $password === '') {
+        $msg = "❌ 代号和密钥不能为空。";
     } else {
-        $user = $conn->real_escape_string($_POST['username']);
-        $pass = $_POST['password'];
-        
-        // 2. 检查用户名是否已存在
-        $check = $conn->query("SELECT id FROM users WHERE username='$user'");
+        $stmt = $conn->prepare("SELECT id FROM users WHERE username = ?");
+        $stmt->bind_param('s', $username);
+        $stmt->execute();
+        $check = $stmt->get_result();
+
         if ($check->num_rows > 0) {
             $msg = "⚠️ 该代号已被其他旅行者占用。";
         } else {
-            // 3. 密码加密 (Hash) - 绝不能存明文！
-            $hashed_pass = password_hash($pass, PASSWORD_DEFAULT);
-            $sql = "INSERT INTO users (username, password) VALUES ('$user', '$hashed_pass')";
-            
-            if ($conn->query($sql) === TRUE) {
+            $hashed_pass = password_hash($password, PASSWORD_DEFAULT);
+            $stmt = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
+            $stmt->bind_param('ss', $username, $hashed_pass);
+
+            if ($stmt->execute()) {
                 $msg = "✅ 注册成功！正在跳转...";
                 header("refresh:2;url=login.php");
             } else {
-                $msg = "注册失败: " . $conn->error;
+                $msg = "注册失败，请稍后再试。";
             }
         }
+        $stmt->close();
     }
 }
 
-// 生成随机验证码
 $num1 = rand(1, 9);
 $num2 = rand(1, 9);
 $_SESSION['captcha_answer'] = $num1 + $num2;
 ?>
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -51,11 +57,11 @@ $_SESSION['captcha_answer'] = $num1 + $num2;
 <body>
     <div class="box">
         <h2>申请虚空通行证</h2>
-        <p style="color: #ffae42;"><?php echo $msg; ?></p>
+        <p style="color: #ffae42;"><?php echo e($msg); ?></p>
         <form method="POST">
             <input type="text" name="username" placeholder="代号 (Username)" required>
             <input type="password" name="password" placeholder="密钥 (Password)" required>
-            <p>验证：<?php echo "$num1 + $num2 = ?"; ?></p>
+            <p>验证：<?php echo $num1 . " + " . $num2 . " = ?"; ?></p>
             <input type="number" name="captcha" placeholder="输入答案" required>
             <button type="submit">注册</button>
         </form>

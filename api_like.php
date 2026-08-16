@@ -1,38 +1,28 @@
 <?php
-// api_like.php - 点赞处理器
-require 'includes/db.php';
-header('Content-Type: application/json');
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/drop_system.php';
 
-if (!isset($_SESSION['user_id']) || !isset($_GET['post_id'])) {
-    echo json_encode(['success' => false, 'message' => '未授权或参数缺失']);
-    exit;
+$user_id = current_user_id();
+$post_id = isset($_GET['post_id']) ? (int) $_GET['post_id'] : 0;
+
+if ($user_id === 0 || $post_id <= 0) {
+    emit_json(['success' => false, 'message' => '未授权或参数缺失']);
 }
 
-$user_id = $_SESSION['user_id'];
-$post_id = intval($_GET['post_id']);
-
-// 检查是否已经点赞
 $check = $conn->query("SELECT id FROM likes WHERE user_id = $user_id AND post_id = $post_id");
+$is_liked = ($check && $check->num_rows > 0);
 
-if ($check->num_rows > 0) {
-    // 已赞 -> 取消点赞
+if ($is_liked) {
     $conn->query("DELETE FROM likes WHERE user_id = $user_id AND post_id = $post_id");
-    echo json_encode(['success' => true, 'action' => 'unliked']);
 } else {
-    // 未赞 -> 点赞
     $conn->query("INSERT INTO likes (user_id, post_id) VALUES ($user_id, $post_id)");
-    echo json_encode(['success' => true, 'action' => 'liked']);
 }
 
-// 🎲 触发掉落检查
-require_once 'api_shop.php'; // 引入商店逻辑
 $drop = trigger_void_drop($conn, $user_id);
 
-// 返回结果时带上 drop 信息
-echo json_encode([
-    'success' => true, 
-    'action' => ($check->num_rows > 0) ? 'unliked' : 'liked',
-    'drop' => $drop // 如果有掉落，这里会有数据
+emit_json([
+    'success' => true,
+    'action' => $is_liked ? 'unliked' : 'liked',
+    'drop' => $drop,
 ]);
-?>
-

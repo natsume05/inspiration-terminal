@@ -1,30 +1,35 @@
 <?php
-require 'includes/db.php';
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
 
 $msg = "";
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $user = $conn->real_escape_string($_POST['username']);
-    $pass = $_POST['password'];
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $username = post_text('username');
+    $password = (string) ($_POST['password'] ?? '');
 
-    $sql = "SELECT id, password, role FROM users WHERE username='$user'";
-    $result = $conn->query($sql);
-
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        // 验证加密密码
-        if (password_verify($pass, $row['password'])) {
-            // 登录成功！存入 Session
-            $_SESSION['user_id'] = $row['id'];
-            $_SESSION['username'] = $user;
-            $_SESSION['role'] = $row['role']; // 记住身份
-            $_SESSION['avatar'] = $row['avatar'];
-            header("Location: community.php");
-            exit();
-        } else {
-            $msg = "❌ 密钥错误。";
-        }
+    if ($username === '' || $password === '') {
+        $msg = "❌ 请输入代号与密钥。";
     } else {
-        $msg = "❌ 查无此人。";
+        $stmt = $conn->prepare("SELECT id, password, role, avatar FROM users WHERE username = ?");
+        $stmt->bind_param('s', $username);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            if (password_verify($password, $row['password'])) {
+                $_SESSION['user_id'] = (int) $row['id'];
+                $_SESSION['username'] = $username;
+                $_SESSION['role'] = $row['role'];
+                $_SESSION['avatar'] = $row['avatar'];
+                redirect('community.php');
+            } else {
+                $msg = "❌ 密钥错误。";
+            }
+        } else {
+            $msg = "❌ 查无此人。";
+        }
+        $stmt->close();
     }
 }
 ?>
@@ -45,7 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <body>
     <div class="box">
         <h2>连接虚空网络</h2>
-        <p style="color: #ffae42;"><?php echo $msg; ?></p>
+        <p style="color: #ffae42;"><?php echo e($msg); ?></p>
         <form method="POST">
             <input type="text" name="username" placeholder="代号" required>
             <input type="password" name="password" placeholder="密钥" required>

@@ -1,4 +1,4 @@
-# 忽略数据库配置文件（保护隐私）
+# 忽略数据库与敏感配置文件（保护隐私）
 db.php
 api_search_github.php
 fetch_github.php
@@ -11,3 +11,21 @@ Thumbs.db
 # 忽略本地上传的临时文件/日志
 *.log
 error_log
+
+# 忽略 IDE / 编辑器临时目录
+.vs/
+.vscode/
+.idea/
+
+# 忽略 Codex 本地工作区配置
+.agents/
+
+# 忽略本地设计素材目录
+网页设计素材/
+
+# 忽略托管环境标记文件（LiteSpeed / 缓存）
+.hcflag
+.litespeed_flag
+
+# 忽略用户上传内容（保留目录结构，不提交二进制资源）
+assets/uploads/

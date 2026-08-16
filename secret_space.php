@@ -1,39 +1,41 @@
 <?php
-session_start();
-require 'includes/db.php';
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
 
-// 严格安检
-if (!isset($_SESSION['user_id'])) {
-    die("⛔ <a href='login.php'>登录</a>");
-}
+$uid = require_login();
 
-// 处理提交
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['save_note'])) {
-    $uid = $_SESSION['user_id'];
-    $content = $conn->real_escape_string($_POST['note_content']);
-    $conn->query("INSERT INTO private_notes (user_id, content) VALUES ($uid, '$content')");
-    // 刷新页面防止重复提交
-    header("Location: secret_space.php"); exit();
+// 保存笔记
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['save_note'])) {
+    $content = post_text('note_content');
+    if ($content !== '') {
+        $stmt = $conn->prepare("INSERT INTO private_notes (user_id, content) VALUES (?, ?)");
+        $stmt->bind_param('is', $uid, $content);
+        $stmt->execute();
+        $stmt->close();
+    }
+    redirect('secret_space.php');
 }
 
 // 删除笔记
 if (isset($_GET['del'])) {
-    $id = intval($_GET['del']);
-    $uid = $_SESSION['user_id'];
-    $conn->query("DELETE FROM private_notes WHERE id=$id AND user_id=$uid");
-    header("Location: secret_space.php"); exit();
+    $id = (int) $_GET['del'];
+    $stmt = $conn->prepare("DELETE FROM private_notes WHERE id = ? AND user_id = ?");
+    $stmt->bind_param('ii', $id, $uid);
+    $stmt->execute();
+    $stmt->close();
+    redirect('secret_space.php');
 }
 
 $page_title = "思维殿堂";
-$style = "community"; 
-include 'includes/header.php'; 
+$style = "community";
+
+include __DIR__ . '/includes/header.php';
 ?>
 
 <style>
-    /* 里世界特供样式 */
-    body { background-color: #050505; } /* 更黑的背景 */
+    body { background-color: #050505; }
     .void-container { max-width: 700px; margin: 0 auto; padding-top: 40px; }
-    
+
     .void-input {
         width: 100%;
         background: transparent;
@@ -48,7 +50,7 @@ include 'includes/header.php';
         transition: border-color 0.5s;
     }
     .void-input:focus { border-bottom-color: #66fcf1; }
-    
+
     .timeline { border-left: 2px solid #333; margin-top: 50px; padding-left: 30px; }
     .note-item { position: relative; margin-bottom: 40px; }
     .note-item::before {
@@ -63,7 +65,6 @@ include 'includes/header.php';
 </style>
 
 <div class="void-container">
-    
     <div style="text-align: center; margin-bottom: 40px; opacity: 0.7;">
         <h2 style="color: #66fcf1; font-weight: 300;">VOID / 思维殿堂</h2>
         <p style="font-size: 0.8rem; color: #666;">这里的声音，只有你听得见。</p>
@@ -78,30 +79,30 @@ include 'includes/header.php';
 
     <div class="timeline">
         <?php
-        $uid = $_SESSION['user_id'];
-        $sql = "SELECT * FROM private_notes WHERE user_id = $uid ORDER BY created_at DESC";
-        $result = $conn->query($sql);
-        
+        $stmt = $conn->prepare("SELECT * FROM private_notes WHERE user_id = ? ORDER BY created_at DESC");
+        $stmt->bind_param('i', $uid);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
         if ($result->num_rows > 0):
-            while($row = $result->fetch_assoc()):
+            while ($row = $result->fetch_assoc()):
         ?>
             <div class="note-item">
-                <a href="?del=<?php echo $row['id']; ?>" class="del-note" onclick="return confirm('要遗忘这段记忆吗？')">×</a>
-                <div class="note-date"><?php echo $row['created_at']; ?></div>
-                <div class="note-content"><?php echo htmlspecialchars($row['content']); ?></div>
+                <a href="?del=<?php echo (int) $row['id']; ?>" class="del-note" onclick="return confirm('要遗忘这段记忆吗？')">×</a>
+                <div class="note-date"><?php echo e($row['created_at']); ?></div>
+                <div class="note-content"><?php echo e($row['content']); ?></div>
             </div>
-        <?php 
+        <?php
             endwhile;
         else:
             echo "<p style='color:#333; font-style:italic;'>虚空之中暂无回响...</p>";
         endif;
+        $stmt->close();
         ?>
     </div>
 
     <div style="text-align: center; margin-top: 50px;">
         <a href="private_notes.php" style="color: #444; text-decoration: none; font-size: 0.8rem;">▲ 上浮至表层</a>
     </div>
-
 </div>
-
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

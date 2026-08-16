@@ -1,72 +1,88 @@
 <?php
-// channel.php - 深空频道 (修复幽灵帖子崩溃版)
-require 'includes/db.php';
-require_once 'includes/image_helper.php';
-require_once 'includes/item_loader.php'; // 引入装备加载
-require 'includes/csrf.php';
-require 'includes/level_system.php';
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
+require_once __DIR__ . '/includes/image_helper.php';
+require_once __DIR__ . '/includes/item_loader.php';
+require_once __DIR__ . '/includes/csrf.php';
+require_once __DIR__ . '/includes/level_system.php';
 
-$page_title = "深空频道";
-$style = "community"; 
-include 'includes/header.php'; 
-
-// 引入特效样式
-echo '<link rel="stylesheet" href="assets/css/effects.css?v='.time().'">';
-
-if (!isset($_SESSION['user_id'])) { header("Location: login.php"); exit(); }
+$uid = require_login();
 
 // --- 处理发帖 ---
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_post'])) {
-    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) die("🛑 信号校验失败");
-    $content = $conn->real_escape_string($_POST['content']);
-    $author = $_SESSION['username'];
-    $tag = isset($_POST['tag']) ? $conn->real_escape_string($_POST['tag']) : 'daily';
-    
-    $image_path = NULL;
-    if (isset($_FILES['post_image']) && $_FILES['post_image']['error'] == 0) {
-        $base_name = "post_" . time() . "_" . rand(100,999);
-        $processed_name = upload_and_compress_webp($_FILES['post_image']['tmp_name'], "assets/uploads/community/" . $base_name, 800, 75);
-        if ($processed_name) $image_path = $processed_name;
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_post'])) {
+    if (!isset($_POST['csrf_token']) || !verify_csrf_token($_POST['csrf_token'])) {
+        exit('🛑 信号校验失败');
     }
 
-    $sql = "INSERT INTO posts (author, content, image, tag) VALUES ('$author', '$content', '$image_path', '$tag')";
-    if ($conn->query($sql) === TRUE) {
-        add_exp($conn, $_SESSION['user_id'], 10);
-        header("Location: channel.php?tag=" . $tag); exit();
+    $content = post_text('content');
+    $author = $_SESSION['username'];
+    $tag = post_text('tag', 'daily');
+
+    $image_path = null;
+    if (isset($_FILES['post_image']) && $_FILES['post_image']['error'] === 0) {
+        $base_name = "post_" . time() . "_" . rand(100, 999);
+        $processed_name = upload_and_compress_webp($_FILES['post_image']['tmp_name'], "assets/uploads/community/" . $base_name, 800, 75);
+        if ($processed_name) {
+            $image_path = $processed_name;
+        }
     }
+
+    $stmt = $conn->prepare("INSERT INTO posts (author, content, image, tag) VALUES (?, ?, ?, ?)");
+    $stmt->bind_param('ssss', $author, $content, $image_path, $tag);
+    if ($stmt->execute()) {
+        add_exp($conn, $uid, 10);
+    }
+    $stmt->close();
+
+    redirect("channel.php?tag=" . urlencode($tag));
 }
 
 // --- 查询逻辑 ---
-$filter = isset($_GET['tag']) ? $_GET['tag'] : 'all';
+$filter = get_text('tag', 'all');
 
-// 🔍 关键 SQL：确保查出 u.id (author_id)
 $sql = "SELECT p.*, u.id as author_id, u.username, u.avatar, u.custom_title, u.exp,
         (SELECT COUNT(*) FROM likes WHERE post_id = p.id) as like_count,
-        (SELECT COUNT(*) FROM likes WHERE post_id = p.id AND user_id = {$_SESSION['user_id']}) as is_liked
-        FROM posts p 
+        (SELECT COUNT(*) FROM likes WHERE post_id = p.id AND user_id = ?) as is_liked
+        FROM posts p
         LEFT JOIN users u ON p.author = u.username ";
 
-if ($filter != 'all') {
-    $safe_tag = $conn->real_escape_string($filter);
-    $sql .= " WHERE p.tag = '$safe_tag' ";
+$params = [$uid];
+$types = 'i';
+
+if ($filter !== 'all') {
+    $sql .= " WHERE p.tag = ? ";
+    $params[] = $filter;
+    $types .= 's';
 }
 $sql .= " ORDER BY p.created_at DESC LIMIT 50";
-$result = $conn->query($sql);
+
+$stmt = $conn->prepare($sql);
+$stmt->bind_param($types, ...$params);
+$stmt->execute();
+$result = $stmt->get_result();
 
 $channels = [
-    'all'=>['icon'=>'🌎','name'=>'全频段'], 'daily'=>['icon'=>'☕','name'=>'日常吐槽'], 
-    'game'=>['icon'=>'🎮','name'=>'游戏圣堂'], 'tech'=>['icon'=>'💻','name'=>'代码深空'], 'void'=>['icon'=>'🕳️','name'=>'虚空回响']
+    'all'   => ['icon' => '🌎', 'name' => '全频段'],
+    'daily' => ['icon' => '☕', 'name' => '日常吐槽'],
+    'game'  => ['icon' => '🎮', 'name' => '游戏圣堂'],
+    'tech'  => ['icon' => '💻', 'name' => '代码深空'],
+    'void'  => ['icon' => '🕳️', 'name' => '虚空回响'],
 ];
+
+$page_title = "深空频道";
+$style = "community";
+
+include __DIR__ . '/includes/header.php';
 ?>
 
+<link rel="stylesheet" href="assets/css/effects.css?v=<?php echo time(); ?>">
+
 <style>
-/* 修复点赞样式 */
 .action-btn { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 5px; color: #888; transition: 0.2s; }
 .action-btn .icon { font-size: 1.2rem; line-height: 1; }
 .action-btn:hover { color: #66fcf1; }
 .action-btn.liked { color: #ff4d4f; }
 .action-btn.liked .icon { transform: scale(1.1); }
-/* 评论区 */
 .comment-section { background: rgba(0,0,0,0.2); border-top: 1px solid #30363d; padding: 15px; margin-top: 15px; display: none; }
 .comment-item { display: flex; gap: 10px; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px; }
 .c-avatar { width: 30px; height: 30px; border-radius: 50%; }
@@ -80,9 +96,9 @@ $channels = [
         <div class="side-card nav-card">
             <h4>📡 频道调频</h4>
             <nav class="channel-nav">
-                <?php foreach($channels as $k=>$v): $act=($filter==$k)?'active':''; ?>
-                <a href="channel.php?tag=<?php echo $k; ?>" class="channel-item <?php echo $act; ?>">
-                    <span class="c-icon"><?php echo $v['icon']; ?></span><span class="c-name"><?php echo $v['name']; ?></span>
+                <?php foreach ($channels as $key => $channel): $active = ($filter === $key) ? 'active' : ''; ?>
+                <a href="channel.php?tag=<?php echo $key; ?>" class="channel-item <?php echo $active; ?>">
+                    <span class="c-icon"><?php echo $channel['icon']; ?></span><span class="c-name"><?php echo $channel['name']; ?></span>
                 </a>
                 <?php endforeach; ?>
             </nav>
@@ -97,8 +113,10 @@ $channels = [
                 <div class="post-toolbar">
                     <div class="tools-left">
                         <select name="tag" class="channel-select">
-                            <option value="daily">☕ 日常吐槽</option><option value="game">🎮 游戏圣堂</option>
-                            <option value="tech">💻 代码深空</option><option value="void">🕳️ 虚空回响</option>
+                            <option value="daily">☕ 日常吐槽</option>
+                            <option value="game">🎮 游戏圣堂</option>
+                            <option value="tech">💻 代码深空</option>
+                            <option value="void">🕳️ 虚空回响</option>
                         </select>
                         <button type="button" class="tool-btn" onclick="toggleEmojiPanel()">😊表情</button>
                         <label class="tool-btn">📷图片 <input type="file" name="post_image" accept="image/*" style="display:none;" onchange="showFileName(this)"></label>
@@ -143,41 +161,38 @@ $channels = [
         </div>
 
         <div class="posts-list">
-            <?php 
-            if ($result->num_rows > 0): 
-                while($row = $result->fetch_assoc()): 
-                    // 🛡️ 安全获取作者ID，如果是空则设为 0
-                    $author_id = !empty($row['author_id']) ? $row['author_id'] : 0;
-                    
-                    // 加载特效 (现在 item_loader 不会因为 ID 为 0 而报错了)
+            <?php if ($result && $result->num_rows > 0): ?>
+                <?php while ($row = $result->fetch_assoc()):
+                    $author_id = !empty($row['author_id']) ? (int) $row['author_id'] : 0;
                     $decor = get_user_decorations($conn, $author_id);
-            ?>
-                <div class="post-card fade-in" id="post-<?php echo $row['id']; ?>">
+                ?>
+                <div class="post-card fade-in" id="post-<?php echo (int) $row['id']; ?>">
                     <div class="post-header">
                         <div class="author-box">
                             <a href="profile.php?id=<?php echo $author_id; ?>" style="text-decoration: none;">
                                 <div class="avatar-wrapper <?php echo $decor['avatar_class']; ?>" style="border-radius:50%; display:inline-block; padding:2px; transition: transform 0.2s;">
-                                    <img src="assets/uploads/avatars/<?php echo !empty($row['avatar']) ? $row['avatar'] : 'default.png'; ?>" class="avatar-small">
+                                    <img src="<?php echo e(get_avatar_url($row['avatar'])); ?>" class="avatar-small">
                                 </div>
                             </a>
-                            
+
                             <div class="author-info">
                                 <a href="profile.php?id=<?php echo $author_id; ?>" style="text-decoration: none;">
                                     <span class="username <?php echo $decor['name_class']; ?>">
-                                        <?php echo htmlspecialchars($row['username'] ?? '虚空游侠'); ?>
+                                        <?php echo e($row['username'] ?? '虚空游侠'); ?>
                                     </span>
                                 </a>
-                                
-                                <?php if(!empty($decor['badge_icon'])): ?>
+
+                                <?php if (!empty($decor['badge_icon'])): ?>
                                     <span title="徽章" style="cursor:help; margin-left:5px;"><?php echo $decor['badge_icon']; ?></span>
                                 <?php endif; ?>
 
-                                <?php $rank = function_exists('get_rank_name') ? get_rank_name($row['exp'] ?? 0) : 'Lv.1'; ?>
-                                <span style="font-size:0.7rem; background:#333; color:#aaa; padding:1px 5px; border-radius:4px; margin-left:5px; border:1px solid #444;"><?php echo $rank; ?></span>
-                                
+                                <span style="font-size:0.7rem; background:#333; color:#aaa; padding:1px 5px; border-radius:4px; margin-left:5px; border:1px solid #444;">
+                                    <?php echo get_rank_name($row['exp'] ?? 0); ?>
+                                </span>
+
                                 <?php if (!empty($row['custom_title'])): ?>
                                     <span class="custom-title-badge" style="background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #333; font-weight: bold; font-size: 0.75rem; padding: 1px 6px; border-radius: 12px; margin-left: 5px;">
-                                        <?php echo htmlspecialchars($row['custom_title']); ?>
+                                        <?php echo e($row['custom_title']); ?>
                                     </span>
                                 <?php endif; ?>
 
@@ -186,36 +201,41 @@ $channels = [
                         </div>
                         <span class="post-time"><?php echo date('m-d H:i', strtotime($row['created_at'])); ?></span>
                     </div>
-                    
-                    <textarea class="raw-markdown" style="display:none;"><?php echo htmlspecialchars($row['content']); ?></textarea>
+
+                    <textarea class="raw-markdown" style="display:none;"><?php echo e($row['content']); ?></textarea>
                     <div class="post-content markdown-body"></div>
-                    <?php if (!empty($row['image'])): ?><div class="post-image"><img src="assets/uploads/community/<?php echo $row['image']; ?>" onclick="openLightbox(this.src)"></div><?php endif; ?>
+                    <?php if (!empty($row['image'])): ?><div class="post-image"><img src="assets/uploads/community/<?php echo e($row['image']); ?>" onclick="openLightbox(this.src)"></div><?php endif; ?>
 
                     <div class="post-footer">
                         <div style="display:flex; gap:20px;">
-                            <span class="action-btn <?php echo ($row['is_liked'] > 0) ? 'liked' : ''; ?>" onclick="toggleLike(<?php echo $row['id']; ?>, this)">
-                                <span class="icon"><?php echo ($row['is_liked'] > 0) ? '❤️' : '🤍'; ?></span> 
-                                <span class="count"><?php echo $row['like_count']; ?></span>
+                            <span class="action-btn <?php echo ($row['is_liked'] > 0) ? 'liked' : ''; ?>" onclick="toggleLike(<?php echo (int) $row['id']; ?>, this)">
+                                <span class="icon"><?php echo ($row['is_liked'] > 0) ? '❤️' : '🤍'; ?></span>
+                                <span class="count"><?php echo (int) $row['like_count']; ?></span>
                             </span>
-                            <span class="action-btn" onclick="toggleComments(<?php echo $row['id']; ?>)"><span class="icon">💬</span> 评论</span>
-                            <span class="action-btn" onclick="sharePost(<?php echo $row['id']; ?>)"><span class="icon">🔗</span> 分享</span>
+                            <span class="action-btn" onclick="toggleComments(<?php echo (int) $row['id']; ?>)"><span class="icon">💬</span> 评论</span>
+                            <span class="action-btn" onclick="sharePost(<?php echo (int) $row['id']; ?>)"><span class="icon">🔗</span> 分享</span>
                         </div>
-                        <?php if($_SESSION['user_id'] == 1): ?>
+                        <?php if (is_admin()): ?>
                             <form method="POST" action="delete_post.php" onsubmit="return confirm('是否确认删除这条帖子？');" style="display:inline;">
-                                <?php echo csrf_field(); ?><input type="hidden" name="post_id" value="<?php echo $row['id']; ?>"><button class="tool-btn" style="color:red;">🗑️</button>
+                                <?php echo csrf_field(); ?>
+                                <input type="hidden" name="post_id" value="<?php echo (int) $row['id']; ?>">
+                                <button class="tool-btn" style="color:red;">🗑️</button>
                             </form>
                         <?php endif; ?>
                     </div>
 
-                    <div id="comment-box-<?php echo $row['id']; ?>" class="comment-section">
-                        <div class="comment-list" id="comment-list-<?php echo $row['id']; ?>"></div>
+                    <div id="comment-box-<?php echo (int) $row['id']; ?>" class="comment-section">
+                        <div class="comment-list" id="comment-list-<?php echo (int) $row['id']; ?>"></div>
                         <div class="comment-input-box">
-                            <input type="text" id="comment-input-<?php echo $row['id']; ?>" class="c-input" placeholder="输入评论..." onkeypress="if(event.key==='Enter') submitComment(<?php echo $row['id']; ?>)">
-                            <button onclick="submitComment(<?php echo $row['id']; ?>)" class="c-submit">发送</button>
+                            <input type="text" id="comment-input-<?php echo (int) $row['id']; ?>" class="c-input" placeholder="输入评论..." onkeypress="if(event.key==='Enter') submitComment(<?php echo (int) $row['id']; ?>)">
+                            <button onclick="submitComment(<?php echo (int) $row['id']; ?>)" class="c-submit">发送</button>
                         </div>
                     </div>
                 </div>
-            <?php endwhile; else: echo "<div style='text-align:center; padding:50px; color:#666;'>暂无信号...</div>"; endif; ?>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <div style='text-align:center; padding:50px; color:#666;'>暂无信号...</div>
+            <?php endif; ?>
         </div>
     </main>
 
@@ -230,69 +250,138 @@ $channels = [
 <div id="lightbox" onclick="this.style.display='none'" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:999; justify-content:center; align-items:center;"><img id="lightbox-img" style="max-width:90%; max-height:90%;"></div>
 
 <script>
-// JS 逻辑与之前一致
 function toggleLike(postId, btn) {
-    const icon = btn.querySelector('.icon'), count = btn.querySelector('.count'), liked = btn.classList.contains('liked');
-    if(liked) { btn.classList.remove('liked'); icon.innerText='🤍'; count.innerText=Math.max(0, parseInt(count.innerText)-1); }
-    else { btn.classList.add('liked'); icon.innerText='❤️'; count.innerText=parseInt(count.innerText)+1; }
-    fetch('api_like.php?post_id='+postId).then(r=>r.json()).then(d=>{ if(!d.success) alert(d.message); else if(d.drop) alert(d.drop.msg+"\n+"+d.drop.val+"✨"); });
+    const icon = btn.querySelector('.icon');
+    const count = btn.querySelector('.count');
+    const liked = btn.classList.contains('liked');
+
+    if (liked) {
+        btn.classList.remove('liked');
+        icon.innerText = '🤍';
+        count.innerText = Math.max(0, parseInt(count.innerText) - 1);
+    } else {
+        btn.classList.add('liked');
+        icon.innerText = '❤️';
+        count.innerText = parseInt(count.innerText) + 1;
+    }
+
+    fetch('api_like.php?post_id=' + postId)
+        .then(r => r.json())
+        .then(d => {
+            if (!d.success) alert(d.message);
+            else if (d.drop) alert(d.drop.msg + "\n+" + d.drop.val + "✨");
+        });
 }
-function toggleComments(id) { 
-    let b=document.getElementById('comment-box-'+id); 
-    if(b.style.display==='none'){ b.style.display='block'; loadComments(id); } else b.style.display='none'; 
+
+function toggleComments(id) {
+    const box = document.getElementById('comment-box-' + id);
+    if (box.style.display === 'none') {
+        box.style.display = 'block';
+        loadComments(id);
+    } else {
+        box.style.display = 'none';
+    }
 }
+
 function loadComments(id) {
-    fetch('api_comment.php?action=list&post_id='+id).then(r=>r.json()).then(d=>{
-        let h = '';
-        if(d.success && d.data.length>0) d.data.forEach(c=>{
-            h+=`<div class="comment-item"><img src="assets/uploads/avatars/${c.avatar}" class="c-avatar"><div style="flex:1;"><div style="font-size:0.8rem; color:#ccc;"><b>${c.username}</b> <span style="float:right; color:#666;">${c.time}</span></div><div style="color:#aaa;">${c.content}</div></div></div>`;
-        }); else h='<div style="text-align:center; color:#666;">暂无评论</div>';
-        document.getElementById('comment-list-'+id).innerHTML=h;
-    });
+    fetch('api_comment.php?action=list&post_id=' + id)
+        .then(r => r.json())
+        .then(d => {
+            let html = '';
+            if (d.success && d.data.length > 0) {
+                d.data.forEach(c => {
+                    html += `<div class="comment-item"><img src="assets/uploads/avatars/${c.avatar}" class="c-avatar"><div style="flex:1;"><div style="font-size:0.8rem; color:#ccc;"><b>${c.username}</b> <span style="float:right; color:#666;">${c.time}</span></div><div style="color:#aaa;">${c.content}</div></div></div>`;
+                });
+            } else {
+                html = '<div style="text-align:center; color:#666;">暂无评论</div>';
+            }
+            document.getElementById('comment-list-' + id).innerHTML = html;
+        });
 }
+
 function submitComment(id) {
-    let i=document.getElementById('comment-input-'+id), v=i.value.trim(); if(!v)return;
-    let fd=new FormData(); fd.append('post_id',id); fd.append('content',v);
-    fetch('api_comment.php',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{alert(d.msg); if(d.success){i.value=''; loadComments(id);}});
+    const input = document.getElementById('comment-input-' + id);
+    const value = input.value.trim();
+    if (!value) return;
+
+    const fd = new FormData();
+    fd.append('post_id', id);
+    fd.append('content', value);
+
+    fetch('api_comment.php', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(d => {
+            alert(d.msg);
+            if (d.success) {
+                input.value = '';
+                loadComments(id);
+            }
+        });
 }
-function parseEmojisJS(t){
-    if(!t)return'';
-    const m ={
-        // 必须转义方括号 \[ \]
-        '\\[s:smile\\]':'🙂', '\\[s:joy\\]':'😂', '\\[s:lol\\]':'🤣', '\\[s:love\\]':'😍', 
-        '\\[s:cool\\]':'😎', '\\[s:thinking\\]':'🤔', '\\[s:cry\\]':'😭', '\\[s:scared\\]':'😱', 
-        '\\[s:angry\\]':'😡', '\\[s:clown\\]':'🤡', '\\[s:vomit\\]':'🤮', '\\[s:shhh\\]':'🤫',
-        
-        '\\[s:thumbsup\\]':'👍', '\\[s:ok\\]':'👌', '\\[s:heart\\]':'❤️', '\\[s:broken\\]':'💔',
-        '\\[s:fire\\]':'🔥', '\\[s:star\\]':'✨', '\\[s:poop\\]':'💩',
-        
-        '\\[s:ghost\\]':'👻', '\\[s:alien\\]':'👽', '\\[s:robot\\]':'🤖', 
-        '\\[s:rocket\\]':'🚀', '\\[s:moon\\]':'🌙', '\\[s:game\\]':'🎮',
-        
-        '\\[s:cat\\]':'🐱', '\\[s:dog\\]':'🐶', '\\[s:fox\\]':'🦊', '\\[s:bug\\]':'🐞',
-        // 🆕 新增游戏 Emoji
-        '\\[s:paimon\\]': '🥘',
-        '\\[s:primogem\\]': '💎',
-        '\\[s:gwent\\]': '🃏',
-        '\\[s:sword\\]': '⚔️',
-        '\\[s:objection\\]': '👉',
-        '\\[s:tree\\]': '🌳',
-        '\\[s:dragon\\]': '🐉',
+
+function parseEmojisJS(text) {
+    if (!text) return '';
+    const emojiMap = {
+        '\\[s:smile\\]': '🙂', '\\[s:joy\\]': '😂', '\\[s:lol\\]': '🤣', '\\[s:love\\]': '😍',
+        '\\[s:cool\\]': '😎', '\\[s:thinking\\]': '🤔', '\\[s:cry\\]': '😭', '\\[s:scared\\]': '😱',
+        '\\[s:angry\\]': '😡', '\\[s:clown\\]': '🤡', '\\[s:vomit\\]': '🤮', '\\[s:shhh\\]': '🤫',
+        '\\[s:thumbsup\\]': '👍', '\\[s:ok\\]': '👌', '\\[s:heart\\]': '❤️', '\\[s:broken\\]': '💔',
+        '\\[s:fire\\]': '🔥', '\\[s:star\\]': '✨', '\\[s:poop\\]': '💩',
+        '\\[s:ghost\\]': '👻', '\\[s:alien\\]': '👽', '\\[s:robot\\]': '🤖',
+        '\\[s:rocket\\]': '🚀', '\\[s:moon\\]': '🌙', '\\[s:game\\]': '🎮',
+        '\\[s:cat\\]': '🐱', '\\[s:dog\\]': '🐶', '\\[s:fox\\]': '🦊', '\\[s:bug\\]': '🐞',
+        '\\[s:paimon\\]': '🥘', '\\[s:primogem\\]': '💎', '\\[s:gwent\\]': '🃏',
+        '\\[s:sword\\]': '⚔️', '\\[s:objection\\]': '👉', '\\[s:tree\\]': '🌳', '\\[s:dragon\\]': '🐉',
     };
-    for(let k in m)t=t.replace(new RegExp(k,'g'),m[k]);return t;}
-function toggleEmojiPanel(){let p=document.getElementById('emoji-panel');p.style.display=p.style.display=='none'?'grid':'none';}
-function insertEmoji(c){document.getElementById('post-content').value+=c;toggleEmojiPanel();}
-function showFileName(i){document.getElementById('file-name').innerText=i.files[0].name;}
-function openLightbox(s){document.getElementById('lightbox-img').src=s;document.getElementById('lightbox').style.display='flex';}
-function sharePost(id){navigator.clipboard.writeText(location.origin+location.pathname+'?post='+id);alert('复制成功');}
+    for (const key in emojiMap) {
+        text = text.replace(new RegExp(key, 'g'), emojiMap[key]);
+    }
+    return text;
+}
+
+function toggleEmojiPanel() {
+    const panel = document.getElementById('emoji-panel');
+    panel.style.display = panel.style.display === 'none' ? 'grid' : 'none';
+}
+
+function insertEmoji(code) {
+    document.getElementById('post-content').value += code;
+    toggleEmojiPanel();
+}
+
+function showFileName(input) {
+    document.getElementById('file-name').innerText = input.files[0].name;
+}
+
+function openLightbox(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').style.display = 'flex';
+}
+
+function sharePost(id) {
+    navigator.clipboard.writeText(location.origin + location.pathname + '?post=' + id);
+    alert('复制成功');
+}
 
 document.addEventListener('DOMContentLoaded', () => {
-    if(typeof marked==='undefined'){console.error('Libs missing');return;}
-    marked.use({breaks:true,gfm:true});
-    document.querySelectorAll('.post-card').forEach(p => {
-        let r=p.querySelector('.raw-markdown'), d=p.querySelector('.post-content');
-        if(r&&d){try{d.innerHTML=DOMPurify.sanitize(marked.parse(parseEmojisJS(r.value)),{FORBID_TAGS:['style','script']});hljs.highlightAll();}catch(e){d.innerText=r.value;}}
+    if (typeof marked === 'undefined') {
+        console.error('Libs missing');
+        return;
+    }
+    marked.use({ breaks: true, gfm: true });
+
+    document.querySelectorAll('.post-card').forEach(post => {
+        const raw = post.querySelector('.raw-markdown');
+        const content = post.querySelector('.post-content');
+        if (!raw || !content) return;
+
+        try {
+            content.innerHTML = DOMPurify.sanitize(marked.parse(parseEmojisJS(raw.value)), { FORBID_TAGS: ['style', 'script'] });
+            hljs.highlightAll();
+        } catch (error) {
+            content.innerText = raw.value;
+        }
     });
 });
 </script>
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

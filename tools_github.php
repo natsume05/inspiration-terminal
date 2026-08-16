@@ -1,21 +1,41 @@
 <?php
-// tools_github.php - GitHub 探索分舰
-require 'includes/db.php';
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
+
+/**
+ * 渲染一张 GitHub 项目卡片。
+ */
+function renderGitHubCard($repo)
+{
+    $stars = number_format($repo['stars']);
+    echo '
+    <a href="' . e($repo['url']) . '" target="_blank" class="gh-card">
+        <div>
+            <h3 style="color:#0969da; margin:0 0 8px 0; font-size:1rem;">📚 ' . e($repo['name']) . '</h3>
+            <p style="color:#57606a; font-size:0.85rem; height:4.5em; overflow:hidden;">' . e($repo['description']) . '</p>
+        </div>
+        <div style="font-size:0.75rem; color:#57606a; border-top:1px dashed #eee; padding-top:10px; display:flex; justify-content:space-between;">
+            <span>🟡 ' . e($repo['language']) . '</span>
+            <span>⭐ ' . $stars . '</span>
+        </div>
+    </a>';
+}
+
 $page_title = "GitHub 探索";
-$style = "tools_sub"; // 引用新 CSS
-include 'includes/header.php'; 
+$style = "tools_sub";
+
+include __DIR__ . '/includes/header.php';
 ?>
 
 <div class="container">
-    
     <div class="gh-header">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
             <h2 style="margin:0; display:flex; align-items:center; font-size:1.5rem;">
                 <span style="font-size:2rem; margin-right:10px;">🐙</span> 开源探索 / Explorer
             </h2>
-            
+
             <div style="position: relative; flex: 1; max-width: 500px;">
-                <input type="text" id="gh-search-input" placeholder="🔍 搜索开源项目..." 
+                <input type="text" id="gh-search-input" placeholder="🔍 搜索开源项目..."
                        style="width: 100%; padding: 10px 15px; border: 1px solid #ddd; border-radius: 20px; outline: none;">
                 <button onclick="searchGitHub()" style="position: absolute; right: 5px; top: 3px; background: #24292e; color: #fff; border: none; padding: 7px 15px; border-radius: 15px; cursor: pointer;">
                     搜索
@@ -32,9 +52,7 @@ include 'includes/header.php';
 
     <div id="list-trending" class="gh-grid-container">
         <?php
-        // 这里的 list_type 根据你数据库实际情况调整
-        $sql = "SELECT * FROM github_projects WHERE list_type='trending' ORDER BY stars DESC LIMIT 12";
-        $res = $conn->query($sql);
+        $res = $conn->query("SELECT * FROM github_projects WHERE list_type = 'trending' ORDER BY stars DESC LIMIT 12");
         if ($res && $res->num_rows > 0) {
             while ($repo = $res->fetch_assoc()) renderGitHubCard($repo);
         } else {
@@ -45,8 +63,7 @@ include 'includes/header.php';
 
     <div id="list-all_time" class="gh-grid-container" style="display: none;">
         <?php
-        $sql = "SELECT * FROM github_projects WHERE list_type='all_time' ORDER BY stars DESC LIMIT 12";
-        $res = $conn->query($sql);
+        $res = $conn->query("SELECT * FROM github_projects WHERE list_type = 'all_time' ORDER BY stars DESC LIMIT 12");
         if ($res && $res->num_rows > 0) {
             while ($repo = $res->fetch_assoc()) renderGitHubCard($repo);
         }
@@ -62,13 +79,12 @@ include 'includes/header.php';
 </div>
 
 <script>
-// Tab 切换
 function showTab(tabName) {
     document.querySelectorAll('.gh-grid-container').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.gh-tab').forEach(el => el.classList.remove('active-tab'));
-    
+
     document.getElementById('list-' + tabName).style.display = 'grid';
-    if(tabName === 'search') {
+    if (tabName === 'search') {
         const btn = document.getElementById('btn-search');
         btn.style.display = 'block';
         btn.classList.add('active-tab');
@@ -77,10 +93,10 @@ function showTab(tabName) {
     }
 }
 
-// 搜索逻辑
 function searchGitHub() {
-    const query = document.getElementById('gh-search-input').value;
-    if(!query) return;
+    const query = document.getElementById('gh-search-input').value.trim();
+    if (!query) return;
+
     showTab('search');
     document.getElementById('list-search').innerHTML = '';
     document.getElementById('gh-loading').style.display = 'block';
@@ -90,7 +106,8 @@ function searchGitHub() {
         .then(data => {
             document.getElementById('gh-loading').style.display = 'none';
             const grid = document.getElementById('list-search');
-            if(data.items && data.items.length > 0) {
+
+            if (data.items && data.items.length > 0) {
                 data.items.forEach(item => {
                     grid.innerHTML += `
                         <a href="${item.html_url}" target="_blank" class="gh-card">
@@ -108,24 +125,10 @@ function searchGitHub() {
             }
         });
 }
-document.getElementById('gh-search-input').addEventListener('keypress', (e) => { if(e.key==='Enter') searchGitHub(); });
+
+document.getElementById('gh-search-input').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') searchGitHub();
+});
 </script>
 
-<?php
-// 渲染卡片函数
-function renderGitHubCard($repo) {
-    $stars = number_format($repo['stars']);
-    echo '
-    <a href="'.$repo['url'].'" target="_blank" class="gh-card">
-        <div>
-            <h3 style="color:#0969da; margin:0 0 8px 0; font-size:1rem;">📚 '.htmlspecialchars($repo['name']).'</h3>
-            <p style="color:#57606a; font-size:0.85rem; height:4.5em; overflow:hidden;">'.htmlspecialchars($repo['description']).'</p>
-        </div>
-        <div style="font-size:0.75rem; color:#57606a; border-top:1px dashed #eee; padding-top:10px; display:flex; justify-content:space-between;">
-            <span>🟡 '.htmlspecialchars($repo['language']).'</span>
-            <span>⭐ '.$stars.'</span>
-        </div>
-    </a>';
-}
-include 'includes/footer.php'; 
-?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

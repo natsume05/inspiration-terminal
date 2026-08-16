@@ -1,13 +1,17 @@
 <?php
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
+
 $page_title = "虚空等级协议";
 $style = "community";
-include 'includes/header.php';
+
+include __DIR__ . '/includes/header.php';
 ?>
 <div class="container" style="max-width: 800px; margin-top: 50px;">
     <div class="post-card">
         <h1 style="color: #f6d365; text-align: center;">📜 虚空等级协议</h1>
         <hr style="border-color: #333;">
-        
+
         <h3>1. 等级体系 (Ranks)</h3>
         <p style="color: #bbb;">随着你在虚空的探索，你的权限等级将不断提升。</p>
         <ul style="line-height: 2; color: #ddd;">
@@ -47,4 +51,4 @@ include 'includes/header.php';
         </div>
     </div>
 </div>
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

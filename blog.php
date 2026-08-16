@@ -1,47 +1,50 @@
 <?php
-require 'includes/db.php';
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
 
-// 处理随机跃迁
-// 随机跃迁逻辑升级
+// 随机跃迁：跳到一篇随机日志。
 if (isset($_GET['random'])) {
-    $rand_sql = "SELECT id FROM blog_posts ORDER BY RAND() LIMIT 1";
-    $rand_res = $conn->query($rand_sql);
+    $rand_res = $conn->query("SELECT id FROM blog_posts ORDER BY RAND() LIMIT 1");
     if ($rand_res && $rand_res->num_rows > 0) {
         $rand_row = $rand_res->fetch_assoc();
-        // 🚀 直接飞向那篇文章的独立页面
-        header("Location: view_post.php?id=" . $rand_row['id']);
-        exit();
+        redirect("view_post.php?id=" . (int) $rand_row['id']);
     }
 }
 
-// 处理博客评论提交
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['submit_blog_comment'])) {
-    $pid = intval($_POST['post_id']);
-    $user = isset($_SESSION['username']) ? $_SESSION['username'] : '过客'; // 没登录就叫过客
-    $content = $conn->real_escape_string($_POST['content']);
-    $conn->query("INSERT INTO blog_comments (post_id, username, content) VALUES ($pid, '$user', '$content')");
-    // 刷新页面防止重复提交
-    header("Location: blog.php#post-$pid"); exit();
+// 处理博客评论提交。
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['submit_blog_comment'])) {
+    $post_id = post_int('post_id');
+    $username = isset($_SESSION['username']) ? $_SESSION['username'] : '过客';
+    $content = post_text('content');
+
+    if ($post_id > 0 && $content !== '') {
+        $stmt = $conn->prepare("INSERT INTO blog_comments (post_id, username, content) VALUES (?, ?, ?)");
+        $stmt->bind_param('iss', $post_id, $username, $content);
+        $stmt->execute();
+        $stmt->close();
+    }
+    redirect("blog.php#post-$post_id");
 }
 
 $page_title = "深空日志";
-$style = "blog"; 
-include 'includes/header.php'; 
+$style = "blog";
+
+include __DIR__ . '/includes/header.php';
 ?>
 
 <div class="blog-header">
     <h1>🚀 深空日志</h1>
     <p id="typing-text"></p>
     <a href="blog.php?random=1" class="dream-btn small" style="background: linear-gradient(135deg, #6a11cb, #2575fc); margin-left: 10px;">
-    🌀 随机跃迁
-</a>
+        🌀 随机跃迁
+    </a>
 </div>
 
 <div class="music-player" style="margin-top: 15px;">
     <audio id="bgm" loop>
         <source src="assets/audio/travelers.mp3" type="audio/mpeg">
     </audio>
-    <button onclick="toggleMusic()" class="dream-btn small" style="width: auto; padding: 5px 15px; font-size: 0.8rem;">
+    <button onclick="toggleMusic(this)" class="dream-btn small" style="width: auto; padding: 5px 15px; font-size: 0.8rem;">
         🎵 播放信号流
     </button>
 </div>
@@ -51,79 +54,65 @@ include 'includes/header.php';
     $sql = "SELECT * FROM blog_posts ORDER BY created_at DESC";
     $result = $conn->query($sql);
 
-    if ($result->num_rows > 0):
-        while($row = $result->fetch_assoc()):
-            $pid = $row['id'];
-            // 获取评论数
-            $c_res = $conn->query("SELECT COUNT(*) as c FROM blog_comments WHERE post_id = $pid");
-            $c_count = $c_res->fetch_assoc()['c'];
+    if ($result && $result->num_rows > 0):
+        while ($row = $result->fetch_assoc()):
+            $pid = (int) $row['id'];
     ?>
             <div class="blog-card" id="post-<?php echo $pid; ?>">
-                    
-                    <?php if($row['cover_image']): ?>
-                        <a href="view_post.php?id=<?php echo $pid; ?>" style="display:block;">
-                            <img src="<?php echo htmlspecialchars($row['cover_image']); ?>" class="blog-cover" alt="Cover">
-                        </a>
-                    <?php endif; ?>
-
-            <div class="blog-body">
-                        
-                <h2 class="blog-title">
-                    <a href="view_post.php?id=<?php echo $pid; ?>" style="text-decoration:none; color:inherit; transition: color 0.3s;">
-                        <?php echo htmlspecialchars($row['title']); ?>
+                <?php if ($row['cover_image']): ?>
+                    <a href="view_post.php?id=<?php echo $pid; ?>" style="display:block;">
+                        <img src="<?php echo e($row['cover_image']); ?>" class="blog-cover" alt="Cover">
                     </a>
-                </h2>
-                
-                <div class="blog-meta-row">
+                <?php endif; ?>
+
+                <div class="blog-body">
+                    <h2 class="blog-title">
+                        <a href="view_post.php?id=<?php echo $pid; ?>" style="text-decoration:none; color:inherit; transition: color 0.3s;">
+                            <?php echo e($row['title']); ?>
+                        </a>
+                    </h2>
+
+                    <div class="blog-meta-row">
                         <span class="meta-item">📅 <?php echo date('Y.m.d', strtotime($row['created_at'])); ?></span>
-                        <span class="meta-item">👁️ <?php echo $row['views']; ?> 阅读</span>
-                                
-                        <?php if(!empty($row['tags'])): 
-                            $tags_arr = explode(',', $row['tags']);
-                            foreach($tags_arr as $tag): 
-                                $tag = trim($tag);
-                                if($tag == '') continue;
+                        <span class="meta-item">👁️ <?php echo (int) $row['views']; ?> 阅读</span>
+
+                        <?php if (!empty($row['tags'])):
+                            $tags_arr = array_filter(array_map('trim', explode(',', $row['tags'])));
+                            foreach ($tags_arr as $tag):
                         ?>
-                            <span class="tag">#<?php echo htmlspecialchars($tag); ?></span>
+                            <span class="tag">#<?php echo e($tag); ?></span>
                         <?php endforeach; endif; ?>
                     </div>
-                        
-                <div class="blog-content summary" style="color: #aaa; font-size: 0.95rem; margin-top: 15px;">
-                                <?php 
-                                    // 提取纯文本摘要
-                                    $clean_text = strip_tags($row['content']);
-                                    echo mb_substr($clean_text, 0, 120, 'utf-8') . '...'; 
-                                ?>
-                            </div>
-                            
-                            <div style="margin-top: 25px; text-align: right;">
-                                <a href="view_post.php?id=<?php echo $pid; ?>" class="dream-btn small" style="width: auto; display: inline-block; text-decoration: none; color: #cdd4eb;">
-                                    📖 阅读完整日志
-                                </a>
-                            </div>
 
-                        </div>
+                    <div class="blog-content summary" style="color: #aaa; font-size: 0.95rem; margin-top: 15px;">
+                        <?php echo mb_substr(strip_tags($row['content']), 0, 120, 'utf-8') . '...'; ?>
+                    </div>
+
+                    <div style="margin-top: 25px; text-align: right;">
+                        <a href="view_post.php?id=<?php echo $pid; ?>" class="dream-btn small" style="width: auto; display: inline-block; text-decoration: none; color: #cdd4eb;">
+                            📖 阅读完整日志
+                        </a>
+                    </div>
+                </div>
 
                 <div class="blog-footer">
-                            <div class="action-btn" onclick="toggleLike(<?php echo $pid; ?>, this)">
-                                ❤ 点赞
-                            </div>
-                            <div class="action-btn" onclick="sharePost(<?php echo $pid; ?>)">
-                                🔗 分享坐标
-                            </div>
-                        </div>
+                    <div class="action-btn" onclick="toggleLike(<?php echo $pid; ?>, this)">❤ 点赞</div>
+                    <div class="action-btn" onclick="sharePost(<?php echo $pid; ?>)">🔗 分享坐标</div>
+                </div>
 
                 <div class="comments-box" id="comments-<?php echo $pid; ?>">
                     <?php
-                    $com_sql = "SELECT * FROM blog_comments WHERE post_id = $pid ORDER BY created_at ASC";
-                    $com_res = $conn->query($com_sql);
-                    while($c = $com_res->fetch_assoc()):
+                    $stmt = $conn->prepare("SELECT username, content FROM blog_comments WHERE post_id = ? ORDER BY created_at ASC");
+                    $stmt->bind_param('i', $pid);
+                    $stmt->execute();
+                    $com_res = $stmt->get_result();
+                    while ($c = $com_res->fetch_assoc()):
                     ?>
                         <div class="comment-item">
-                            <span class="comment-user"><?php echo htmlspecialchars($c['username']); ?>:</span>
-                            <?php echo htmlspecialchars($c['content']); ?>
+                            <span class="comment-user"><?php echo e($c['username']); ?>:</span>
+                            <?php echo e($c['content']); ?>
                         </div>
-                    <?php endwhile; ?>
+                    <?php endwhile; $stmt->close(); ?>
 
                     <form class="comment-form" method="POST">
                         <input type="hidden" name="post_id" value="<?php echo $pid; ?>">
@@ -132,122 +121,62 @@ include 'includes/header.php';
                     </form>
                 </div>
             </div>
-        </article>
-    <?php 
+        <?php
         endwhile;
     else:
         echo "<p style='text-align:center; color:#666;'>暂无日志，舰长正在休眠...</p>";
-    endif; 
+    endif;
     ?>
-
 </div>
 
 <script>
-function toggleComments(id) {
-    var el = document.getElementById('comments-' + id);
-    el.style.display = (el.style.display === 'block') ? 'none' : 'block';
-}
 function copyLink(id) {
-    var url = window.location.origin + window.location.pathname + "#post-" + id;
+    const url = window.location.origin + window.location.pathname + "#post-" + id;
     navigator.clipboard.writeText(url).then(() => alert('链接已复制！'));
 }
 
-// --- 👁️ 真实阅读量统计 (Intersection Observer) ---
-document.addEventListener("DOMContentLoaded", function() {
-    // // 1. 创建一个观察者（修改为阅读全文再计数，因此注释掉）
-    // let observer = new IntersectionObserver((entries) => {
-    //     entries.forEach(entry => {
-    //         // 如果帖子出现在屏幕中 (可见比例超过 50%)
-    //         if (entry.isIntersecting) {
-    //             let postId = entry.target.id.replace('post-', '');
-                
-    //             // 为了防止重复计数，检查是否已经记过
-    //             if (!sessionStorage.getItem('viewed-' + postId)) {
-    //                 // 发送请求给后台
-    //                 fetch('update_view.php', {
-    //                     method: 'POST',
-    //                     headers: { 'Content-Type': 'application/json' },
-    //                     body: JSON.stringify({ id: postId })
-    //                 });
-                    
-    //                 // 标记为本次会话已读
-    //                 sessionStorage.setItem('viewed-' + postId, 'true');
-                    
-    //                 // (可选) 让界面上的数字也跳动一下 +1
-    //                 let viewSpan = document.getElementById('view-count-' + postId); // 确保你的 span id 叫这个
-    //                 if(viewSpan) viewSpan.innerText = parseInt(viewSpan.innerText) + 1;
-    //             }
-    //         }
-    //     });
-    // }, { threshold: 0.5 }); // 阈值：露出 50% 就算看
-
-    // 2. 开始观察所有博客卡片
-    document.querySelectorAll('.blog-card').forEach(card => {
-        observer.observe(card);
-    });
-});
-
-// --- ⌨️ 打字机特效 ---
-const text = "Admin的私人观测站。星际拓荒风格，记录思维的波形与宇宙的余晖。";
-const typeWriterElement = document.getElementById('typing-text');
-let i = 0;
+// 打字机特效
+const typewriterText = "Admin的私人观测站。星际拓荒风格，记录思维的波形与宇宙的余晖。";
+const typewriterElement = document.getElementById('typing-text');
+let typewriterIndex = 0;
 
 function typeWriter() {
-    if (i < text.length) {
-        typeWriterElement.innerHTML += text.charAt(i);
-        i++;
-        setTimeout(typeWriter, 50); // 打字速度
+    if (typewriterIndex < typewriterText.length) {
+        typewriterElement.innerHTML += typewriterText.charAt(typewriterIndex);
+        typewriterIndex++;
+        setTimeout(typeWriter, 50);
     }
 }
-// 页面加载后启动
-window.onload = typeWriter;
+document.addEventListener('DOMContentLoaded', typeWriter);
 
-// --- 🎵 音乐控制 ---
-function toggleMusic() {
-    var audio = document.getElementById("bgm");
-    var btn = event.target; // 获取按钮
+// 音乐控制
+function toggleMusic(btn) {
+    const audio = document.getElementById("bgm");
     if (audio.paused) {
         audio.play();
         btn.innerHTML = "⏸️ 暂停信号";
-        btn.style.background = "linear-gradient(135deg, #ff6b6b, #ffae42)"; // 变色
+        btn.style.background = "linear-gradient(135deg, #ff6b6b, #ffae42)";
     } else {
         audio.pause();
         btn.innerHTML = "🎵 播放信号流";
-        btn.style.background = ""; // 恢复原色
+        btn.style.background = "";
     }
 }
 
-// 🚀 跃迁导航系统
-document.addEventListener("DOMContentLoaded", function() {
-    // 1. 获取 URL 中的 highlight 参数
-    const urlParams = new URLSearchParams(window.location.search);
-    const targetId = urlParams.get('highlight');
+// 跃迁导航系统：读取 highlight 参数并平滑定位到对应日志。
+document.addEventListener("DOMContentLoaded", function () {
+    const targetId = new URLSearchParams(window.location.search).get('highlight');
+    if (!targetId) return;
 
-    // 2. 如果有目标 ID
-    if (targetId) {
-        const targetElement = document.getElementById('post-' + targetId);
-        
-        if (targetElement) {
-            // 延迟一点点执行，等待页面布局稳定
-            setTimeout(() => {
-                // A. 平滑滚动到屏幕中央
-                targetElement.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'center' 
-                });
+    const targetElement = document.getElementById('post-' + targetId);
+    if (!targetElement) return;
 
-                // B. 添加高亮特效 (CSS 类)
-                targetElement.classList.add('signal-locked');
-                
-                // C. 3秒后移除特效，让它恢复正常
-                setTimeout(() => {
-                    targetElement.classList.remove('signal-locked');
-                }, 3000);
-            }, 300);
-        }
-    }
+    setTimeout(() => {
+        targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetElement.classList.add('signal-locked');
+        setTimeout(() => targetElement.classList.remove('signal-locked'), 3000);
+    }, 300);
 });
-
 </script>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

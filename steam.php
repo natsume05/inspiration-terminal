@@ -1,11 +1,14 @@
 <?php
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
+
 $page_title = "Steam 战略指挥室";
-$style = "steam"; 
-include 'includes/header.php'; 
+$style = "steam";
+
+include __DIR__ . '/includes/header.php';
 ?>
 
 <div class="container steam-layout">
-    
     <div class="section-title">📅 2026 战术时间表 (Sale Calendar)</div>
     <div class="calendar-wrapper">
         <div class="calendar-track" id="calendar-track">
@@ -53,27 +56,26 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDeals();
 });
 
-function handleEnter(e) { if(e.key === 'Enter') searchGames(); }
+function handleEnter(e) {
+    if (e.key === 'Enter') searchGames();
+}
 
-// 1. 加载时间轴
 function loadCalendar() {
     fetch('api_steam.php?action=calendar')
         .then(res => res.json())
         .then(events => {
             const track = document.getElementById('calendar-track');
             track.innerHTML = '';
-            
+
             const today = new Date();
-            
+
             events.forEach(event => {
                 const eventDate = new Date(event.date);
-                const diffTime = eventDate - today;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                
-                // 状态判断
+                const diffDays = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
+
                 let statusClass = 'future';
                 let statusText = `${diffDays} 天后`;
-                
+
                 if (diffDays < 0 && diffDays > -14) { statusClass = 'active'; statusText = '🔥 进行中'; }
                 else if (diffDays < 0) { statusClass = 'past'; statusText = '已结束'; }
                 else if (diffDays <= 30) { statusClass = 'near'; statusText = `⚠️ 仅 ${diffDays} 天`; }
@@ -91,48 +93,43 @@ function loadCalendar() {
         });
 }
 
-// 2. 加载热门大作
 function loadTrending() {
     fetch('api_steam.php?action=trending')
         .then(res => res.json())
         .then(data => renderGames(data, document.getElementById('trending-grid')));
 }
 
-// 3. 加载史低
 function loadDeals() {
     fetch('api_steam.php?action=deals')
         .then(res => res.json())
         .then(data => renderGames(data, document.getElementById('deals-grid')));
 }
 
-// 4. 搜索逻辑
 function searchGames() {
     const title = document.getElementById('game-search').value.trim();
-    if(!title) return;
-    
+    if (!title) return;
+
     document.getElementById('search-result-area').style.display = 'block';
     const grid = document.getElementById('search-grid');
     grid.innerHTML = '<div class="loading">🔍 全网检索中...</div>';
-    
-    fetch(`api_steam.php?action=search&title=${title}`)
+
+    fetch(`api_steam.php?action=search&title=${encodeURIComponent(title)}`)
         .then(res => res.json())
         .then(data => renderGames(data, grid));
 }
 
-// 通用渲染函数
 function renderGames(games, container) {
     container.innerHTML = '';
-    if(!games || games.length === 0) {
-        container.innerHTML = '<p style="color:#666;">未探测到相关信号。</p>'; return;
+    if (!games || games.length === 0) {
+        container.innerHTML = '<p style="color:#666;">未探测到相关信号。</p>';
+        return;
     }
 
     games.forEach(game => {
         const savings = Math.round(game.savings);
         const metaScore = game.metacriticScore > 0 ? `<span class="tag meta">M ${game.metacriticScore}</span>` : '';
         const steamRate = game.steamRatingPercent > 0 ? `<span class="tag steam">👍 ${game.steamRatingPercent}%</span>` : '';
-        
-        // 尝试获取高清图
-        let imgUrl = game.thumb.replace('capsule_sm_120.jpg', 'header.jpg');
+        const imgUrl = game.thumb.replace('capsule_sm_120.jpg', 'header.jpg');
 
         const card = document.createElement('div');
         card.className = 'game-card fade-in';
@@ -156,4 +153,4 @@ function renderGames(games, container) {
 }
 </script>
 
-<?php include 'includes/footer.php'; ?>
+<?php include __DIR__ . '/includes/footer.php'; ?>

@@ -1,20 +1,22 @@
 <?php
-require 'includes/db.php';
+require_once __DIR__ . '/includes/db.php';
+require_once __DIR__ . '/includes/helpers.php';
 
-// 下达命令：我是主页，不用导航栏
 $page_title = "灵感传输终端";
-$style = "index"; 
-$show_nav = false; 
+$style = "index";
+$show_nav = false;
 
-include 'includes/header.php'; 
+include __DIR__ . '/includes/header.php';
 
-// 🟢 1. 查询是否有正在进行的广播
-$notice_sql = "SELECT * FROM announcements WHERE is_active = 1 ORDER BY id DESC LIMIT 1";
-$notice_res = $conn->query($notice_sql);
+// 查询当前是否有一条生效中的广播。
 $active_notice = null;
+$stmt = $conn->prepare("SELECT * FROM announcements WHERE is_active = 1 ORDER BY id DESC LIMIT 1");
+$stmt->execute();
+$notice_res = $stmt->get_result();
 if ($notice_res && $notice_res->num_rows > 0) {
     $active_notice = $notice_res->fetch_assoc();
 }
+$stmt->close();
 ?>
 
 <?php if ($active_notice): ?>
@@ -31,7 +33,7 @@ if ($notice_res && $notice_res->num_rows > 0) {
             </div>
         </div>
         <div class="modal-footer">
-            <button class="confirm-btn" onclick="markAsRead(<?php echo $active_notice['id']; ?>)">收到信号</button>
+            <button class="confirm-btn" onclick="markAsRead(<?php echo (int) $active_notice['id']; ?>)">收到信号</button>
         </div>
     </div>
 </div>
@@ -68,22 +70,17 @@ if ($notice_res && $notice_res->num_rows > 0) {
 </div>
 
 <script>
-// --- 弹窗逻辑 ---
 <?php if ($active_notice): ?>
-document.addEventListener("DOMContentLoaded", function() {
-    const noticeId = "<?php echo $active_notice['id']; ?>"; // 当前公告的唯一ID
-    
-    // 检查本地存储：用户是否看过这个ID的公告？
+document.addEventListener("DOMContentLoaded", function () {
+    const noticeId = "<?php echo (int) $active_notice['id']; ?>";
+
     if (!localStorage.getItem('read_notice_' + noticeId)) {
-        // 没看过 -> 显示弹窗
         document.getElementById('global-modal').style.display = 'flex';
     }
 });
 
 function markAsRead(id) {
-    // 1. 记在小本本上：这个ID我看过了
     localStorage.setItem('read_notice_' + id, 'true');
-    // 2. 关闭弹窗
     closeNotice();
 }
 
@@ -92,3 +89,5 @@ function closeNotice() {
 }
 <?php endif; ?>
 </script>
+
+<?php include __DIR__ . '/includes/footer.php'; ?>

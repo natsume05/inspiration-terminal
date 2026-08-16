@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($page_title) ? $page_title : '灵感传输终端'; ?></title>
+    <title><?php echo isset($page_title) ? e($page_title) : '灵感传输终端'; ?></title>
 
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0b0c10">
     <link rel="apple-touch-icon" href="assets/images/app-icon.png">
-    
+
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
@@ -21,70 +21,64 @@
 
     <link rel="stylesheet" href="assets/css/index.css?v=<?php echo time(); ?>">
 
-    <?php if (isset($style) && $style == 'tools'): ?>
-        <link rel="stylesheet" href="assets/css/tools.css?v=<?php echo time(); ?>">
-    <?php elseif (isset($style) && $style == 'blog'): ?>
-        <link rel="stylesheet" href="assets/css/blog.css?v=<?php echo time(); ?>">
-    <?php elseif (isset($style) && $style == 'community'): ?>
-        <link rel="stylesheet" href="assets/css/community.css?v=<?php echo time(); ?>">
-    <?php elseif (isset($style) && $style == 'steam'): ?>
-        <link rel="stylesheet" href="assets/css/steam.css?v=<?php echo time(); ?>">
-    <?php elseif (isset($style) && $style == 'tools_sub'): ?>
-        <link rel="stylesheet" href="assets/css/tools_sub.css?v=<?php echo time(); ?>">        
-    <?php elseif (isset($style) && $style == 'lobby'): ?>
-        <link rel="stylesheet" href="assets/css/community_lobby.css?v=<?php echo time(); ?>">    
-    <?php elseif (isset($style) && $style == 'shop'): ?>
-        <link rel="stylesheet" href="assets/css/shop.css?v=<?php echo time(); ?>">    
-    <?php endif; ?>
+    <?php
+    // 页面风格 -> 对应样式表映射，避免冗长的 if/elseif 链。
+    $style_map = [
+        'tools'     => 'assets/css/tools.css',
+        'blog'      => 'assets/css/blog.css',
+        'community' => 'assets/css/community.css',
+        'steam'     => 'assets/css/steam.css',
+        'tools_sub' => 'assets/css/tools_sub.css',
+        'lobby'     => 'assets/css/community_lobby.css',
+        'shop'      => 'assets/css/shop.css',
+    ];
+    if (!empty($style) && isset($style_map[$style])) {
+        echo '<link rel="stylesheet" href="' . $style_map[$style] . '?v=' . time() . '">';
+    }
+    ?>
 
     <link rel="stylesheet" href="assets/libs/highlight.css">
 
     <script src="assets/libs/marked.min.js"></script>
-    
     <script src="assets/libs/highlight.min.js"></script>
     <script src="assets/libs/xml.min.js"></script>
     <script src="assets/libs/javascript.min.js"></script>
-    <script src="assets/libs/languages/php.min.js"></script>
     <script src="assets/libs/css.min.js"></script>
     <script src="assets/libs/sql.min.js"></script>
-
     <script src="assets/libs/purify.min.js"></script>
 
     <script>
-        // 初始化检查
         document.addEventListener('DOMContentLoaded', () => {
-            if(typeof hljs !== 'undefined') hljs.highlightAll();
+            if (typeof hljs !== 'undefined') hljs.highlightAll();
         });
     </script>
 </head>
 <body>
     <?php
+    $nav_uid = current_user_id();
     $has_unread = false;
-    if (isset($_SESSION['user_id'])) {
-        $uid = $_SESSION['user_id'];
-        $n_sql = "SELECT COUNT(*) as count FROM notifications WHERE user_id = $uid AND is_read = 0";
-        $n_res = $conn->query($n_sql);
-        if ($n_res && $n_res->fetch_assoc()['count'] > 0) {
+    if ($nav_uid > 0) {
+        $stmt = $conn->prepare("SELECT COUNT(*) AS count FROM notifications WHERE user_id = ? AND is_read = 0");
+        $stmt->bind_param('i', $nav_uid);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($result && $result->fetch_assoc()['count'] > 0) {
             $has_unread = true;
         }
+        $stmt->close();
     }
     ?>
 
-    <?php if (isset($show_nav) && $show_nav == true): ?>
-        <div id="particles"></div> <header>
-            <h1><?php echo $page_title; ?></h1>
+    <?php if (!empty($show_nav)): ?>
+        <div id="particles"></div>
+        <header>
+            <h1><?php echo e($page_title); ?></h1>
             <p class="subtitle">“在此刻下你的思想，也许会有回响……”</p>
-            
+
             <div class="user-bar" style="margin-top:10px;">
-                <?php if(isset($_SESSION['user_id'])): 
-                    // 获取头像 (这里做一个简单的 Session 缓存优化，实际最好查库，但为了性能先这样)
-                    // 建议：登录时就把 avatar 存进 Session，或者这里简单查一下
-                    // 为了简单，我们先用默认图占位，或者你需要去 login.php 把 avatar 也存进 $_SESSION
-                    $u_avatar = isset($_SESSION['avatar']) ? $_SESSION['avatar'] : 'default.png';
-                    $nav_avatar = ($u_avatar != 'default.png') ? "assets/uploads/avatars/$u_avatar" : "assets/images/default.png";
-                ?>
-                    <img src="<?php echo $nav_avatar; ?>" style="width:24px; height:24px; border-radius:50%; vertical-align:middle; margin-right:5px; border:1px solid #45a29e;">
-                    <span><?php echo htmlspecialchars($_SESSION['username']); ?></span>
+                <?php if ($nav_uid > 0): ?>
+                    <img src="<?php echo e(get_avatar_url(isset($_SESSION['avatar']) ? $_SESSION['avatar'] : '')); ?>" style="width:24px; height:24px; border-radius:50%; vertical-align:middle; margin-right:5px; border:1px solid #45a29e;">
+                    <span><?php echo e($_SESSION['username']); ?></span>
                     <a href="profile.php" class="nav-link" style="position:relative;">
                         个人中心
                         <?php if ($has_unread): ?>
