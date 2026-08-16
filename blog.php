@@ -132,7 +132,7 @@ include __DIR__ . '/includes/header.php';
 </div>
 
 <script>
-function copyLink(id) {
+function sharePost(id) {
     const url = window.location.origin + window.location.pathname + "#post-" + id;
     navigator.clipboard.writeText(url).then(() => alert('链接已复制！'));
 }

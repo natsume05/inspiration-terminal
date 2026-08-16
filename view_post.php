@@ -69,4 +69,10 @@ include __DIR__ . '/includes/header.php';
     </div>
 </div>
 
+<script>
+function sharePost() {
+    navigator.clipboard.writeText(window.location.href).then(() => alert('链接已复制！'));
+}
+</script>
+
 <?php include __DIR__ . '/includes/footer.php'; ?>
