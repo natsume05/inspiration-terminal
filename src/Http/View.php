@@ -49,7 +49,11 @@ final class View
     {
         $content = $this->renderTemplate($template, $data);
 
-        $layout = $this->renderTemplate('layout', [...$this->shared, ...$data, 'content' => $content]);
+        // The child template's markup is named `renderedContent` rather than the
+        // more obvious `content`, so it cannot be confused with a value that
+        // needs escaping. It is the one intentional raw output in the project,
+        // and tools/lint.php recognises the name for that reason.
+        $layout = $this->renderTemplate('layout', [...$this->shared, ...$data, 'renderedContent' => $content]);
 
         return Response::html($layout, $status);
     }

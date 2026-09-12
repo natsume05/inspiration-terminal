@@ -52,15 +52,15 @@ $navState = static function (string $path): string {
     <a class="brand" href="/"><?= View::escape($siteName) ?></a>
 
     <nav class="site-nav" aria-label="主导航">
-        <a class="<?= $navState('/') ?>" href="/">首页</a>
-        <a class="<?= $navState('/blog') ?>" href="/blog">日志</a>
+        <a class="<?= View::escape($navState('/')) ?>" href="/">首页</a>
+        <a class="<?= View::escape($navState('/blog')) ?>" href="/blog">日志</a>
         <?php if ($currentUser !== null): ?>
-            <a class="<?= $navState('/community') ?>" href="/community">社区</a>
-            <a class="<?= $navState('/tools') ?>" href="/tools">百宝箱</a>
-            <a class="<?= $navState('/notes') ?>" href="/notes">思维殿堂</a>
+            <a class="<?= View::escape($navState('/community')) ?>" href="/community">社区</a>
+            <a class="<?= View::escape($navState('/tools')) ?>" href="/tools">百宝箱</a>
+            <a class="<?= View::escape($navState('/notes')) ?>" href="/notes">思维殿堂</a>
         <?php endif; ?>
         <?php if ($isModerator): ?>
-            <a class="<?= $navState('/admin') ?>" href="/admin">控制台</a>
+            <a class="<?= View::escape($navState('/admin')) ?>" href="/admin">控制台</a>
         <?php endif; ?>
     </nav>
 
@@ -93,7 +93,7 @@ $navState = static function (string $path): string {
 <?php endif; ?>
 
 <main id="main" class="site-main">
-    <?= $content ?>
+    <?= $renderedContent ?>
 </main>
 
 <footer class="site-footer">

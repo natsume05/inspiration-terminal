@@ -23,8 +23,25 @@ if (!is_dir($storageDirectory) && !mkdir($storageDirectory, 0755, true) && !is_d
 
 $databasePath = $storageDirectory . '/dev.sqlite';
 
-if (is_file($databasePath)) {
-    unlink($databasePath);
+// SQLite in WAL mode keeps its committed state in `-wal` and `-shm` sidecar
+// files. Removing only the main file leaves those behind, and a later process
+// can then read a mix of the new database and the old journal — which shows up
+// as a freshly seeded database that appears empty. All three are removed here.
+$sidecars = [$databasePath, $databasePath . '-wal', $databasePath . '-shm'];
+
+foreach ($sidecars as $file) {
+    if (!is_file($file)) {
+        continue;
+    }
+
+    if (!@unlink($file)) {
+        fwrite(STDERR, sprintf(
+            'Cannot remove %s. A running server is probably holding it open; stop it and retry.%s',
+            basename($file),
+            PHP_EOL,
+        ));
+        exit(1);
+    }
 }
 
 $database = Database::boot([
