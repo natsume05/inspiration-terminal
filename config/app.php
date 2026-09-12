@@ -56,7 +56,12 @@ return [
             "default-src 'self'",
             "script-src 'self'",
             "style-src 'self' 'unsafe-inline'",
-            "img-src 'self' data:",
+            // The Steam panel renders capsule images that CheapShark serves from
+            // its own CDN, so image sources are the one place this policy has to
+            // name a third party. Everything else stays same-origin: note that
+            // scripts, styles and connections are all still restricted to 'self',
+            // and no third-party script is ever loaded.
+            "img-src 'self' data: https://shared.fastly.steamstatic.com https://shared.akamai.steamstatic.com https://cdn.cloudflare.steamstatic.com",
             "media-src 'self'",
             "font-src 'self'",
             "connect-src 'self'",

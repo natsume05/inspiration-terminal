@@ -1,10 +1,16 @@
 <?php
 
 /**
- * One-off check that the new modules work against the development database.
+ * Check that every module works against a real database file.
  *
- * Run with the same environment as the dev server:
- *   DB_DRIVER=sqlite DB_SQLITE_PATH=storage/dev.sqlite APP_KEY=... php tools/module-smoke.php
+ * The target database is taken from `DB_SQLITE_PATH` rather than defaulting to
+ * `storage/dev.sqlite`. This script creates a `smoke_owner` account and a sample
+ * blog entry, so pointing it at the development database leaves those rows behind
+ * and they turn up in screenshots and demos. `tests/` covers the same modules in
+ * memory; this script exists for the cases that need a file-backed database.
+ *
+ *   DB_DRIVER=sqlite DB_SQLITE_PATH=storage/smoke.sqlite \
+ *     APP_KEY=<32-byte-key> php tools/module-smoke.php
  */
 
 declare(strict_types=1);
@@ -28,9 +34,20 @@ use App\Service\NotificationService;
 use App\Service\SteamService;
 use App\Support\Config;
 
+$databasePath = getenv('DB_SQLITE_PATH');
+
+if ($databasePath === false || $databasePath === '') {
+    fwrite(STDERR, 'Set DB_SQLITE_PATH to a throwaway database file, for example:' . PHP_EOL);
+    fwrite(STDERR, '  DB_SQLITE_PATH=storage/smoke.sqlite php tools/module-smoke.php' . PHP_EOL);
+    fwrite(STDERR, PHP_EOL . 'Refusing to fall back to the development database, so smoke fixtures' . PHP_EOL);
+    fwrite(STDERR, 'cannot end up in the data used for screenshots and demos.' . PHP_EOL);
+
+    exit(2);
+}
+
 $database = Database::boot([
     'driver' => 'sqlite',
-    'sqlite_path' => $basePath . '/storage/dev.sqlite',
+    'sqlite_path' => $databasePath,
 ]);
 
 $config = Config::fromFile($basePath . '/config/app.php');

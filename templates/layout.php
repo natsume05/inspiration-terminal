@@ -42,6 +42,8 @@ $navState = static function (string $path): string {
     <title><?= View::escape($pageTitle !== '' ? $pageTitle . ' · ' . $siteName : $siteName) ?></title>
     <meta name="description" content="<?= View::escape($siteName) ?>——集博客、工具箱与匿名社区于一体的个人门户网站。">
     <meta name="color-scheme" content="dark">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/assets/images/app-icon.svg">
     <link rel="stylesheet" href="/assets/css/app.css">
     <link rel="manifest" href="/manifest.json">
 </head>

@@ -1,0 +1,59 @@
+# Normalise line endings in the repository, and mark what is binary.
+#
+# The project is developed on Windows but deployed and tested on Linux, so
+# without this the same file can be checked out with different endings on
+# different machines. That difference is invisible until it is not: a diff shows
+# every line as changed, or a shell script fails because of a carriage return its
+# author cannot see.
+
+# Default: keep files as they are in the working tree, normalise to LF in the
+# repository. That is the setting a cross-platform project wants.
+* text=auto eol=lf
+
+# ---------------------------------------------------------------------------
+# Explicit text types
+# ---------------------------------------------------------------------------
+*.php   text
+*.md    text
+*.sql   text
+*.json  text
+*.yml   text
+*.yaml  text
+*.css   text
+*.js    text
+*.svg   text
+*.xml   text
+*.html  text
+*.sh    text eol=lf
+
+# ---------------------------------------------------------------------------
+# Windows-specific script types keep CRLF, because their interpreters expect it
+# ---------------------------------------------------------------------------
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# ---------------------------------------------------------------------------
+# Binary: never diff, never merge, never convert
+# ---------------------------------------------------------------------------
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.mp3   binary
+*.mp4   binary
+*.zip   binary
+*.sqlite binary
+*.sqlite-wal binary
+*.sqlite-shm binary
+
+# ---------------------------------------------------------------------------
+# Generated or vendored: exclude from language statistics, and collapse in diffs
+# ---------------------------------------------------------------------------
+public/assets/js/vendor/*.js  linguist-vendored
+composer.lock                 linguist-generated -diff

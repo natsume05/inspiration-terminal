@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="灵感传输终端">
+    <!--
+        Simplified from app-icon.svg so the mark stays legible at 16px, where the
+        rings and satellites of the full icon collapse into noise.
+    -->
+    <rect width="32" height="32" rx="7" fill="#0b0c10"/>
+    <circle cx="16" cy="15" r="7.5" fill="none" stroke="#66fcf1" stroke-width="2.2"/>
+    <circle cx="16" cy="15" r="2.6" fill="#66fcf1"/>
+    <ellipse cx="16" cy="15" rx="13" ry="4.2" fill="none" stroke="#45a29e" stroke-width="1.6" opacity="0.8"/>
+</svg>

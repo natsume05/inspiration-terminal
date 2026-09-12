@@ -1,0 +1,96 @@
+# Third-party notices
+
+This project bundles a small amount of third-party code and ships media that is
+not mine. Both are recorded here, because "the repository has a LICENSE file" is
+not by itself an answer to "what is actually in here".
+
+---
+
+## Bundled code
+
+These are committed to the repository rather than installed, because the project
+has no build step and no package manager. Each file keeps its upstream licence
+banner at the top.
+
+### marked
+
+- **Version:** 12.0.0
+- **Licence:** MIT
+- **Upstream:** <https://github.com/markedjs/marked>
+- **File:** `public/assets/js/vendor/marked.min.js`
+- **Used for:** converting Markdown to HTML for blog entries.
+
+### DOMPurify
+
+- **Version:** 3.0.6
+- **Licence:** Apache License 2.0 **or** Mozilla Public License 2.0
+- **Upstream:** <https://github.com/cure53/DOMPurify>
+- **File:** `public/assets/js/vendor/purify.min.js`
+- **Used for:** sanitising the HTML that `marked` produces.
+
+**Both are required.** `marked` performs no sanitisation and its own
+documentation says so; Markdown permits raw HTML, so a single
+`<img src=x onerror=...>` in a blog entry would execute if its output were
+inserted into the page directly. The rendering path is always
+`marked` → DOMPurify → DOM. See `public/assets/js/vendor/README.md` for the
+update procedure.
+
+Both licences are permissive and compatible with the MIT licence covering this
+project's own code.
+
+---
+
+## Server-side dependencies
+
+None are bundled. The application deliberately requires no Composer packages at
+runtime, so there is no vendor tree to audit.
+
+It does rely on PHP extensions: `pdo_mysql` or `pdo_sqlite`, `mbstring`, `json`,
+and — depending on which features are used — `gd` for image conversion,
+`curl` for the GitHub and Steam integrations, and `openssl` for encrypting
+private notes. These are distributed with PHP itself under the PHP Licence.
+
+---
+
+## Media assets
+
+| Asset | Location | Status |
+|---|---|---|
+| Application icon | `public/assets/images/app-icon.svg` | Created for this project |
+| Placeholder avatar | `public/assets/images/default-avatar.svg` | Created for this project |
+| Screenshots | `docs/images/` | Captured from this project's own interface |
+
+### Music
+
+The deployed site previously played a background track on the blog page.
+
+> **Action required before publishing this repository widely.** The audio file is
+> third-party music. If it is still shipped in the site's assets, confirm that its
+> licence permits redistribution — most commercial game soundtracks do not. If it
+> does not, either remove it or replace it with a track under a permissive
+> licence. This file is not part of the repository's tracked source, but the
+> deployed site serves it.
+
+### Site imagery
+
+Artwork used as post covers or backgrounds may originate from the games whose
+aesthetic the interface draws on. Those images are **not** covered by this
+repository's licences. Treat them as the property of their respective rights
+holders and replace them before any public or commercial reuse.
+
+---
+
+## Reporting an omission
+
+If you are a rights holder and believe something here is used without
+permission, please open an issue or use the contact details on the site. It will
+be removed or replaced.
+
+---
+
+## A note on the personal references
+
+The interface takes visual and naming cues from several games — the dark
+starfield palette, and terms such as "Stardust" and "Void". These are stylistic
+references in a personal project, not affiliation with or endorsement by any of
+those games or their publishers.
