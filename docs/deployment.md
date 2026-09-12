@@ -90,6 +90,23 @@ php bin/migrate.php --status    # show what has run
 php bin/seed.php                # optional: categories, shop items, demo account
 ```
 
+On Windows with XAMPP, `php` is usually not on `PATH`, so the command reports
+that it is not recognised. Either call the interpreter by its full path:
+
+```powershell
+D:\XAMPP\php\php.exe bin\migrate.php
+D:\XAMPP\php\php.exe bin\migrate.php --status
+D:\XAMPP\php\php.exe bin\seed.php
+D:\XAMPP\php\php.exe tools\verify-deployment.php
+```
+
+…or add it to `PATH` for the current session:
+
+```powershell
+$env:Path += ';D:\XAMPP\php'
+php bin/migrate.php
+```
+
 ### 4. Make `storage/` writable
 
 Sessions and uploads are written under `storage/`:
