@@ -161,8 +161,11 @@ php tools/lint.php            # 静态检查
 
 | 文档 | 内容 |
 |---|---|
+| [`docs/project-overview.md`](docs/project-overview.md) | 项目全貌：规模数字、23 张表设计、请求流向、四个关键数据流、已知边界 |
 | [`docs/security.md`](docs/security.md) | 威胁模型、已实现措施、已知边界，以及 strict mode 问题的完整说明 |
 | [`docs/deployment.md`](docs/deployment.md) | 从 XAMPP 到生产服务器的完整步骤 |
+| [`docs/interview-questions.md`](docs/interview-questions.md) | 40 题问答，围绕本项目的真实设计与缺陷 |
+| [`docs/resume-entry.md`](docs/resume-entry.md) | 项目经历描述，含可举证的规模数字 |
 | [`public/assets/js/vendor/README.md`](public/assets/js/vendor/README.md) | 前端依赖库的版本、许可与为何随仓库分发 |
 
 ---
