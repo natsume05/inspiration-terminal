@@ -7,7 +7,7 @@
 [![PHP](https://img.shields.io/badge/PHP-8.1%20%7C%208.2%20%7C%208.3-777BB4)](https://www.php.net/)
 [![MySQL](https://img.shields.io/badge/MySQL%20%2F%20MariaDB-supported-4479A1)](https://mariadb.org/)
 [![Tests](https://img.shields.io/badge/tests-92%20assertions-brightgreen)](tests/)
-[![Licence](https://img.shields.io/badge/licence-MIT-blue)](LICENSE-CODE.md)
+[![Licence](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
 **[English](README.en.md)** · 中文
 
@@ -423,7 +423,7 @@ SQL 只允许出现在 Repository
 | [`docs/release-notes-v2.0.0.md`](docs/release-notes-v2.0.0.md) | v2.0.0 的发布说明（含升级注意事项） |
 | [`SECURITY.md`](SECURITY.md) | 漏洞报送方式与支持范围 |
 | [`NOTICE`](NOTICE) | 第三方组件与媒体素材的授权情况 |
-| [`LICENSE-CODE.md`](LICENSE-CODE.md) | 代码授权：MIT |
+| [`LICENSE`](LICENSE) | 代码授权：MIT |
 | [`LICENSE-CONTENT.md`](LICENSE-CONTENT.md) | 文字与站点内容授权：CC BY-NC-ND 4.0 |
 
 两份 README 靠人工维护，英文版可能比这里慢半拍——上面的数字与结论以中文版为准。
@@ -431,7 +431,9 @@ SQL 只允许出现在 Repository
 
 两份授权是分开的：代码可以自由取用，站点上的文字和文章不行。
 分文件、分名字写，是为了让“到底哪份授权管什么”一眼可辨，
-而不是让人在两个都叫 LICENSE 的文件之间猜。
+而不是让人在两个都叫 LICENSE 的文件之间猜。代码那份仍然叫 `LICENSE`，
+因为**托管平台只会识别这个文件名**——改名成 `LICENSE-CODE.md` 之后，
+仓库侧边栏的授权会变成 `NOASSERTION`，那比命名整齐更糟。
 
 ---
 
@@ -543,7 +545,7 @@ GitHub 界面和 shell 历史里的凭据。没有东西会抱怨，代价要等
 
 ## 授权
 
-- **代码**：[MIT](LICENSE-CODE.md) —— 随便用，包括商用。
+- **代码**：[MIT](LICENSE) —— 随便用，包括商用。
 - **站点内容**（文章、截图、文案、图片）：[CC BY-NC-ND 4.0](LICENSE-CONTENT.md) ——
   可以引用和转载（需署名与链接），不可商用、不可改编后再发布。
 - **第三方组件**：见 [`NOTICE`](NOTICE)。随仓库分发的 `marked`（MIT）与

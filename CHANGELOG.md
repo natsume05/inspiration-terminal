@@ -68,6 +68,12 @@ green run on SQLite, plus one found by the new documentation gate.
 
 ### Changed
 
+- **The code licence is at `LICENSE`, and the content licence stays at
+  `LICENSE-CONTENT.md`.** Naming the code licence `LICENSE-CODE.md` made the
+  repository report its licence as `NOASSERTION`: hosting platforms recognise only
+  the plain `LICENSE` filename, so the two files were unambiguous to a reader and
+  invisible to a licence scanner. The explanation of which covers what lives in
+  both files and in the README.
 - **The screenshot pipeline reports more.** It signs out before the signed-out
   captures, checks that every image inside the viewport actually decoded, captures
   named sections that used to be cropped away, and no longer excuses a duplicate.

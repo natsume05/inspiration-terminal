@@ -8,7 +8,7 @@
 [![PHP](https://img.shields.io/badge/PHP-8.1%20%7C%208.2%20%7C%208.3-777BB4)](https://www.php.net/)
 [![MySQL](https://img.shields.io/badge/MySQL%20%2F%20MariaDB-supported-4479A1)](https://mariadb.org/)
 [![Tests](https://img.shields.io/badge/tests-92%20assertions-brightgreen)](tests/)
-[![Licence](https://img.shields.io/badge/licence-MIT-blue)](LICENSE-CODE.md)
+[![Licence](https://img.shields.io/badge/licence-MIT-blue)](LICENSE)
 
 English · **[中文](README.md)**
 
@@ -470,12 +470,13 @@ Templates render; every value they print is escaped explicitly
 | [`docs/release-notes-v2.0.0.md`](docs/release-notes-v2.0.0.md) | The v2.0.0 release notes, including upgrade cautions |
 | [`SECURITY.md`](SECURITY.md) | How to report a vulnerability, and what is in scope |
 | [`NOTICE`](NOTICE) | Third-party components and media licensing |
-| [`LICENSE-CODE.md`](LICENSE-CODE.md) | Licence for the code: MIT |
+| [`LICENSE`](LICENSE) | Licence for the code: MIT |
 | [`LICENSE-CONTENT.md`](LICENSE-CONTENT.md) | Licence for the writing and site content: CC BY-NC-ND 4.0 |
 
 The two licences are separate on purpose: the code is free to take, the prose and
-articles are not. They carry distinct names so that which licence covers what is
-obvious at a glance, rather than a guess between two files both called LICENSE.
+articles are not. The code file keeps the plain `LICENSE` name because **hosting
+platforms only recognise that filename** — calling it `LICENSE-CODE.md` makes the
+repository report its licence as `NOASSERTION`, which is worse than an untidy name.
 
 Both READMEs are maintained by hand, so the English one may lag behind the Chinese
 one; where they disagree, the Chinese version is authoritative. `tools/check-docs.php`
@@ -606,7 +607,7 @@ the design, an issue is welcome.
 
 ## Licence
 
-- **Code**: [MIT](LICENSE-CODE.md) — use it freely, including commercially.
+- **Code**: [MIT](LICENSE) — use it freely, including commercially.
 - **Site content** (articles, screenshots, copy, images):
   [CC BY-NC-ND 4.0](LICENSE-CONTENT.md) — you may quote and repost it with attribution
   and a link; no commercial use, and no distributing modified versions.
