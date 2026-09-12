@@ -1,0 +1,84 @@
+# Container setup for local development and demos.
+#
+#   cp .env.example .env
+#   # put a 32-byte hex value in APP_KEY, then:
+#   docker compose up -d
+#   open http://localhost:8080
+#
+# The web root is the `public` directory, and the database schema is applied by
+# the `migrate` service before the application starts.
+
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: inspiration
+      MARIADB_USER: inspiration
+      MARIADB_PASSWORD: inspiration
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      # The application must not start before the database accepts connections.
+      test: ['CMD', 'healthcheck.sh', '--connect', '--innodb_initialized']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    ports:
+      - '3307:3306'
+
+  # Applies migrations and seeds demo data, then exits. `app` waits for it.
+  migrate:
+    build:
+      context: .
+      dockerfile: docker/php.Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_DRIVER: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: inspiration
+      DB_USERNAME: inspiration
+      DB_PASSWORD: inspiration
+      APP_KEY: ${APP_KEY:-0123456789abcdef0123456789abcdef}
+    command: sh -c "php bin/migrate.php && php bin/seed.php"
+    volumes:
+      - .:/app
+    restart: 'no'
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/php.Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      APP_ENV: local
+      APP_DEBUG: 'true'
+      APP_URL: http://localhost:8080
+      APP_KEY: ${APP_KEY:-0123456789abcdef0123456789abcdef}
+      DB_DRIVER: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: inspiration
+      DB_USERNAME: inspiration
+      DB_PASSWORD: inspiration
+      SESSION_COOKIE_SECURE: 'false'
+    volumes:
+      - .:/app
+      # Uploads live outside the source tree so a rebuild does not discard them.
+      - uploads:/app/storage/uploads
+    ports:
+      - '8080:8080'
+    # PHP's built-in server keeps the image small and needs no web server config.
+    # It is single-threaded, which is fine for development and demos.
+    command: php -S 0.0.0.0:8080 -t public
+
+volumes:
+  db-data:
+  uploads:

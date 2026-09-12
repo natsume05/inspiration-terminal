@@ -1,31 +1,33 @@
-# 忽略数据库与敏感配置文件（保护隐私）
-db.php
-api_search_github.php
-fetch_github.php
-includes/config.php
+# Secrets and local configuration
+.env
+.env.local
+.env.*.local
 
-# 忽略系统生成的垃圾文件
+# Generated storage: uploads, logs, SQLite files used by tests
+storage/
+*.sqlite
+*.sqlite-journal
+*.sqlite-wal
+*.sqlite-shm
+
+# Composer
+/vendor/
+composer.lock
+
+# Local editor and OS residue
+.vscode/
+.idea/
+.vs/
+*.swp
 .DS_Store
 Thumbs.db
 
-# 忽略本地上传的临时文件/日志
-*.log
-error_log
+# PHP tooling caches
+.phpunit.result.cache
+.phpunit.cache/
 
-# 忽略 IDE / 编辑器临时目录
-.vs/
-.vscode/
-.idea/
+# Old WordPress installation, kept out of the repository during its removal
+legacy-wordpress/
 
-# 忽略 Codex 本地工作区配置
-.agents/
-
-# 忽略本地设计素材目录
+# Local design assets and editor working copies
 网页设计素材/
-
-# 忽略托管环境标记文件（LiteSpeed / 缓存）
-.hcflag
-.litespeed_flag
-
-# 忽略用户上传内容（保留目录结构，不提交二进制资源）
-assets/uploads/

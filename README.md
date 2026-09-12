@@ -1,103 +1,185 @@
-# 🚀 灵感传输终端 (Inspiration Terminal)
+# 灵感传输终端 · Inspiration Terminal
 
-![Status](https://img.shields.io/badge/Status-Active-success) ![PHP](https://img.shields.io/badge/PHP-8.0+-777BB4) ![Style](https://img.shields.io/badge/Style-Outer%20Wilds-blue)
+> 一个用原生 PHP 手写的个人门户与社区网站：博客、匿名社区、游戏化经济系统与开发者工具箱。
+> **无框架、无 Composer 依赖、无前端构建步骤** —— `git clone` 之后就能跑。
 
-> “无论代价如何，在此刻下你的思想……”
-
-这是一个集成了**博客**、**工具箱**与**匿名社区**的个人门户网站。作为我的全栈开发入门项目，它融合了《星际拓荒》、《空洞骑士》与《原神》的视觉风格。
-
-## ✨ 功能特性 (Features)
-
-### 🌌 虚空梦语（社区版块）
-- **匿名发帖**：基于 MySQL 数据库的留言板机制。
-- **互动系统**：支持点赞（心跳特效）、评论（折叠/展开）与链接分享。
-- **人性化体验**：由 PHP 后端处理的“几分钟前”时间显示算法。
-- **权限管理**：管理员账号拥有删帖权限。
-
-### 👤 个人中心 (Profile)
-- **身份系统**：完整的注册/登录流程，含图形验证码。
-- **隐私空间**：加密存储的私人笔记功能。
-- **档案管理**：支持修改头像、签名与个人信息。
-
-### 🛠️ 提瓦特百宝箱
-- 实用工具导航聚合，动态分类切换。
-- **GitHub 开源猎手**：热门项目榜单与敏感内容过滤搜索。
-- **Steam 战略指挥室**：史低监控、大促日历与口碑榜单。
-
-## 📁 目录结构
-
-```
-inspiration/
-├── index.php              # 主页（广播弹窗 + 入口卡片）
-├── blog.php               # 深空日志（博客列表）
-├── view_post.php          # 日志详情页
-├── community.php          # 虚空枢纽（大厅）
-├── channel.php            # 深空频道（发帖/点赞/评论）
-├── profile.php            # 个人档案
-├── feedback.php           # 信号塔（反馈与答疑）
-├── private_notes.php      # 私密树洞
-├── secret_space.php       # 思维殿堂（私密笔记）
-├── delete_post.php        # 管理员删帖
-├── shop.php               # 星尘交易所
-├── games.php              # 娱乐终端（施工中）
-├── level_rules.php        # 等级协议说明
-├── tools.php              # 百宝箱入口
-├── tools_github.php       # GitHub 开源猎手
-├── tools_links.php        # 星际导航终端
-├── steam.php              # Steam 战略指挥室
-├── login.php / register.php / logout.php
-├── terms.php / privacy.php
-├── api_checkin.php        # 每日补给接口
-├── api_comment.php        # 评论接口
-├── api_like.php           # 点赞接口
-├── api_shop.php           # 商店/抽奖/装备接口
-├── api_search_github.php  # GitHub 搜索接口
-├── api_steam.php          # Steam 代理接口
-├── fetch_github.php       # 榜单数据抓取
-└── includes/
-    ├── config.php         # 常量与密钥
-    ├── db.php             # 数据库连接 + 会话初始化
-    ├── helpers.php        # 通用工具函数层
-    ├── drop_system.php    # 虚空掉落逻辑
-    ├── csrf.php           # CSRF 防护
-    ├── header.php         # 页面头部
-    ├── footer.php         # 页面底部
-    ├── image_helper.php   # 图片压缩 (WebP)
-    ├── level_system.php   # 经验与等级
-    └── item_loader.php    # 用户装扮加载
-```
-
-## 🛠️ 技术栈 (Tech Stack)
-
-- **Frontend**: HTML5, CSS3 (Flexbox/Grid), Vanilla JS
-- **Backend**: Native PHP（无框架纯手写，已验证 PHP 8.2）
-- **Database**: MySQL / MariaDB
-- **Environment**: XAMPP (Local), cPanel (Production)
-
-## 🚀 本地部署
-
-1. 使用 XAMPP 启动 Apache 与 MySQL，将项目放入 `htdocs/`。
-2. 创建数据库 `my_forum` 并导入数据表结构。
-3. 按需修改 `includes/db.php` 中的数据库连接信息。
-4. 在 `includes/config.php` 中通过环境变量 `GITHUB_TOKEN` 配置 GitHub API 令牌（用于榜单抓取与搜索）。
-5. 访问 `index.php`。
-
-> 安全提醒：`includes/config.php` 与 `includes/db.php` 已被 `.gitignore` 忽略，请勿将真实密钥提交到仓库。
-
-## 📸 预览 (Screenshots)
-
-![主页](assets/images/image.png)
-![深空日志](assets/images/image-1.png)
-![提瓦特百宝箱](assets/images/image-2.png)
-![虚空梦语](assets/images/image-3.png)
-
-## 📝 开发日志 (Dev Log)
-
-- **2026.08.16** - 代码结构重构：拆分通用工具层 `helpers.php`、掉落系统 `drop_system.php`；全面参数化 SQL 消除注入风险；修复点赞接口双 JSON、签到余额不同步、部分页面缺库依赖等隐性 bug；统一代码风格。
-- **2026.02.07** - 成功完成本地化部署 (XAMPP)，解决数据库编码与时区问题。
-- **2026.02.06** - 实现用户登录与图形验证码系统。
-- **2026.02.05** - 初步完成《空洞骑士》风格 UI 设计。
+[![Tests](https://github.com/natsume05/inspiration-terminal/actions/workflows/ci.yml/badge.svg)](https://github.com/natsume05/inspiration-terminal/actions/workflows/ci.yml)
+![PHP](https://img.shields.io/badge/PHP-8.1%2B-777BB4)
+![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-4479A1)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
-*Created by [MingMo](https://github.com/natsume05)*
+## 这是什么
+
+一个单人在业余时间做完并上线的全栈项目。它把三类东西放进同一个站点：
+
+| 板块 | 内容 |
+|---|---|
+| **深空日志** | 博客，支持封面图与 Markdown |
+| **虚空枢纽** | 匿名社区：发帖、评论、点赞、频道筛选、图片上传 |
+| **虚空经济** | 星尘虚拟货币：每日签到、概率掉落、分级抽奖、装备穿戴 |
+| **提瓦特百宝箱** | 工具箱：GitHub 开源榜单、Steam 折扣监控、链接导航 |
+
+---
+
+## 技术栈
+
+| 层 | 选型 | 说明 |
+|---|---|---|
+| 语言 | PHP 8.1+ | 严格类型（`declare(strict_types=1)`），PSR-4 自动加载 |
+| 数据库 | MySQL 8 / MariaDB | 手写 SQL + 预处理语句，23 张表 |
+| 数据访问 | PDO | 具名占位符，关闭预处理仿真，事务封装 |
+| 前端 | 原生 HTML / CSS / ES Modules | Flexbox + Grid，无构建工具、无框架 |
+| 测试 | 自研轻量测试框架 | 78 条断言，跑在 SQLite 上复刻生产 schema |
+| 部署 | Apache / Nginx | 文档根指向 `public/`，单入口前端控制器 |
+
+**为什么不用框架？** 这个项目的规模不需要框架的收益，而我更想把请求生命周期、SQL 边界、
+会话与安全这些底层链路真正写一遍。代价我也清楚：依赖注入、路由、迁移、模板转义这些
+框架替我解决的问题，都需要我自己写对，因此测试和文档在本项目里不是可选项。
+
+---
+
+## 快速开始
+
+### 方式一：Docker（不需要装任何东西）
+
+```bash
+git clone https://github.com/natsume05/inspiration-terminal.git
+cd inspiration-terminal
+cp .env.example .env
+# 生成一个应用密钥填进 APP_KEY
+php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"
+docker compose up -d
+```
+
+打开 <http://localhost:8080>，用 `demo@example.com` / `demo-password` 登录。
+
+### 方式二：本地 XAMPP / 已有 PHP 环境
+
+```bash
+git clone https://github.com/natsume05/inspiration-terminal.git
+cd inspiration-terminal
+cp .env.example .env
+```
+
+编辑 `.env`，至少填好 `APP_KEY` 与 `DB_*`：
+
+```bash
+php bin/migrate.php     # 建表
+php bin/seed.php        # 写入示例数据（可选）
+php -S 127.0.0.1:8080 -t public
+```
+
+> **文档根必须指向 `public/`**，而不是项目根目录。`public/index.php` 是唯一的入口文件，
+> 配置、迁移脚本、测试都在它之外，因此从 HTTP 层面无法访问。
+
+### 只想看看界面、不想装数据库
+
+```bash
+php bin/dev-sqlite.php
+DB_DRIVER=sqlite DB_SQLITE_PATH=storage/dev.sqlite \
+APP_KEY=0123456789abcdef0123456789abcdef \
+php -S 127.0.0.1:8080 -t public
+```
+
+---
+
+## 架构
+
+```
+inspiration-terminal/
+├── public/                 # 唯一的 Web 根
+│   ├── index.php           # 前端控制器
+│   └── assets/             # CSS 与 ES Module
+├── src/
+│   ├── Database/           # 连接、迁移器、SQLite 方言适配
+│   ├── Http/               # 请求、响应、路由、内核、视图
+│   ├── Repository/         # 数据访问，SQL 只出现在这一层
+│   ├── Security/           # 会话、CSRF、校验、加密、上传、安全头
+│   ├── Service/            # 业务规则
+│   └── Support/            # 配置与环境变量
+├── routes/web.php          # 路由表
+├── templates/              # 视图
+├── database/migrations/    # 迁移，按序号执行
+├── tests/                  # 测试套件
+├── bin/                    # 命令行入口
+└── docs/                   # 架构、数据库、安全模型、部署
+```
+
+**请求流向**：`public/index.php` → `Kernel`（装配依赖）→ `Router`（CSRF 校验）→
+控制器闭包 → `Repository`（SQL）→ `View`（转义渲染）→ `Response`（安全头）。
+
+关键设计约束：**SQL 只允许出现在 `src/Repository/`**，业务规则只允许出现在 `src/Service/`，
+模板只负责渲染。`tools/lint.php` 会检查这些边界。
+
+---
+
+## 测试
+
+```bash
+php tests/run.php            # 全部套件
+php tests/run.php --verbose   # 显示每条断言
+php tools/lint.php            # 静态检查
+```
+
+测试跑在 SQLite 上，但用的是**同一份生产 schema**：迁移文件是 MySQL DDL，
+`SqliteDialect` 负责翻译，因此外键、唯一约束、CHECK 约束在测试中同样生效。
+
+覆盖的关键行为：
+
+- 签到当天只能领取一次；重复请求不会污染每日计数器
+- 评论奖励每天封顶，无法刷取星尘
+- 购买失败不会扣款；重复购买不会重复扣款；余额不会变负
+- 点赞依赖唯一键去重，双击不会刷高赞数
+- 作者改名后，历史帖子依然能正确关联到同一账号
+- 上传：伪装成图片的脚本、超大文件、非 HTTP 上传来源全部被拒绝
+- 私密笔记：AES-GCM 加解密往返、篡改密文会被拒绝、换密钥无法解密
+
+---
+
+## 安全
+
+完整模型见 [`docs/security.md`](docs/security.md)。要点：
+
+| 威胁 | 措施 |
+|---|---|
+| SQL 注入 | 全部使用 PDO 具名占位符，关闭预处理仿真 |
+| XSS | 模板统一走 `View::escape()`；前端用 `textContent` 构造 DOM |
+| CSRF | 路由层统一强制校验，写接口无法遗漏 |
+| 密码破解 | `password_hash(PASSWORD_DEFAULT)` + 登录失败锁定 |
+| 会话固定 | 登录时轮换 Session ID；Cookie 为 `HttpOnly` + `SameSite` |
+| 越权 | 所有查询把 `user_id` 作为 SQL 条件，而非查出来后判断 |
+| 上传攻击 | 内容嗅探校验类型、限制体积与像素、重新编码为 WebP |
+| 密钥泄露 | 只从环境变量读取；`.env` 已被 `.gitignore` 排除 |
+| 点击劫持 | `X-Frame-Options: DENY` + CSP `frame-ancestors 'none'` |
+| 静态文件被当脚本执行 | 上传目录在文档根之外，由前端控制器转发 |
+
+---
+
+## 文档
+
+| 文档 | 内容 |
+|---|---|
+| [`docs/architecture.md`](docs/architecture.md) | 分层、依赖方向、为什么这么分 |
+| [`docs/database.md`](docs/database.md) | 23 张表的设计意图与关系 |
+| [`docs/security.md`](docs/security.md) | 威胁模型、已实现措施、已知边界 |
+| [`docs/deployment.md`](docs/deployment.md) | 从 XAMPP 到生产服务器的完整步骤 |
+| [`docs/migration-from-v1.md`](docs/migration-from-v1.md) | 从旧版本升级的完整迁移说明 |
+
+---
+
+## 已知边界
+
+这个项目是诚实交付的，下面这些限制是明确的，不是疏忽：
+
+- **没有使用框架**，因此路由与模板能力是刻意做小的；复杂项目应当选框架。
+- **没有队列**，图片处理与外部 API 调用都在请求内同步完成。
+- **没有多语言**，界面文案只有中文。
+- **限流是单机内存外的数据库实现**，多实例部署需要换成 Redis 之类的共享存储。
+
+---
+
+## 许可
+
+MIT，见 [LICENSE](LICENSE)。

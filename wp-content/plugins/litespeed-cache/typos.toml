@@ -1,7 +1,0 @@
-[files]
-extend-exclude = [
-  "**",
-  "!cli/**",
-  "!tpl/**",
-  "!autoload.php"
-]

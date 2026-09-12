@@ -1,8 +1,0 @@
-Lighthouse
-GTmetrix
-Google
-Pingdom
-bot
-spider
-PTST
-HeadlessChrome

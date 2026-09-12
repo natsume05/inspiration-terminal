@@ -1,0 +1,49 @@
+{
+    "name": "natsume05/inspiration-terminal",
+    "description": "A self-hosted personal portal and community platform built with vanilla PHP: blog, anonymous community with a gamified currency economy, and a developer toolbox. No framework, no build step.",
+    "type": "project",
+    "license": "MIT",
+    "keywords": ["php", "mysql", "community", "forum", "blog", "vanilla-php", "portfolio"],
+    "authors": [
+        {
+            "name": "natsume05"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "ext-pdo": "*",
+        "ext-pdo_mysql": "*",
+        "ext-json": "*",
+        "ext-mbstring": "*"
+    },
+    "suggest": {
+        "ext-gd": "Required for avatar and post image compression (WebP pipeline)",
+        "ext-curl": "Required for the GitHub and Steam toolbox integrations",
+        "ext-openssl": "Required for encrypted private notes"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit --colors=always",
+        "lint": "php tools/lint.php",
+        "migrate": "php bin/migrate.php",
+        "seed": "php bin/seed.php"
+    },
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
