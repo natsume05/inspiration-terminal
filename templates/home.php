@@ -6,10 +6,20 @@
  * @var string $siteName
  * @var array{id:int,name:string,role:string}|null $currentUser
  * @var list<array<string,mixed>> $categories
+ * @var array<string,mixed>|null $announcement
  */
 
 use App\Http\View;
+
+$announcement = $announcement ?? null;
 ?>
+<?php if ($announcement !== null): ?>
+    <aside class="announcement" role="note">
+        <strong>站内广播</strong>
+        <p><?= nl2br(View::escape($announcement['content'])) ?></p>
+    </aside>
+<?php endif; ?>
+
 <section class="hero">
     <h1><?= View::escape($siteName) ?></h1>
     <p class="hero-sub">一个集博客、工具箱与匿名社区于一体的个人门户。</p>

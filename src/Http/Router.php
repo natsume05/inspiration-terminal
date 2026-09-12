@@ -16,7 +16,7 @@ use RuntimeException;
  */
 final class Router
 {
-    /** @var array<string, array<string, callable>> Method to path to handler. */
+    /** @var array<string, list<array{pattern: string, handler: callable, names: list<string>}>> Method to routes. */
     private array $routes = [];
 
     /**
@@ -29,8 +29,8 @@ final class Router
     /**
      * Register a GET route.
      *
-     * @param string $path Route path.
-     * @param callable(Request): Response $handler Route handler.
+     * @param string $path Route path, optionally containing `{name}` placeholders.
+     * @param callable(Request, string...): Response $handler Route handler.
      * @return void
      */
     public function get(string $path, callable $handler): void
@@ -41,8 +41,8 @@ final class Router
     /**
      * Register a POST route.
      *
-     * @param string $path Route path.
-     * @param callable(Request): Response $handler Route handler.
+     * @param string $path Route path, optionally containing `{name}` placeholders.
+     * @param callable(Request, string...): Response $handler Route handler.
      * @return void
      */
     public function post(string $path, callable $handler): void
@@ -53,8 +53,8 @@ final class Router
     /**
      * Register a DELETE route.
      *
-     * @param string $path Route path.
-     * @param callable(Request): Response $handler Route handler.
+     * @param string $path Route path, optionally containing `{name}` placeholders.
+     * @param callable(Request, string...): Response $handler Route handler.
      * @return void
      */
     public function delete(string $path, callable $handler): void
@@ -65,9 +65,13 @@ final class Router
     /**
      * Register a handler for one method and path.
      *
+     * A `{name}` segment matches one path component and is passed to the handler
+     * as a string argument. Placeholders deliberately do not span slashes, so a
+     * slug can never swallow the rest of the path.
+     *
      * @param string $method HTTP method.
      * @param string $path Route path.
-     * @param callable(Request): Response $handler Route handler.
+     * @param callable $handler Route handler.
      * @return void
      */
     private function add(string $method, string $path, callable $handler): void
@@ -78,7 +82,22 @@ final class Router
             $normalised = '/';
         }
 
-        $this->routes[$method][$normalised] = $handler;
+        $names = [];
+        $regex = preg_replace_callback(
+            '/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/',
+            static function (array $matches) use (&$names): string {
+                $names[] = $matches[1];
+
+                return '([^/]+)';
+            },
+            $normalised,
+        );
+
+        $this->routes[$method][] = [
+            'pattern' => '#^' . ($regex ?? $normalised) . '$#',
+            'handler' => $handler,
+            'names' => $names,
+        ];
     }
 
     /**
@@ -97,19 +116,44 @@ final class Router
             return $this->csrfFailure($request);
         }
 
-        $handler = $this->routes[$request->method()][$path] ?? null;
+        $route = $this->match($request->method(), $path);
 
-        if ($handler === null) {
+        if ($route === null) {
             return $this->notFound($request);
         }
 
-        $response = $handler($request);
+        $response = ($route['handler'])($request, ...$route['parameters']);
 
         if (!$response instanceof Response) {
             throw new RuntimeException(sprintf('Route %s %s did not return a Response.', $request->method(), $path));
         }
 
         return $response;
+    }
+
+    /**
+     * Find the handler registered for a method and path.
+     *
+     * @param string $method HTTP method.
+     * @param string $path Request path.
+     * @return array{handler: callable, parameters: list<string>}|null The match, or null.
+     */
+    private function match(string $method, string $path): ?array
+    {
+        foreach ($this->routes[$method] ?? [] as $route) {
+            if (preg_match($route['pattern'], $path, $matches) !== 1) {
+                continue;
+            }
+
+            array_shift($matches);
+
+            return [
+                'handler' => $route['handler'],
+                'parameters' => array_map(static fn (mixed $value): string => rawurldecode((string) $value), $matches),
+            ];
+        }
+
+        return null;
     }
 
     /**
@@ -179,14 +223,16 @@ final class Router
     }
 
     /**
-     * @return array<string, list<string>> Registered paths grouped by method.
+     * @return array<string, list<string>> Registered patterns grouped by method.
      */
     public function registeredRoutes(): array
     {
         $summary = [];
 
-        foreach ($this->routes as $method => $paths) {
-            $summary[$method] = array_keys($paths);
+        foreach ($this->routes as $method => $routes) {
+            foreach ($routes as $route) {
+                $summary[$method][] = $route['pattern'];
+            }
         }
 
         return $summary;

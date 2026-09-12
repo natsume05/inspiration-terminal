@@ -75,7 +75,10 @@ foreach ($sourceDirectories as $directory) {
 
             // Rule 1: no SQL assembled with interpolated variables.
             // Parameter binding is the guarantee; interpolation reintroduces it.
-            if (preg_match('/\b(SELECT|INSERT|UPDATE|DELETE)\b/i', $line) === 1
+            // Keywords are matched in upper case only, because that is how SQL is
+            // written here. Matching case-insensitively flagged ordinary prose
+            // that happened to contain a word such as "insert".
+            if (preg_match('/\b(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|VALUES)\b/', $line) === 1
                 && preg_match('/\$\w+/', $line) === 1
                 && preg_match('/[\'"]\s*\.\s*\$\w+/', $line) === 1
             ) {

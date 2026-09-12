@@ -199,6 +199,22 @@ final class UserRepository
     }
 
     /**
+     * List the identifiers of every active account.
+     *
+     * Used to fan a site-wide announcement out to notifications. Suspended
+     * accounts are excluded: they cannot sign in, so a notification for them
+     * would never be read.
+     *
+     * @return list<int> Active account identifiers.
+     */
+    public function activeUserIds(): array
+    {
+        $rows = $this->database->select("SELECT id FROM users WHERE status = 'active' ORDER BY id ASC");
+
+        return array_map(static fn (array $row): int => (int) $row['id'], $rows);
+    }
+
+    /**
      * @param int $userId User identifier.
      * @return int Current stardust balance.
      */

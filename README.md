@@ -161,11 +161,25 @@ php tools/lint.php            # 静态检查
 
 | 文档 | 内容 |
 |---|---|
-| [`docs/architecture.md`](docs/architecture.md) | 分层、依赖方向、为什么这么分 |
-| [`docs/database.md`](docs/database.md) | 23 张表的设计意图与关系 |
-| [`docs/security.md`](docs/security.md) | 威胁模型、已实现措施、已知边界 |
+| [`docs/security.md`](docs/security.md) | 威胁模型、已实现措施、已知边界，以及 strict mode 问题的完整说明 |
 | [`docs/deployment.md`](docs/deployment.md) | 从 XAMPP 到生产服务器的完整步骤 |
-| [`docs/migration-from-v1.md`](docs/migration-from-v1.md) | 从旧版本升级的完整迁移说明 |
+| [`public/assets/js/vendor/README.md`](public/assets/js/vendor/README.md) | 前端依赖库的版本、许可与为何随仓库分发 |
+
+---
+
+## 功能模块
+
+| 路由 | 说明 | 权限 |
+|---|---|---|
+| `/` | 首页，展示管理员发布的站内广播与频道列表 | 公开 |
+| `/blog`、`/blog/{slug}` | 日志列表与详情，Markdown 渲染，支持访客评论与登录用户点赞 | 公开 |
+| `/community` | 社区动态：发帖、评论、点赞、频道筛选、图片上传 | 需登录 |
+| `/notes` | 思维殿堂：私密笔记，AES-256-GCM 加密存储 | 需登录 |
+| `/notifications` | 信号记录：评论、点赞、奖励与系统通知 | 需登录 |
+| `/feedback` | 信号塔：提交缺陷与建议，收到回复时通知 | 需登录 |
+| `/tools` | 百宝箱：导航聚合、GitHub 榜单检索、Steam 折扣监控 | 公开 |
+| `/admin` | 舰长控制台：广播、日志发布、导航管理、账号与反馈处理 | 版主／管理员 |
+| `/admin/audit` | 操作日志，记录登录与增删改的关键动作 | 版主／管理员 |
 
 ---
 
@@ -176,10 +190,14 @@ php tools/lint.php            # 静态检查
 - **没有使用框架**，因此路由与模板能力是刻意做小的；复杂项目应当选框架。
 - **没有队列**，图片处理与外部 API 调用都在请求内同步完成。
 - **没有多语言**，界面文案只有中文。
-- **限流是单机内存外的数据库实现**，多实例部署需要换成 Redis 之类的共享存储。
+- **限流是数据库实现**，多实例部署需要换成 Redis 之类的共享存储。
+- **`bin/migrate-legacy.php` 只支持 MySQL**，它按定义就是从旧的 MySQL 安装读取数据，
+  因此不像仓储层那样需要兼容 SQLite，也不在自动化测试覆盖范围内。
+- **日志 Markdown 在浏览器渲染**，因此关闭 JavaScript 时显示为纯文本（`<noscript>` 回退）。
+  渲染路径固定为 `marked` → `DOMPurify` → DOM，绝不直接插入 `marked` 的输出。
 
 ---
 
 ## 许可
 
-MIT，见 [LICENSE](LICENSE)。
+MIT，见 [LICENSE](LICENSE)。前端依赖库的许可见其 vendored 说明。

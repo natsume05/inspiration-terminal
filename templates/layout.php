@@ -7,6 +7,8 @@
  * @var array{id:int,name:string,role:string}|null $currentUser
  * @var string $csrfToken
  * @var array<string,string> $flashes
+ * @var bool $isModerator
+ * @var int $unreadNotifications
  * @var string $pageTitle
  * @var string $content
  */
@@ -16,6 +18,21 @@ use App\Http\View;
 $pageTitle = $pageTitle ?? '';
 $currentUser = $currentUser ?? null;
 $flashes = $flashes ?? [];
+$isModerator = $isModerator ?? false;
+$unreadNotifications = $unreadNotifications ?? 0;
+
+/**
+ * Mark the current navigation item so the reader can see where they are.
+ *
+ * @param string $path Target path.
+ * @return string Either `is-current` or an empty string.
+ */
+$navState = static function (string $path): string {
+    $current = parse_url((string) ($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
+    $current = is_string($current) ? rtrim($current, '/') : '/';
+
+    return $current === rtrim($path, '/') ? 'is-current' : '';
+};
 ?>
 <!DOCTYPE html>
 <html lang="zh-CN">
@@ -35,15 +52,27 @@ $flashes = $flashes ?? [];
     <a class="brand" href="/"><?= View::escape($siteName) ?></a>
 
     <nav class="site-nav" aria-label="主导航">
-        <a href="/">首页</a>
+        <a class="<?= $navState('/') ?>" href="/">首页</a>
+        <a class="<?= $navState('/blog') ?>" href="/blog">日志</a>
         <?php if ($currentUser !== null): ?>
-            <a href="/community">社区</a>
+            <a class="<?= $navState('/community') ?>" href="/community">社区</a>
+            <a class="<?= $navState('/tools') ?>" href="/tools">百宝箱</a>
+            <a class="<?= $navState('/notes') ?>" href="/notes">思维殿堂</a>
+        <?php endif; ?>
+        <?php if ($isModerator): ?>
+            <a class="<?= $navState('/admin') ?>" href="/admin">控制台</a>
         <?php endif; ?>
     </nav>
 
     <div class="site-account">
         <?php if ($currentUser !== null): ?>
-            <span class="account-name"><?= View::escape($currentUser['name']) ?></span>
+            <a class="account-link" href="/notifications">
+                信号
+                <?php if ($unreadNotifications > 0): ?>
+                    <span class="badge-count" aria-label="<?= (int) $unreadNotifications ?> 条未读"><?= (int) $unreadNotifications ?></span>
+                <?php endif; ?>
+            </a>
+            <a class="account-name" href="/profile"><?= View::escape($currentUser['name']) ?></a>
             <form method="post" action="/logout" class="inline-form">
                 <input type="hidden" name="csrf_token" value="<?= View::escape($csrfToken) ?>">
                 <button type="submit" class="btn btn-ghost">登出</button>
@@ -69,6 +98,13 @@ $flashes = $flashes ?? [];
 
 <footer class="site-footer">
     <p><?= View::escape($siteName) ?> · 原生 PHP 构建，无框架、无构建步骤。</p>
+    <?php if ($currentUser !== null): ?>
+        <p class="footer-links">
+            <a href="/feedback">信号塔</a> ·
+            <a href="/tools">百宝箱</a> ·
+            <a href="/notes">思维殿堂</a>
+        </p>
+    <?php endif; ?>
 </footer>
 
 <script type="module" src="/assets/js/app.js"></script>

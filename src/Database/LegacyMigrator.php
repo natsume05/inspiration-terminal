@@ -23,6 +23,11 @@ use Throwable;
  *
  * Each of those is handled explicitly rather than being allowed to abort the
  * run, and every step is idempotent so the migration can be re-run.
+ *
+ * This class deliberately uses MySQL-only syntax (`ON DUPLICATE KEY UPDATE`,
+ * `INSERT IGNORE`). It reads from a legacy MySQL installation by definition, so
+ * unlike the repositories it has no SQLite counterpart to stay compatible with
+ * and is not exercised by the automated suite.
  */
 final class LegacyMigrator
 {

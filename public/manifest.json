@@ -1,0 +1,19 @@
+{
+    "name": "灵感传输终端",
+    "short_name": "灵感终端",
+    "description": "集博客、工具箱与匿名社区于一体的个人门户。",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#0b0c10",
+    "theme_color": "#0b0c10",
+    "lang": "zh-CN",
+    "icons": [
+        {
+            "src": "/assets/images/app-icon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ]
+}

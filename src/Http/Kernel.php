@@ -16,7 +16,6 @@ use App\Security\Session;
 use App\Service\AuthService;
 use App\Service\EconomyService;
 use App\Support\Config;
-use App\Support\Env;
 
 /**
  * Application entry point: builds the object graph and dispatches one request.
@@ -51,12 +50,9 @@ final class Kernel
      */
     public function boot(): self
     {
-        // Load .env before configuration so environment overrides are visible.
-        Env::load($this->basePath . '/.env');
-
+        // The bootstrap already loaded `.env` and applied the application
+        // timezone, so every entry point — web or command line — agrees on both.
         $this->config = Config::fromFile($this->basePath . '/config/app.php');
-
-        date_default_timezone_set((string) $this->config->get('app.timezone', 'UTC'));
 
         // Errors are always logged, but only shown when debugging is enabled, so
         // a production deployment never leaks paths or credentials.
@@ -176,6 +172,103 @@ final class Kernel
     public function posts(): PostRepository
     {
         return new PostRepository($this->database);
+    }
+
+    /**
+     * Build the blog repository.
+     *
+     * @return \App\Repository\BlogRepository
+     */
+    public function blog(): \App\Repository\BlogRepository
+    {
+        return new \App\Repository\BlogRepository($this->database);
+    }
+
+    /**
+     * Build the encrypted note repository.
+     *
+     * @return \App\Repository\NoteRepository
+     */
+    public function notes(): \App\Repository\NoteRepository
+    {
+        return new \App\Repository\NoteRepository($this->database, $this->crypto());
+    }
+
+    /**
+     * Build the toolbox repository.
+     *
+     * @return \App\Repository\ToolRepository
+     */
+    public function tools(): \App\Repository\ToolRepository
+    {
+        return new \App\Repository\ToolRepository($this->database);
+    }
+
+    /**
+     * Build the notification service.
+     *
+     * @return \App\Service\NotificationService
+     */
+    public function notifications(): \App\Service\NotificationService
+    {
+        return new \App\Service\NotificationService(
+            new \App\Repository\NotificationRepository($this->database),
+            new \App\Repository\UserRepository($this->database),
+        );
+    }
+
+    /**
+     * Build the audit log repository.
+     *
+     * @return \App\Repository\AuditRepository
+     */
+    public function audit(): \App\Repository\AuditRepository
+    {
+        return new \App\Repository\AuditRepository($this->database);
+    }
+
+    /**
+     * Build the GitHub integration service.
+     *
+     * @return \App\Service\GithubService
+     */
+    public function github(): \App\Service\GithubService
+    {
+        return new \App\Service\GithubService(
+            new \App\Repository\ToolRepository($this->database),
+            new \App\Repository\ApiCacheRepository($this->database),
+            $this->config,
+        );
+    }
+
+    /**
+     * Build the Steam integration service.
+     *
+     * @return \App\Service\SteamService
+     */
+    public function steam(): \App\Service\SteamService
+    {
+        return new \App\Service\SteamService(
+            new \App\Repository\ApiCacheRepository($this->database),
+            $this->config,
+        );
+    }
+
+    /**
+     * Build the administration service.
+     *
+     * @return \App\Service\AdminService
+     */
+    public function admin(): \App\Service\AdminService
+    {
+        return new \App\Service\AdminService(
+            $this->database,
+            $this->blog(),
+            $this->tools(),
+            new \App\Repository\UserRepository($this->database),
+            $this->audit(),
+            $this->notifications(),
+        );
     }
 
     /**

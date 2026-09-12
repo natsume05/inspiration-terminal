@@ -1,14 +1,36 @@
 /**
  * Application entry point.
  *
- * Loads the module for the page that is actually present, so no page downloads
- * JavaScript it does not use. Previously every page carried inline script
- * blocks, which meant every visitor received all of it and none of it could be
- * tested or cached.
+ * Loads the behaviour each page actually uses, so no page downloads code for a
+ * feature it does not have. Previously every page carried inline script blocks,
+ * which meant every visitor received all of it and none of it could be cached.
  */
 
-import './community.js';
+import { renderMarkdown } from './markdown.js';
 
-// Reveal the current page in the console for quick manual verification that the
-// module graph loaded; harmless in production and useful when debugging.
-console.debug('[inspiration] front-end modules loaded');
+/**
+ * Decide which modules this page needs and load them.
+ *
+ * @returns {Promise<void>} Resolves once the required modules have run.
+ */
+async function boot() {
+    const jobs = [];
+
+    // Community interactions: likes, comments, and composing a post.
+    if (document.querySelector('[data-like], [data-comment-form], [data-compose-form]')) {
+        jobs.push(import('./community.js'));
+    }
+
+    // Blog interactions: liking an entry and commenting on it.
+    if (document.querySelector('[data-blog-like], [data-blog-comment-form]')) {
+        jobs.push(import('./blog.js'));
+    }
+
+    await Promise.all(jobs);
+
+    // Markdown is rendered after the behaviour modules attach, so a re-rendered
+    // comment list cannot detach a listener that was bound to its elements.
+    renderMarkdown();
+}
+
+void boot();

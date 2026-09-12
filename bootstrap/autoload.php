@@ -36,3 +36,10 @@ spl_autoload_register(static function (string $class): void {
         return;
     }
 });
+
+// Configuration and the application timezone are applied for every entry point,
+// including command-line scripts, so the web request path and a cron run cannot
+// disagree about what "now" means.
+require __DIR__ . '/runtime.php';
+
+bootstrap_runtime(dirname(__DIR__));
