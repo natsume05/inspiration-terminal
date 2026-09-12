@@ -26,4 +26,8 @@ This license covers the source code in this repository.
 
 It does not cover the site's editorial content — the posts, articles, images and
 copy that make up the deployed site. That content is licensed separately; see
-LICENSE-CONTENT and NOTICE.
+[LICENSE-CONTENT.md](LICENSE-CONTENT.md) and [NOTICE](NOTICE).
+
+The two licences sit side by side in the repository root because they cover
+different things. This file is the one that makes the code open source;
+`LICENSE-CONTENT.md` explains why the writing and imagery are not.

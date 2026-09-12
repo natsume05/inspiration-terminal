@@ -64,13 +64,28 @@ cp .env.example .env
 php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"
 ```
 
+That command prints a **64-character hexadecimal string**. It belongs in
+`APP_KEY` and nowhere else.
+
+> **`APP_KEY` and `GITHUB_TOKEN` are different kinds of secret and are not
+> interchangeable.** `APP_KEY` is generated locally from random bytes and never
+> leaves your machine; it derives the encryption key for private notes, so losing
+> it makes those notes permanently unreadable. `GITHUB_TOKEN` is issued by GitHub
+> and is used only to raise the API rate limit for the toolbox.
+>
+> Putting a `ghp_…` token into `APP_KEY` does not fail loudly — encryption still
+> runs, because any string of 16 characters or more is accepted. The result is
+> that note encryption is keyed by a credential that also lives in GitHub's
+> interface and in your shell history, which defeats the point of having a
+> separate application key. Check with `php tools/doctor.php` after editing.
+
 Edit `.env`:
 
 ```ini
 APP_ENV=production
 APP_DEBUG=false                 # must be false: it prints stack traces
 APP_URL=https://example.com
-APP_KEY=<the generated value>
+APP_KEY=<the 64-character hex value generated above>
 
 DB_DRIVER=mysql
 DB_HOST=127.0.0.1
@@ -80,6 +95,9 @@ DB_PASSWORD=<host-provided password>
 
 # Set true once the site is served over HTTPS.
 SESSION_COOKIE_SECURE=true
+
+# Optional. A fine-grained, read-only token; leave empty to run unauthenticated.
+# GITHUB_TOKEN=github_pat_...
 ```
 
 ### 3. Migrate
@@ -188,6 +206,29 @@ finds rather than aborting, and reports every repair as a warning:
 - [ ] Document root points at `public/`
 - [ ] `storage/` writable by the web server, and not reachable over HTTP
 - [ ] `php bin/migrate.php --status` reports nothing pending
+- [ ] `php tools/doctor.php` reports no failures
 - [ ] `php tools/verify-deployment.php` passes against the live database
 - [ ] Database user has only the privileges the application needs
 - [ ] Any token that has ever been committed has been rotated, not just removed
+
+### Rotating APP_KEY
+
+Rotating `APP_KEY` is not a configuration change like any other: it is the key for
+every private note. Notes written under the previous key cannot be read afterwards,
+and the notes page will say so rather than showing nothing —
+`（此笔记无法解密：密钥可能已更换，或数据已被修改。）` — one row at a time, which is the
+point: the alternative is silently empty notes.
+
+There is no re-encryption path, because the old key is exactly what you are trying to
+retire. Before rotating, decide which of these you want:
+
+1. **Accept the loss.** Correct when the notes are throwaway, or when the key was
+   exposed and keeping the notes is not worth the risk.
+2. **Re-encrypt first, while both keys are available.** Read the notes with the old
+   key, write them back with the new one, and only then retire the old value. This has
+   to happen while both keys still exist, so it is a planned operation rather than a
+   recovery step.
+
+The deployment this project runs was rotated once, for the reason above: the key slot
+held a GitHub token. One note was lost to it, which is how the failure mode is
+documented here rather than assumed.

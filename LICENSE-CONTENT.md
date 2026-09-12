@@ -1,7 +1,7 @@
 # Content licence — CC BY-NC-ND 4.0
 
 The **source code** in this repository is licensed under the MIT License (see
-[LICENSE](LICENSE)). The **editorial content is not**.
+[LICENSE-CODE.md](LICENSE-CODE.md)). The **editorial content is not**.
 
 This file explains the split, because "open source" does not automatically mean
 "the writing is yours to reuse".

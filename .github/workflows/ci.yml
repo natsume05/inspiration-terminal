@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [main]
 
-# Every job runs the same three gates a developer is expected to run locally,
+# Every job runs the same four gates a developer is expected to run locally,
 # so a passing local run predicts a passing build.
 jobs:
   test:
@@ -37,6 +37,9 @@ jobs:
 
       - name: Static analysis
         run: php tools/lint.php
+
+      - name: Documentation links and encoding
+        run: php tools/check-docs.php
 
       - name: Run the test suite
         run: php tests/run.php

@@ -115,5 +115,5 @@ php -r "echo bin2hex(random_bytes(32)), PHP_EOL;"   # put this in APP_KEY
 docker compose up -d
 ```
 
-See [`docs/deployment.md`](docs/deployment.md) for the non-Docker path and a
+See [`deployment.md`](deployment.md) for the non-Docker path and a
 post-deployment checklist.
