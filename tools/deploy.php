@@ -54,6 +54,13 @@ if (!is_dir($target) && !mkdir($target, 0755, true) && !is_dir($target)) {
 
 // Everything the running site needs. Development-only paths are deliberately
 // absent so they cannot be reached over HTTP.
+//
+// The licence files are here even though nothing reads them at runtime. The MIT
+// terms require the notice to travel with copies of the software, and a
+// deployment that omits them is distributing the code without the licence it is
+// distributed under. `tools/` and `tests/` stay out: they are not needed by the
+// running application and `tools/` would expose scripts over the web root if the
+// document root were ever misconfigured.
 $include = [
     'bin',
     'bootstrap',
@@ -65,6 +72,9 @@ $include = [
     'templates',
     'composer.json',
     'README.md',
+    'LICENSE',
+    'LICENSE-CONTENT.md',
+    'NOTICE',
 ];
 
 /**
