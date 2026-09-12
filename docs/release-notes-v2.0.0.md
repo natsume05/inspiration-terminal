@@ -16,7 +16,11 @@ in PHP and then wrote, which two concurrent requests can both pass.
   refused by the database and the counter is only incremented when a row was really
   created.
 - Balance changes are relative SQL updates with the check inside the `WHERE` clause:
-  `UPDATE ... SET stardust = stardust - :amount WHERE user_id = :id AND stardust >= :amount`.
+  `UPDATE ... SET stardust = stardust - :spend WHERE user_id = :user_id AND stardust >= :required`.
+  (The first version bound one `:amount` parameter twice. MySQL refuses a repeated named
+  placeholder, so the entire purchase path failed on the engine production uses while
+  every SQLite test passed. It is fixed in v2.0.1, and `tools/lint.php` now rejects a
+  repeated placeholder outright.)
 - One generic `rate_limits` table keyed on `(user_id, action, window_date)` replaces
   three per-feature counters, so a new throttled action needs no schema change.
 - Authors are referenced by integer id everywhere. Posts previously stored their

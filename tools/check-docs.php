@@ -32,6 +32,7 @@ $documents = [
     'docs/deployment.md',
     'docs/interview-questions.md',
     'docs/release-notes-v2.0.0.md',
+    'docs/release-notes-v2.0.1.md',
 ];
 
 /**

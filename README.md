@@ -420,6 +420,7 @@ SQL 只允许出现在 Repository
 | [`docs/deployment.md`](docs/deployment.md) | 从本地到生产服务器的完整步骤与检查清单 |
 | [`docs/interview-questions.md`](docs/interview-questions.md) | 40 题问答，围绕本项目的真实设计与缺陷 |
 | [`CHANGELOG.md`](CHANGELOG.md) | 版本变更记录 |
+| [`docs/release-notes-v2.0.1.md`](docs/release-notes-v2.0.1.md) | v2.0.1 发布说明：只在 MySQL 上出现的四个缺陷 |
 | [`docs/release-notes-v2.0.0.md`](docs/release-notes-v2.0.0.md) | v2.0.0 的发布说明（含升级注意事项） |
 | [`SECURITY.md`](SECURITY.md) | 漏洞报送方式与支持范围 |
 | [`NOTICE`](NOTICE) | 第三方组件与媒体素材的授权情况 |

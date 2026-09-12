@@ -11,7 +11,10 @@ steps in `docs/deployment.md`.
 
 ---
 
-## [Unreleased]
+## [2.0.1] — 2026-09-12
+
+Released the same day as 2.0.0, because every local gate was green and the defects
+below only appear on MySQL. Upgrading is a file replacement: no schema changes.
 
 ### Fixed
 
@@ -96,6 +99,9 @@ lists accomplishments is a marketing document.
   but there is no multi-process test that exercises them under real contention.
 - API error payloads are consistently `message` in new code, but a few older
   paths still return `msg`.
+- CI still runs on SQLite only. The module checks and the static analysis can be
+  pointed at MySQL, and that is how the defects below were found, but nothing runs
+  them there automatically.
 
 ---
 
@@ -202,5 +208,6 @@ The pre-release line. It was developed in public but never tagged or supported,
 and its schema is incompatible with 2.0.0. It is recorded here only so the
 version history has no unexplained gap.
 
-[Unreleased]: https://github.com/natsume05/inspiration-terminal/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/natsume05/inspiration-terminal/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/natsume05/inspiration-terminal/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/natsume05/inspiration-terminal/releases/tag/v2.0.0

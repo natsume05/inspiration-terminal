@@ -467,6 +467,7 @@ Templates render; every value they print is escaped explicitly
 | [`docs/deployment.md`](docs/deployment.md) | From a local checkout to production, with a checklist |
 | [`docs/interview-questions.md`](docs/interview-questions.md) | Forty questions on this project's real design and defects |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history |
+| [`docs/release-notes-v2.0.1.md`](docs/release-notes-v2.0.1.md) | The v2.0.1 release notes: four defects that only appear on MySQL |
 | [`docs/release-notes-v2.0.0.md`](docs/release-notes-v2.0.0.md) | The v2.0.0 release notes, including upgrade cautions |
 | [`SECURITY.md`](SECURITY.md) | How to report a vulnerability, and what is in scope |
 | [`NOTICE`](NOTICE) | Third-party components and media licensing |
