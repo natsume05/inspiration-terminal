@@ -170,14 +170,29 @@ final class ToolRepository
      */
     public function searchProjects(string $term, int $limit = 20): array
     {
+        // Three separate placeholders, never one used twice. MySQL with real
+        // prepared statements (`ATTR_EMULATE_PREPARES => false`) rejects a repeated
+        // named parameter with "Invalid parameter number", while SQLite accepts it
+        // — so a shared placeholder only ever fails on the engine that matters.
+        //
+        // `language` is searched as well as the name and description. It is often
+        // the only useful handle: several cached repositories carry no description
+        // at all, so searching "php" or "rust" would otherwise match nothing even
+        // when a repository in that language is sitting in the cache.
         $statement = $this->database->pdo()->prepare(
             'SELECT id, name, description, url, stars, language, list_type
              FROM github_projects
-             WHERE name LIKE :term OR description LIKE :term
+             WHERE name LIKE :term_name
+                OR description LIKE :term_description
+                OR language LIKE :term_language
              ORDER BY stars DESC
              LIMIT :limit',
         );
-        $statement->bindValue(':term', '%' . $term . '%');
+
+        $pattern = '%' . $term . '%';
+        $statement->bindValue(':term_name', $pattern);
+        $statement->bindValue(':term_description', $pattern);
+        $statement->bindValue(':term_language', $pattern);
         $statement->bindValue(':limit', $limit, \PDO::PARAM_INT);
         $statement->execute();
 

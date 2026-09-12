@@ -130,6 +130,59 @@ function inertReason(string $expression): ?string
     return null;
 }
 
+/**
+ * Find named parameters used more than once in a single SQL statement.
+ *
+ * MySQL rejects a repeated named placeholder with emulated prepares switched
+ * off, which is how this application configures PDO: `:id` twice in one
+ * statement is `SQLSTATE[HY093]: Invalid parameter number`. SQLite accepts it,
+ * so the mistake passes the test suite and the smoke script and then fails on
+ * the only engine that matters in production. It appeared twice in this code
+ * base before this rule existed — once in the toolbox search, once in the demo
+ * seeder — and neither time was the failure visible locally.
+ *
+ * Statements are read from string tokens rather than from lines because SQL here
+ * is written across several lines and only the whole literal shows the repeat.
+ *
+ * @param string $source File contents.
+ * @param string $relative Path shown in the report.
+ * @return list<string> One message per offending statement.
+ */
+function repeatedPlaceholderViolations(string $source, string $relative): array
+{
+    $violations = [];
+
+    foreach (token_get_all($source) as $token) {
+        if (!is_array($token)) {
+            continue;
+        }
+
+        $isString = in_array($token[0], [T_CONSTANT_ENCAPSED_STRING, T_ENCAPSED_AND_WHITESPACE], true);
+
+        if (!$isString || preg_match('/\b(SELECT|INSERT|UPDATE|DELETE|FROM|WHERE|VALUES)\b/', $token[1]) !== 1) {
+            continue;
+        }
+
+        preg_match_all('/:([a-zA-Z_]\w*)/', $token[1], $matches);
+
+        $counts = array_count_values($matches[1]);
+        $repeated = array_keys(array_filter($counts, static fn (int $count): bool => $count > 1));
+
+        if ($repeated === []) {
+            continue;
+        }
+
+        $violations[] = sprintf(
+            '%s:%d  SQL reuses the named parameter(s) %s; MySQL with emulated prepares off rejects that, so bind a separate placeholder for each use',
+            $relative,
+            $token[2],
+            implode(', ', array_map(static fn (string $name): string => ':' . $name, $repeated)),
+        );
+    }
+
+    return $violations;
+}
+
 foreach ($sourceDirectories as $directory) {
     foreach (phpFiles($basePath . '/' . $directory) as $file) {
         $filesChecked++;
@@ -145,6 +198,10 @@ foreach ($sourceDirectories as $directory) {
 
         $contents = (string) file_get_contents($file);
         $lines = explode("\n", $contents);
+
+        foreach (repeatedPlaceholderViolations($contents, $relative) as $violation) {
+            $violations[] = $violation;
+        }
 
         foreach ($lines as $index => $line) {
             $lineNumber = $index + 1;

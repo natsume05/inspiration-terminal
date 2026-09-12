@@ -14,6 +14,7 @@ use App\Http\Kernel;
 use App\Http\Request;
 use App\Http\Response;
 use App\Http\Router;
+use App\Repository\AuditRepository;
 
 return static function (Router $router, Kernel $kernel): void {
     $view = new App\Http\View(dirname(__DIR__) . '/templates');
@@ -40,6 +41,9 @@ return static function (Router $router, Kernel $kernel): void {
     $router->get('/', static fn (Request $request): Response => $view->render('home', [
         'pageTitle' => '首页',
         'categories' => $posts->categories(),
+        // Only the blog is readable without signing in, so this is the one kind
+        // of activity that can appear on the page every visitor lands on.
+        'entries' => $kernel->blog()->published(3, 0),
         // The administrator's broadcast is only useful if the page every visitor
         // lands on actually renders it.
         'announcement' => $kernel->admin()->activeAnnouncement(),
@@ -69,6 +73,7 @@ return static function (Router $router, Kernel $kernel): void {
             (string) $validator->value('username'),
             (string) $validator->value('password'),
             $request->ip(),
+            $request->userAgent(),
         );
 
         if (!$result['ok']) {
@@ -123,8 +128,8 @@ return static function (Router $router, Kernel $kernel): void {
         return Response::redirect('/login');
     });
 
-    $router->post('/logout', static function () use ($auth): Response {
-        $auth->logout();
+    $router->post('/logout', static function (Request $request) use ($auth): Response {
+        $auth->logout($request->ip(), $request->userAgent());
 
         return Response::redirect('/');
     });
@@ -178,6 +183,15 @@ return static function (Router $router, Kernel $kernel): void {
             (string) $validator->value('content'),
             '',
             $imagePath,
+        );
+
+        $kernel->audit()->record(
+            AuditRepository::POST_CREATED,
+            $auth->userId(),
+            'post',
+            $postId,
+            $request->ip(),
+            $request->userAgent(),
         );
 
         // The reward is capped per day, so posting cannot mint currency.
@@ -242,10 +256,19 @@ return static function (Router $router, Kernel $kernel): void {
             return Response::json(['ok' => false, 'message' => '该帖子不存在。'], 404);
         }
 
-        $posts->addComment(
+        $commentId = $posts->addComment(
             (int) $validator->value('post_id'),
             $auth->userId(),
             (string) $validator->value('content'),
+        );
+
+        $kernel->audit()->record(
+            AuditRepository::COMMENT_CREATED,
+            $auth->userId(),
+            'comment',
+            $commentId,
+            $request->ip(),
+            $request->userAgent(),
         );
 
         // Capped per day: the previous version allowed unlimited farming.
@@ -568,12 +591,18 @@ return static function (Router $router, Kernel $kernel): void {
         $results = $term !== '' ? $github->search($term) : [];
         $rankings = $term === '' ? $github->rankings() : ['trending' => [], 'all_time' => []];
 
+        // The cached total lets the page distinguish "nothing matched" from
+        // "nothing has been fetched yet". Without it those look identical, and the
+        // second one reads as a broken search.
+        $cachedTotal = $kernel->tools()->projectCount();
+
         return $view->render('tools/github', [
             'pageTitle' => 'GitHub 开源猎手',
             'term' => $term,
             'results' => $results,
             'trending' => $rankings['trending'],
             'allTime' => $rankings['all_time'],
+            'cachedTotal' => $cachedTotal,
         ]);
     });
 

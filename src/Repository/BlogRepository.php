@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repository;
 
 use App\Database\Database;
+use App\Support\Excerpt;
 
 /**
  * Data access for blog posts and their comments.
@@ -109,8 +110,9 @@ final class BlogRepository
      */
     public function create(int $authorId, string $title, string $content, ?string $coverImage = null, bool $published = true): int
     {
-        // Strip tags before truncating so the excerpt cannot contain half a tag.
-        $excerpt = mb_substr(trim(strip_tags($content)), 0, 320);
+        // Built from the Markdown source rather than from the raw text, so the
+        // excerpt cannot contain a heading marker, a code fence, or half a tag.
+        $excerpt = Excerpt::from($content, 320);
 
         return $this->database->insert(
             'INSERT INTO blog_posts (author_id, title, slug, excerpt, content, cover_image, is_published, published_at)
@@ -148,7 +150,7 @@ final class BlogRepository
                 'id' => $id,
                 'title' => $title,
                 'content' => $content,
-                'excerpt' => mb_substr(trim(strip_tags($content)), 0, 320),
+                'excerpt' => Excerpt::from($content, 320),
                 'cover' => $coverImage,
             ],
         );

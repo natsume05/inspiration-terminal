@@ -20,11 +20,52 @@ const baseUrl = process.argv[2] ?? 'http://127.0.0.1:8099';
 const outputDirectory = resolve(process.argv[3] ?? 'docs/images');
 const debuggingPort = process.env.CDP_PORT ?? '9222';
 
-/** Credentials for the demo administrator seeded by bin/seed-demo.php. */
-const credentials = { username: 'MingMo', password: 'demo-password' };
+/**
+ * Credentials for the pages behind sign-in.
+ *
+ * Overridable because the account that exists depends on how the database was
+ * populated: `bin/seed-demo.php` creates `MingMo` with `demo-password`, while a
+ * database imported from an older installation carries the original accounts and
+ * their original passwords.
+ *
+ *   CAPTURE_USER=someone CAPTURE_PASSWORD=secret node tools/capture-screenshots.mjs
+ */
+const credentials = {
+    username: process.env.CAPTURE_USER ?? 'MingMo',
+    password: process.env.CAPTURE_PASSWORD ?? 'demo-password',
+};
 
-const viewport = { width: 1440, height: 900 };
+const viewport = { width: 1440, height: 1000 };
 const mobileViewport = { width: 420, height: 900 };
+
+/**
+ * Scroll an element to the top of the viewport before the next capture.
+ *
+ * A viewport-only capture cuts the page at a fixed height, so a long page loses
+ * whatever sits below it — which is how a screenshot of the Steam page came to
+ * advertise a sale calendar that was not in the frame. Naming an element here
+ * gives that section a capture of its own instead of cropping it away.
+ *
+ * @param {Cdp} cdp Client.
+ * @param {string} selector CSS selector to bring into view.
+ * @returns {Promise<boolean>} True when the element was found.
+ */
+async function scrollTo(cdp, selector) {
+    const { result } = await cdp.send('Runtime.evaluate', {
+        expression: `(() => {
+            const node = document.querySelector(${JSON.stringify(selector)});
+            if (node === null) return false;
+            node.scrollIntoView({ block: 'start' });
+            return true;
+        })()`,
+        returnByValue: true,
+    });
+
+    // One frame for the scroll to apply and any lazy image to start loading.
+    await new Promise((r) => setTimeout(r, 400));
+
+    return result.value === true;
+}
 
 /**
  * Minimal DevTools Protocol client.
@@ -188,6 +229,49 @@ async function goto(cdp, path) {
 }
 
 /**
+ * Inspect every image on the page before it is captured.
+ *
+ * A page can look fine and still be full of empty boxes: an `<img>` whose source
+ * failed to load keeps its layout slot, so the screenshot shows a correctly
+ * sized hole where the artwork should be, and nothing in the HTML admits it. The
+ * Steam page is the reason this check exists — its deal thumbnails come from a
+ * third-party CDN.
+ *
+ * Only images inside the viewport count as pending. An image below the fold is
+ * still `loading="lazy"` on purpose and has not been given a reason to load yet,
+ * so treating it as a defect would make the report noise, and a report that
+ * cries wolf gets ignored.
+ *
+ * @param {Cdp} cdp Client.
+ * @returns {Promise<{total: number, broken: string[], pending: string[]}>} Findings.
+ */
+async function inspectImages(cdp) {
+    const { result } = await cdp.send('Runtime.evaluate', {
+        expression: `(() => {
+            const name = (image) => image.currentSrc || image.src;
+            const visible = (image) => {
+                const box = image.getBoundingClientRect();
+                return box.bottom > 0 && box.top < window.innerHeight
+                    && box.right > 0 && box.left < window.innerWidth;
+            };
+            const images = [...document.images];
+            return JSON.stringify({
+                total: images.length,
+                broken: images.filter((i) => i.complete && i.naturalWidth === 0).map(name),
+                pending: images.filter((i) => !i.complete && visible(i)).map(name),
+            });
+        })()`,
+        returnByValue: true,
+    });
+
+    try {
+        return JSON.parse(result.value);
+    } catch {
+        return { total: 0, broken: [], pending: [] };
+    }
+}
+
+/**
  * Capture the current page to a PNG file.
  *
  * The path, title and byte count are recorded with each capture, and the run
@@ -207,6 +291,16 @@ async function capture(cdp, name) {
     });
 
     const state = JSON.parse(result.value);
+    const images = await inspectImages(cdp);
+
+    if (images.broken.length > 0) {
+        problems.push(`${state.path}: ${images.broken.length} of ${images.total} image(s) failed to decode: ${images.broken.slice(0, 3).join(', ')}`);
+    }
+
+    if (images.pending.length > 0) {
+        problems.push(`${state.path}: ${images.pending.length} image(s) had not loaded when the page was captured: ${images.pending.slice(0, 3).join(', ')}`);
+    }
+
     const { data } = await cdp.send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
     const target = join(outputDirectory, `${name}.png`);
 
@@ -215,10 +309,10 @@ async function capture(cdp, name) {
     const buffer = Buffer.from(data, 'base64');
     await writeFile(target, buffer);
 
-    captures.push({ name, bytes: buffer.length, ...state });
+    captures.push({ name, bytes: buffer.length, images: images.total, ...state });
 
     console.log(
-        `  captured ${name}.png  ${(buffer.length / 1024).toFixed(1)} KB  ${state.path}  "${state.title}"`,
+        `  captured ${name}.png  ${(buffer.length / 1024).toFixed(1)} KB  ${images.total} image(s)  ${state.path}  "${state.title}"`,
     );
 }
 
@@ -291,6 +385,47 @@ async function signIn(cdp) {
 }
 
 /**
+ * End any existing session before the signed-out captures.
+ *
+ * The browser profile keeps cookies between runs, so a second run reaches `/login`
+ * already signed in, gets redirected to `/community`, and writes a logged-in page
+ * into the file that is supposed to show the sign-in form. Signing out first is
+ * what makes the signed-out captures actually signed out.
+ *
+ * @param {Cdp} cdp Client.
+ * @returns {Promise<boolean>} True when the session is gone afterwards.
+ */
+async function signOut(cdp) {
+    await goto(cdp, '/');
+
+    const { result } = await cdp.send('Runtime.evaluate', {
+        expression: `(() => {
+            const form = document.querySelector('form[action="/logout"]');
+            if (form === null) return 'already-signed-out';
+            form.submit();
+            return 'submitted';
+        })()`,
+        returnByValue: true,
+    });
+
+    if (result.value !== 'submitted') {
+        return true;
+    }
+
+    // The logout handler answers with a redirect, so the page is re-read once it
+    // has had time to arrive.
+    await new Promise((r) => setTimeout(r, 700));
+    await goto(cdp, '/');
+
+    const { result: state } = await cdp.send('Runtime.evaluate', {
+        expression: `document.querySelector('form[action="/logout"]') === null`,
+        returnByValue: true,
+    });
+
+    return state.value === true;
+}
+
+/**
  * Resize the viewport for the next captures.
  *
  * @param {Cdp} cdp Client.
@@ -352,16 +487,16 @@ const warnings = [];
 const captures = [];
 
 /**
- * Captures whose image is expected to repeat an earlier one.
+ * Captures whose image is legitimately expected to repeat an earlier one.
  *
- * `/tools` renders the same markup whether or not a session exists, so capturing
- * it a second time while signed in adds a file with no new information. Naming it
- * here keeps the duplicate check meaningful instead of training the reader to
- * ignore its warning.
+ * Empty on purpose. `/tools` used to render identically signed in and signed out,
+ * so its second capture was excused here; now that every signed-out capture is
+ * taken after an explicit sign-out, the two really do differ, and excusing them
+ * would only hide a sign-in that silently failed.
  *
  * @type {Set<string>}
  */
-const expectedDuplicates = new Set(['15-tools-signed-in']);
+const expectedDuplicates = new Set();
 
 /** Set once every page has been captured successfully. */
 let captured = false;
@@ -399,19 +534,30 @@ try {
     console.log('Opening the site...');
     await setViewport(cdp, viewport);
 
+    if (!await signOut(cdp)) {
+        problems.push('could not sign out, so the signed-out captures may show a logged-in page');
+    }
+
     // Public pages first, so a sign-in failure still leaves useful output.
     const publicPages = [
-        ['01-home', '/'],
-        ['02-blog', '/blog'],
-        ['03-tools', '/tools'],
-        ['04-tools-github', '/tools/github'],
-        ['05-tools-steam', '/tools/steam'],
-        ['06-login', '/login'],
+        { name: '01-home', path: '/' },
+        { name: '02-blog', path: '/blog' },
+        { name: '03-tools', path: '/tools' },
+        { name: '04-tools-github', path: '/tools/github' },
+        { name: '05-tools-steam', path: '/tools/steam', height: 1500 },
+        { name: '05b-tools-steam-calendar', path: '/tools/steam', scrollTo: '.calendar-grid' },
+        { name: '06-login', path: '/login' },
     ];
 
-    for (const [name, path] of publicPages) {
-        await goto(cdp, path);
-        await capture(cdp, name);
+    for (const page of publicPages) {
+        await setViewport(cdp, { width: viewport.width, height: page.height ?? viewport.height });
+        await goto(cdp, page.path);
+
+        if (page.scrollTo !== undefined && !await scrollTo(cdp, page.scrollTo)) {
+            problems.push(`${page.path}: ${page.scrollTo} was not found, so ${page.name} repeats the top of the page`);
+        }
+
+        await capture(cdp, page.name);
     }
 
     const blogPath = await firstBlogSlug(cdp);
@@ -419,6 +565,12 @@ try {
     if (blogPath !== null) {
         await goto(cdp, blogPath);
         await capture(cdp, '07-blog-entry');
+
+        if (!await scrollTo(cdp, '[data-blog-comments]')) {
+            problems.push(`${blogPath}: the comment list was not found`);
+        }
+
+        await capture(cdp, '07b-blog-entry-comments');
     } else {
         console.log('  skipped the blog detail page: no entry was linked');
     }
@@ -427,19 +579,26 @@ try {
     await signIn(cdp);
 
     const memberPages = [
-        ['08-community', '/community'],
-        ['09-notes', '/notes'],
-        ['10-notifications', '/notifications'],
-        ['11-profile', '/profile'],
-        ['12-feedback', '/feedback'],
-        ['13-admin', '/admin'],
-        ['14-admin-audit', '/admin/audit'],
-        ['15-tools-signed-in', '/tools'],
+        { name: '08-community', path: '/community', height: 1180 },
+        { name: '09-notes', path: '/notes' },
+        { name: '10-notifications', path: '/notifications' },
+        { name: '11-profile', path: '/profile' },
+        { name: '12-feedback', path: '/feedback' },
+        { name: '13-admin', path: '/admin' },
+        { name: '13b-admin-accounts', path: '/admin', scrollTo: '#admin-accounts', height: 760 },
+        { name: '14-admin-audit', path: '/admin/audit' },
+        { name: '15-tools-signed-in', path: '/tools' },
     ];
 
-    for (const [name, path] of memberPages) {
-        await goto(cdp, path);
-        await capture(cdp, name);
+    for (const page of memberPages) {
+        await setViewport(cdp, { width: viewport.width, height: page.height ?? viewport.height });
+        await goto(cdp, page.path);
+
+        if (page.scrollTo !== undefined && !await scrollTo(cdp, page.scrollTo)) {
+            problems.push(`${page.path}: ${page.scrollTo} was not found, so ${page.name} repeats the top of the page`);
+        }
+
+        await capture(cdp, page.name);
     }
 
     console.log('Capturing the mobile layout...');

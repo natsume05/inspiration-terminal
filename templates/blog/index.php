@@ -31,13 +31,17 @@ $announcement = $announcement ?? null;
     <?php endif; ?>
 
     <?php foreach ($entries as $entry): ?>
+        <?php
+        // The cover column is always present. Emitting it only when an entry has
+        // one left the list ragged, and a reader cannot tell a deliberate text-only
+        // card from a cover image that failed to load.
+        $cover = !empty($entry['cover_image']) ? (string) $entry['cover_image'] : '/assets/images/cover-missing.svg';
+        ?>
         <article class="blog-card">
-            <?php if (!empty($entry['cover_image'])): ?>
-                <a class="blog-cover-link" href="/blog/<?= urlencode((string) $entry['slug']) ?>">
-                    <img class="blog-cover" src="<?= View::escape($entry['cover_image']) ?>"
-                         alt="<?= View::escape($entry['title']) ?> 的封面" loading="lazy">
-                </a>
-            <?php endif; ?>
+            <a class="blog-cover-link" href="/blog/<?= urlencode((string) $entry['slug']) ?>">
+                <img class="blog-cover" src="<?= View::escape($cover) ?>"
+                     alt="<?= View::escape($entry['title']) ?> 的封面" loading="lazy">
+            </a>
 
             <div class="blog-body">
                 <h2 class="blog-title">

@@ -21,6 +21,11 @@ async function boot() {
         jobs.push(import('./community.js'));
     }
 
+    // The emoji palette only exists where a post can be written.
+    if (document.querySelector('[data-emoji-picker]')) {
+        jobs.push(import('./emoji.js'));
+    }
+
     // Blog interactions: liking an entry and commenting on it.
     if (document.querySelector('[data-blog-like], [data-blog-comment-form]')) {
         jobs.push(import('./blog.js'));
@@ -30,7 +35,7 @@ async function boot() {
 
     // Markdown is rendered after the behaviour modules attach, so a re-rendered
     // comment list cannot detach a listener that was bound to its elements.
-    renderMarkdown();
+    await renderMarkdown();
 }
 
 void boot();

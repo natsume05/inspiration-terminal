@@ -44,6 +44,7 @@ final class AuditRepository
      * @param int|null $targetId Entity identifier.
      * @param string $ipAddress Client address.
      * @param string $userAgent Client user agent.
+     * @param string|null $createdAt Event time, or null for now.
      * @return void
      */
     public function record(
@@ -53,12 +54,18 @@ final class AuditRepository
         ?int $targetId = null,
         string $ipAddress = '',
         string $userAgent = '',
+        ?string $createdAt = null,
     ): void {
         // The timestamp is supplied by PHP rather than by the database's
         // CURRENT_TIMESTAMP, so a row's time and the windows queried below are
         // always measured against the same clock. SQLite reports
         // CURRENT_TIMESTAMP in UTC, which would otherwise put every window query
         // off by the timezone offset.
+        //
+        // A caller may supply the time instead, which is only correct when it is
+        // recording an event that has already happened — the demo seeder writes
+        // the actions it performed under their own timestamps, so the log does not
+        // claim a week of activity happened in the same second.
         $this->database->execute(
             'INSERT INTO audit_logs (user_id, action, target_type, target_id, ip_address, user_agent, created_at)
              VALUES (:user_id, :action, :target_type, :target_id, :ip_address, :user_agent, :created_at)',
@@ -69,7 +76,7 @@ final class AuditRepository
                 'target_id' => $targetId,
                 'ip_address' => mb_substr($ipAddress, 0, 45),
                 'user_agent' => mb_substr($userAgent, 0, 255),
-                'created_at' => date('Y-m-d H:i:s'),
+                'created_at' => $createdAt ?? date('Y-m-d H:i:s'),
             ],
         );
     }

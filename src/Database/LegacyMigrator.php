@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Database;
 
 use App\Security\Crypto;
+use App\Support\Excerpt;
 use PDO;
 use Throwable;
 
@@ -140,7 +141,7 @@ final class LegacyMigrator
                     'id' => $id,
                     'display_name' => $username,
                     'bio' => mb_substr((string) ($row['bio'] ?? ''), 0, 255),
-                    'avatar' => (string) ($row['avatar'] ?? ''),
+                    'avatar' => $this->normaliseAvatarPath($row['avatar'] ?? null),
                     'title' => ($row['custom_title'] ?? null) === null ? null : mb_substr((string) $row['custom_title'], 0, 32),
                     'exp' => max(0, (int) ($row['exp'] ?? 0)),
                     'stardust' => max(0, (int) ($row['stardust'] ?? 0)),
@@ -242,7 +243,7 @@ final class LegacyMigrator
                     'category_id' => $categoryId,
                     'title' => '',
                     'content' => (string) ($row['content'] ?? ''),
-                    'image' => $this->nullIfBlank($row['image'] ?? null),
+                    'image' => $this->normaliseMediaPath($row['image'] ?? null, 'community'),
                     'created_at' => $createdAt,
                 ],
             );
@@ -376,9 +377,9 @@ final class LegacyMigrator
                     'author_id' => $this->ownerId(),
                     'title' => mb_substr($title, 0, 160),
                     'slug' => $this->slugify($title, $id),
-                    'excerpt' => mb_substr(trim(strip_tags((string) ($row['content'] ?? ''))), 0, 320),
+                    'excerpt' => Excerpt::from((string) ($row['content'] ?? ''), 320),
                     'content' => (string) ($row['content'] ?? ''),
-                    'cover' => $this->nullIfBlank($row['cover_image'] ?? null),
+                    'cover' => $this->normaliseMediaPath($row['cover_image'] ?? null, 'blog'),
                     'published' => $this->validDate($row['created_at'] ?? null),
                     'created_at' => $this->validDate($row['created_at'] ?? null),
                 ],
@@ -783,5 +784,64 @@ final class LegacyMigrator
         $value = trim((string) $value);
 
         return $value === '' ? null : $value;
+    }
+
+    /**
+     * Rewrite a stored media path into the absolute form the templates emit.
+     *
+     * The legacy schema stored paths relative to the site root, such as
+     * `assets/images/cover.webp`, and one column stored a bare filename. Both
+     * resolve differently on every page: on `/blog` the browser resolves
+     * `assets/images/cover.webp` against `/blog/`, so the image 404s on exactly the
+     * page that displays it.
+     *
+     * Everything becomes a leading-slash path, which resolves identically from any
+     * route. Bare filenames are pointed at their upload directory, because a name
+     * on its own carries no information about where it lives.
+     *
+     * @param mixed $value Stored path.
+     * @param string $uploadsSubdirectory Directory that bare filenames live in.
+     * @return string|null The normalised path, or null when there was none.
+     */
+    private function normaliseMediaPath(mixed $value, string $uploadsSubdirectory): ?string
+    {
+        $path = trim((string) $value);
+
+        if ($path === '') {
+            return null;
+        }
+
+        // Already absolute, or a remote URL: leave it as it is.
+        if (str_starts_with($path, '/') || preg_match('#^https?://#i', $path) === 1) {
+            return $path;
+        }
+
+        if (!str_contains($path, '/')) {
+            return '/uploads/' . trim($uploadsSubdirectory, '/') . '/' . $path;
+        }
+
+        return '/' . ltrim($path, '/');
+    }
+
+    /**
+     * Normalise the legacy default-avatar marker.
+     *
+     * The old code used the sentinel `default.png` to mean "no avatar uploaded".
+     * That is a bare filename with no directory, and it does not exist in the new
+     * tree, so it is mapped to an empty value and the view falls back to the
+     * built-in placeholder.
+     *
+     * @param mixed $value Stored avatar value.
+     * @return string A path to render, or an empty string for the built-in default.
+     */
+    private function normaliseAvatarPath(mixed $value): string
+    {
+        $path = trim((string) $value);
+
+        if ($path === '' || $path === 'default.png' || $path === 'default.jpg') {
+            return '';
+        }
+
+        return (string) $this->normaliseMediaPath($path, 'avatars');
     }
 }

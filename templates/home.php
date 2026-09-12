@@ -6,12 +6,14 @@
  * @var string $siteName
  * @var array{id:int,name:string,role:string}|null $currentUser
  * @var list<array<string,mixed>> $categories
+ * @var list<array<string,mixed>> $entries
  * @var array<string,mixed>|null $announcement
  */
 
 use App\Http\View;
 
 $announcement = $announcement ?? null;
+$entries = $entries ?? [];
 ?>
 <?php if ($announcement !== null): ?>
     <aside class="announcement" role="note">
@@ -33,6 +35,28 @@ $announcement = $announcement ?? null;
         <?php endif; ?>
     </div>
 </section>
+
+<?php if ($entries !== []): ?>
+    <section class="panel">
+        <h2>最近的日志</h2>
+        <ul class="entry-list">
+            <?php foreach ($entries as $entry): ?>
+                <li class="entry-item">
+                    <a class="entry-title" href="/blog/<?= urlencode((string) $entry['slug']) ?>">
+                        <?= View::escape($entry['title']) ?>
+                    </a>
+                    <time class="entry-time" datetime="<?= View::escape($entry['published_at'] ?? $entry['created_at']) ?>">
+                        <?= View::escape($entry['published_at'] ?? $entry['created_at']) ?>
+                    </time>
+                    <?php if (!empty($entry['excerpt'])): ?>
+                        <p class="entry-excerpt"><?= View::escape($entry['excerpt']) ?></p>
+                    <?php endif; ?>
+                </li>
+            <?php endforeach; ?>
+        </ul>
+        <p class="panel-more"><a href="/blog">全部日志 →</a></p>
+    </section>
+<?php endif; ?>
 
 <section class="panel">
     <h2>频道</h2>
@@ -58,4 +82,5 @@ $announcement = $announcement ?? null;
         <li>星尘经济的所有奖励都按天上限，无法刷取。</li>
         <li>私密笔记使用 AES-256-GCM 加密，密钥不落库。</li>
     </ul>
+    <p class="panel-more"><a href="https://github.com/natsume05/inspiration-terminal">源码与文档 →</a></p>
 </section>

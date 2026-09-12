@@ -124,7 +124,7 @@ $isAdmin = ($currentUser['role'] ?? '') === 'admin';
                 <tbody>
                     <?php foreach ($links as $link): ?>
                         <tr>
-                            <td><?= View::escape($link['icon']) ?> <?= View::escape($link['title']) ?></td>
+                            <td><?= View::escape($link['icon'] !== '' ? $link['icon'] : '🔗') ?> <?= View::escape($link['title']) ?></td>
                             <td><?= View::escape($link['category']) ?></td>
                             <td><a href="<?= View::escape($link['url']) ?>" target="_blank" rel="noopener noreferrer">访问</a></td>
                             <td>
@@ -142,7 +142,7 @@ $isAdmin = ($currentUser['role'] ?? '') === 'admin';
         <?php endif; ?>
     </section>
 
-    <section class="panel">
+    <section class="panel" id="admin-accounts">
         <h2>账号管理（<?= count($users) ?>）</h2>
 
         <table class="data-table">

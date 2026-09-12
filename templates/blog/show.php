@@ -35,7 +35,9 @@ $currentUser = $currentUser ?? null;
     <?php
     // Both libraries are UMD bundles, so they are loaded as classic scripts
     // before the module that uses them. They are served from this origin because
-    // the Content-Security-Policy restricts scripts to 'self'.
+    // the Content-Security-Policy restricts scripts to 'self'. Loading them here
+    // rather than from the module keeps the article from rendering empty for the
+    // length of a network round trip.
     ?>
     <script src="/assets/js/vendor/marked.min.js"></script>
     <script src="/assets/js/vendor/purify.min.js"></script>
@@ -43,13 +45,12 @@ $currentUser = $currentUser ?? null;
     <?php
     // The raw Markdown travels as a JSON string inside an attribute, so a
     // closing script tag in the content cannot escape the element. The browser
-    // module renders it through marked and then DOMPurify.
+    // module renders it through marked and then DOMPurify, and replaces the
+    // escaped source below — which stays visible if that never happens.
     ?>
     <div class="markdown-body"
          data-markdown-source="<?= View::escape(json_encode((string) $entry['content'], JSON_UNESCAPED_UNICODE)) ?>">
-        <noscript>
-            <pre class="markdown-fallback"><?= View::escape($entry['content']) ?></pre>
-        </noscript>
+        <pre class="markdown-fallback"><?= View::escape($entry['content']) ?></pre>
     </div>
 
     <footer class="blog-entry-footer">

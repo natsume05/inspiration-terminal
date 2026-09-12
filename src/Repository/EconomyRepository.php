@@ -53,10 +53,14 @@ final class EconomyRepository
             return false;
         }
 
+        // Three placeholders for one value, not two uses of `:amount`. MySQL with
+        // emulated prepares switched off rejects a named parameter that appears
+        // twice, and that is how this connection is configured; SQLite accepts it,
+        // which is why the test suite never saw this fail.
         $affected = $this->database->execute(
-            'UPDATE user_profiles SET stardust = stardust - :amount, updated_at = CURRENT_TIMESTAMP
-             WHERE user_id = :user_id AND stardust >= :amount',
-            ['amount' => $amount, 'user_id' => $userId],
+            'UPDATE user_profiles SET stardust = stardust - :spend, updated_at = CURRENT_TIMESTAMP
+             WHERE user_id = :user_id AND stardust >= :required',
+            ['spend' => $amount, 'user_id' => $userId, 'required' => $amount],
         );
 
         return $affected > 0;

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" role="img" aria-label="封面：地平线上的日出">
+    <!--
+        Cover artwork for a demo entry about a cross-platform defect. Drawn rather
+        than taken from somewhere, for the same reason as the other demo covers.
+    -->
+    <defs>
+        <linearGradient id="dawn" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0b0c10"/>
+            <stop offset="100%" stop-color="#2a2136"/>
+        </linearGradient>
+        <linearGradient id="sun" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#66fcf1"/>
+            <stop offset="100%" stop-color="#45a29e"/>
+        </linearGradient>
+    </defs>
+
+    <rect width="1200" height="480" fill="url(#dawn)"/>
+
+    <circle cx="600" cy="330" r="150" fill="url(#sun)" opacity="0.85"/>
+    <rect x="0" y="330" width="1200" height="150" fill="#0b0c10"/>
+
+    <g stroke="#7d8590" stroke-width="2" opacity="0.5">
+        <path d="M0 380h1200"/>
+        <path d="M0 430h1200"/>
+    </g>
+
+    <g stroke="#45a29e" stroke-width="3" opacity="0.6" fill="none">
+        <path d="M120 330l60-70 50 45 40-30 60 55"/>
+        <path d="M880 330l50-55 45 40 55-65 50 80"/>
+    </g>
+
+    <g fill="#c5c6c7" opacity="0.5">
+        <circle cx="180" cy="90" r="2"/>
+        <circle cx="420" cy="60" r="1.5"/>
+        <circle cx="760" cy="80" r="2"/>
+        <circle cx="1020" cy="130" r="1.5"/>
+    </g>
+</svg>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http;
 
 use App\Database\Database;
+use App\Repository\AuditRepository;
 use App\Repository\EconomyRepository;
 use App\Repository\PostRepository;
 use App\Repository\RateLimitRepository;
@@ -73,7 +74,13 @@ final class Kernel
         $this->csrf = new Csrf($this->session);
 
         $users = new UserRepository($this->database);
-        $this->auth = new AuthService($this->database, $users, $this->session, $this->csrf);
+        $this->auth = new AuthService(
+            $this->database,
+            $users,
+            $this->session,
+            $this->csrf,
+            new AuditRepository($this->database),
+        );
 
         return $this;
     }

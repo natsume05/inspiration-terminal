@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Database\Database;
+use App\Repository\AuditRepository;
 use App\Repository\UserRepository;
 use App\Security\Csrf;
 use App\Security\Session;
@@ -18,6 +19,11 @@ use App\Security\Session;
  *   * a failed-login throttle, without which passwords could be brute forced;
  *   * session id regeneration on login, defeating session fixation;
  *   * refusal to authenticate suspended accounts.
+ *
+ * Every outcome is also written to the audit log. The throttle below is keyed on
+ * the client address rather than the account, so without that record there is no
+ * way to see which accounts an address was guessing, or whether it moved on to
+ * another one after the lockout expired.
  */
 final class AuthService
 {
@@ -32,6 +38,7 @@ final class AuthService
         private readonly UserRepository $users,
         private readonly Session $session,
         private readonly Csrf $csrf,
+        private readonly AuditRepository $audit,
     ) {
     }
 
@@ -59,13 +66,18 @@ final class AuthService
      * @param string $username Login name.
      * @param string $password Plaintext password.
      * @param string $clientKey Value identifying the client, used for throttling.
+     * @param string $userAgent Client user agent, recorded with the outcome.
      * @return array{ok: bool, message: string, user_id?: int}
      */
-    public function attempt(string $username, string $password, string $clientKey): array
+    public function attempt(string $username, string $password, string $clientKey, string $userAgent = ''): array
     {
         $attemptKey = $this->attemptKey($clientKey, $username);
 
         if ($this->isLockedOut($attemptKey)) {
+            // Recorded too: a request the lockout refused is the clearest
+            // evidence that an address is still guessing.
+            $this->audit->record(AuditRepository::LOGIN_FAILED, null, '', null, $clientKey, $userAgent);
+
             return [
                 'ok' => false,
                 'message' => '尝试次数过多，请稍后再试。',
@@ -81,6 +93,7 @@ final class AuthService
 
         if (!is_array($user) || !$verified) {
             $this->recordFailure($attemptKey);
+            $this->audit->record(AuditRepository::LOGIN_FAILED, null, '', null, $clientKey, $userAgent);
 
             // A single message for both cases: revealing which part was wrong
             // would confirm whether an account exists.
@@ -88,11 +101,14 @@ final class AuthService
         }
 
         if (($user['status'] ?? 'active') !== 'active') {
+            $this->audit->record(AuditRepository::LOGIN_FAILED, (int) $user['id'], '', null, $clientKey, $userAgent);
+
             return ['ok' => false, 'message' => '该账号已被停用。'];
         }
 
         $this->clearFailures($attemptKey);
         $this->startSession((int) $user['id'], $user);
+        $this->audit->record(AuditRepository::LOGIN_SUCCEEDED, (int) $user['id'], '', null, $clientKey, $userAgent);
 
         return ['ok' => true, 'message' => '登录成功。', 'user_id' => (int) $user['id']];
     }
@@ -122,10 +138,21 @@ final class AuthService
     /**
      * End the current session.
      *
+     * The actor has to be read before the session is destroyed, which is why the
+     * record is written here rather than by the route that calls this.
+     *
+     * @param string $clientKey Value identifying the client.
+     * @param string $userAgent Client user agent.
      * @return void
      */
-    public function logout(): void
+    public function logout(string $clientKey = '', string $userAgent = ''): void
     {
+        $userId = $this->userId();
+
+        if ($userId > 0) {
+            $this->audit->record(AuditRepository::LOGOUT, $userId, '', null, $clientKey, $userAgent);
+        }
+
         $this->session->destroy();
     }
 

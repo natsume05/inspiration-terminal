@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" role="img" aria-label="封面：数据库表与连线">
+    <!--
+        Cover artwork for a demo entry about constraints. Drawn rather than
+        taken from somewhere, for the same reason as the other demo covers.
+    -->
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#12141d"/>
+            <stop offset="100%" stop-color="#0b0c10"/>
+        </linearGradient>
+    </defs>
+
+    <rect width="1200" height="480" fill="url(#bg)"/>
+
+    <g stroke="#45a29e" stroke-width="3" fill="none" opacity="0.7">
+        <path d="M300 150h180"/>
+        <path d="M300 330h180"/>
+        <path d="M660 150h180"/>
+        <path d="M660 330h180"/>
+        <path d="M480 150v180"/>
+        <path d="M660 150v180"/>
+        <path d="M840 150v180"/>
+    </g>
+
+    <g fill="#11141b" stroke="#66fcf1" stroke-width="3">
+        <rect x="180" y="105" width="120" height="90" rx="10"/>
+        <rect x="180" y="285" width="120" height="90" rx="10"/>
+        <rect x="480" y="105" width="120" height="90" rx="10"/>
+        <rect x="480" y="285" width="120" height="90" rx="10"/>
+        <rect x="780" y="105" width="120" height="90" rx="10"/>
+        <rect x="780" y="285" width="120" height="90" rx="10"/>
+    </g>
+
+    <g fill="#7d8590">
+        <rect x="204" y="132" width="72" height="8" rx="4"/>
+        <rect x="204" y="152" width="52" height="8" rx="4"/>
+        <rect x="204" y="312" width="72" height="8" rx="4"/>
+        <rect x="504" y="132" width="72" height="8" rx="4"/>
+        <rect x="504" y="152" width="52" height="8" rx="4"/>
+        <rect x="504" y="312" width="72" height="8" rx="4"/>
+        <rect x="804" y="132" width="72" height="8" rx="4"/>
+        <rect x="804" y="312" width="72" height="8" rx="4"/>
+        <rect x="804" y="332" width="52" height="8" rx="4"/>
+    </g>
+</svg>

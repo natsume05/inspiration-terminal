@@ -126,9 +126,21 @@ h3 {
 /* --- Layout ---------------------------------------------------------- */
 
 .site-main {
-    max-width: 860px;
+    /*
+     * Widened for desktop. At 860px a 1440px window left a wide empty margin down
+     * one side of the feed and the toolbox, which made both pages read as
+     * unfinished. Prose is still bounded — reading comfort is what the cap is for —
+     * but the bound is now sized for a real window.
+     */
+    max-width: 1040px;
     margin: 0 auto;
     padding: 32px 20px 64px;
+}
+
+@media (max-width: 640px) {
+    .site-main {
+        max-width: none;
+    }
 }
 
 .site-footer {
@@ -345,6 +357,77 @@ h3 {
     padding: 6px;
 }
 
+.compose-hint {
+    margin: 0;
+    font-size: 0.78rem;
+}
+
+.compose-hint code {
+    font-size: 0.78rem;
+    padding: 1px 4px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+}
+
+.emoji-picker {
+    position: relative;
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+
+.tool-btn {
+    padding: 8px 14px;
+    font: inherit;
+    font-size: 0.85rem;
+    color: var(--text);
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.tool-btn:hover {
+    border-color: var(--accent-dim);
+    color: var(--accent);
+}
+
+.emoji-panel {
+    position: absolute;
+    z-index: 20;
+    top: calc(100% + 6px);
+    left: 0;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 2px;
+    width: 320px;
+    max-height: 210px;
+    overflow-y: auto;
+    padding: 8px;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgb(0 0 0 / 45%);
+}
+
+.emoji-panel[hidden] {
+    display: none;
+}
+
+.emoji-option {
+    padding: 2px;
+    font-size: 1.05rem;
+    line-height: 1.4;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.emoji-option:hover {
+    background: var(--bg-input);
+    border-color: var(--accent-dim);
+}
+
 .form-status {
     margin: 0;
     font-size: 0.85rem;
@@ -398,10 +481,23 @@ h3 {
     color: var(--text-muted);
 }
 
-.post-body p {
-    margin: 0 0 10px;
+/*
+ * The plain-text body. It is what the server emits and what the reader keeps
+ * when the Markdown bundles do not arrive, so it has to stand on its own, and
+ * it must not leak `pre-wrap` into rendered Markdown paragraphs.
+ */
+.post-text {
+    margin: 0;
     white-space: pre-wrap;
     word-break: break-word;
+}
+
+.post-body.markdown-body > :first-child {
+    margin-top: 0;
+}
+
+.post-body.markdown-body > :last-child {
+    margin-bottom: 0;
 }
 
 .post-image {
@@ -506,6 +602,53 @@ h3 {
     font-size: 1.1rem;
 }
 
+/* --- Home page entry list --------------------------------------------- */
+
+.entry-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.entry-item {
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+}
+
+.entry-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.entry-title {
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.entry-title:hover {
+    color: var(--accent);
+}
+
+.entry-time {
+    margin-left: 10px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.entry-excerpt {
+    margin: 4px 0 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.panel-more {
+    margin: 14px 0 0;
+    font-size: 0.85rem;
+}
+
 /* --- Navigation state ------------------------------------------------- */
 
 .site-nav a.is-current {
@@ -562,11 +705,12 @@ h3 {
     overflow: hidden;
     margin-bottom: var(--gap);
     display: grid;
-    grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
-}
-
-.blog-card:not(:has(.blog-cover-link)) {
-    grid-template-columns: minmax(0, 1fr);
+    /*
+     * The cover column is sized to the artwork. A wider column than the image
+     * needs left a tall empty region beside short entries, because the cover
+     * stretched to the card's full height.
+     */
+    grid-template-columns: minmax(0, 210px) minmax(0, 1fr);
 }
 
 .blog-cover-link {
@@ -576,7 +720,8 @@ h3 {
 .blog-cover {
     width: 100%;
     height: 100%;
-    min-height: 140px;
+    min-height: 120px;
+    max-height: 220px;
     object-fit: cover;
     display: block;
 }
@@ -937,22 +1082,44 @@ h3 {
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 12px;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+@media (min-width: 620px) {
+    .link-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1000px) {
+    .link-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
 }
 
 .link-card {
     border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 12px;
+    border-radius: 8px;
+    padding: 12px 14px;
+    background: var(--bg-input);
+    min-width: 0;
+}
+
+.link-card:hover {
+    border-color: var(--accent-dim);
 }
 
 .link-icon {
-    margin-right: 6px;
+    flex: 0 0 auto;
+    font-size: 1.05rem;
+    line-height: 1;
 }
 
 .link-title {
     color: var(--text-strong);
+    font-weight: 600;
+    word-break: break-word;
 }
 
 .link-desc {
@@ -986,16 +1153,98 @@ h3 {
     border-bottom: none;
 }
 
+/*
+ * Repository cards.
+ *
+ * One per row on a phone; two per row once there is room. The single-column rule
+ * that used to apply everywhere was written for mobile and left the desktop
+ * layout reading as an unfinished list.
+ */
+.project-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+@media (min-width: 760px) {
+    .project-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.project-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    background: var(--bg-input);
+}
+
+.project-card:hover {
+    border-color: var(--accent-dim);
+}
+
+.project-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    color: var(--text-strong);
+    font-weight: 600;
+    word-break: break-word;
+}
+
 .project-stars {
     color: #f6d365;
-    margin-left: 8px;
+    margin: 0;
     font-size: 0.85rem;
+    white-space: nowrap;
 }
 
 .project-desc {
-    margin: 4px 0 0;
+    flex: 1 1 100%;
+    margin: 0;
     color: var(--text-muted);
     font-size: 0.85rem;
+}
+
+/*
+ * Empty and error states.
+ *
+ * These carry instructions rather than a single grey line, because "nothing
+ * matched" and "nothing has been fetched yet" are different problems and used to
+ * look identical on the page.
+ */
+.empty-state {
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    background: rgba(0, 0, 0, 0.15);
+}
+
+.empty-state p {
+    margin: 0 0 10px;
+}
+
+.empty-state p:last-child {
+    margin-bottom: 0;
+}
+
+.empty-state pre {
+    margin: 10px 0;
+    padding: 10px 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow-x: auto;
+}
+
+.empty-state code {
+    color: var(--accent);
 }
 
 .deal-list {
@@ -1167,8 +1416,228 @@ code {
     font-size: 0.88em;
 }
 
-/* --- Responsive ------------------------------------------------------ */
+/* --- Toolbox module cards -------------------------------------------- */
 
+/*
+ * The two toolbox entry points. One per row on a phone, side by side once there
+ * is width for it: the single-column rule they used to share was written for
+ * mobile and left the desktop view looking like an unfinished list.
+ */
+.module-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--gap);
+    margin-bottom: var(--gap);
+}
+
+@media (min-width: 760px) {
+    .module-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.module-card {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    background: var(--bg-raised);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    color: var(--text);
+    transition: border-color 0.15s ease;
+}
+
+.module-card:hover {
+    border-color: var(--accent-dim);
+    text-decoration: none;
+}
+
+.module-card .card-icon {
+    font-size: 1.8rem;
+    line-height: 1;
+    flex: 0 0 auto;
+}
+
+.module-body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.module-card .card-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-strong);
+}
+
+.module-card .card-desc {
+    margin: 0;
+    color: var(--text);
+    font-size: 0.88rem;
+}
+
+.module-meta {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.module-meta strong {
+    color: var(--accent);
+}
+
+.link-anchor {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+}
+
+/* --- Steam deals and calendar ---------------------------------------- */
+
+.deal-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+@media (min-width: 760px) {
+    .deal-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.deal-card {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--bg-input);
+}
+
+.deal-card:hover {
+    border-color: var(--accent-dim);
+}
+
+.deal-thumb {
+    /*
+     * The Steam capsule artwork is 231x87. Rendering it at 96x45 — the first size
+     * used here — made it a dark smudge on a dark card, which reads as an empty
+     * box rather than as artwork. It is roughly doubled, and the aspect ratio now
+     * matches the source so nothing is cropped.
+     */
+    width: 150px;
+    aspect-ratio: 231 / 87;
+    height: auto;
+    object-fit: cover;
+    border-radius: 5px;
+    flex: 0 0 auto;
+    background: var(--bg);
+    border: 1px solid var(--border);
+}
+
+.deal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.deal-title {
+    color: var(--text-strong);
+    font-size: 0.92rem;
+    line-height: 1.3;
+}
+
+.deal-prices {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.deal-was {
+    color: var(--text-muted);
+    font-size: 0.82rem;
+}
+
+.deal-now {
+    color: var(--success);
+    font-size: 1.05rem;
+}
+
+.deal-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.calendar-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+@media (min-width: 620px) {
+    .calendar-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1000px) {
+    .calendar-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.calendar-card {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    background: var(--bg-input);
+}
+
+.calendar-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+    flex: 0 0 auto;
+}
+
+.calendar-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.calendar-name {
+    color: var(--text-strong);
+    font-weight: 600;
+    font-size: 0.94rem;
+}
+
+.calendar-date {
+    color: var(--accent);
+    font-size: 0.82rem;
+}
+
+.calendar-desc {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* --- Responsive ------------------------------------------------------ */
 @media (max-width: 640px) {
     .site-header {
         flex-wrap: wrap;
@@ -1198,8 +1667,7 @@ code {
         flex-direction: column;
     }
 
-    .blog-card,
-    .blog-card:not(:has(.blog-cover-link)) {
+    .blog-card {
         grid-template-columns: minmax(0, 1fr);
     }
 

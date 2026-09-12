@@ -11,6 +11,14 @@
  *
  *   DB_DRIVER=sqlite DB_SQLITE_PATH=storage/smoke.sqlite \
  *     APP_KEY=<32-byte-key> php tools/module-smoke.php
+ *
+ * Setting `DB_DRIVER=mysql` runs the same checks against MySQL or MariaDB. The
+ * two engines disagree about things that matter here — a repeated named
+ * placeholder is one, `ON DUPLICATE KEY UPDATE` against `ON CONFLICT` is another
+ * — and this script exists to catch exactly that, so being able to point it at
+ * the engine production uses is the point. It writes fixtures, so it refuses to
+ * start unless `SMOKE_ALLOW_MYSQL=1` is set as well, and the target should be a
+ * throwaway database rather than the live one.
  */
 
 declare(strict_types=1);
@@ -20,23 +28,39 @@ $basePath = dirname(__DIR__);
 require $basePath . '/bootstrap/autoload.php';
 
 use App\Database\Database;
+use App\Database\Migrator;
 use App\Repository\ApiCacheRepository;
 use App\Repository\AuditRepository;
 use App\Repository\BlogRepository;
+use App\Repository\EconomyRepository;
 use App\Repository\NoteRepository;
 use App\Repository\NotificationRepository;
+use App\Repository\RateLimitRepository;
 use App\Repository\ToolRepository;
 use App\Repository\UserRepository;
 use App\Security\Crypto;
+use App\Security\Csrf;
+use App\Security\Session;
 use App\Service\AdminService;
+use App\Service\AuthService;
+use App\Service\EconomyService;
 use App\Service\GithubService;
 use App\Service\NotificationService;
 use App\Service\SteamService;
 use App\Support\Config;
 
 $databasePath = getenv('DB_SQLITE_PATH');
+$driver = getenv('DB_DRIVER') === 'mysql' ? 'mysql' : 'sqlite';
 
-if ($databasePath === false || $databasePath === '') {
+if ($driver === 'mysql' && getenv('SMOKE_ALLOW_MYSQL') !== '1') {
+    fwrite(STDERR, 'DB_DRIVER=mysql writes fixture rows into the database it is given.' . PHP_EOL);
+    fwrite(STDERR, 'Point it at a throwaway database and set SMOKE_ALLOW_MYSQL=1 to confirm.' . PHP_EOL);
+    fwrite(STDERR, '  DB_DRIVER=mysql DB_DATABASE=inspiration_smoke SMOKE_ALLOW_MYSQL=1 php tools/module-smoke.php' . PHP_EOL);
+
+    exit(2);
+}
+
+if ($driver === 'sqlite' && ($databasePath === false || $databasePath === '')) {
     fwrite(STDERR, 'Set DB_SQLITE_PATH to a throwaway database file, for example:' . PHP_EOL);
     fwrite(STDERR, '  DB_SQLITE_PATH=storage/smoke.sqlite php tools/module-smoke.php' . PHP_EOL);
     fwrite(STDERR, PHP_EOL . 'Refusing to fall back to the development database, so smoke fixtures' . PHP_EOL);
@@ -45,10 +69,31 @@ if ($databasePath === false || $databasePath === '') {
     exit(2);
 }
 
-$database = Database::boot([
-    'driver' => 'sqlite',
-    'sqlite_path' => $databasePath,
-]);
+$database = $driver === 'mysql'
+    ? Database::boot([
+        'driver' => 'mysql',
+        'host' => getenv('DB_HOST') ?: '127.0.0.1',
+        'port' => (int) (getenv('DB_PORT') ?: 3306),
+        'name' => (string) getenv('DB_DATABASE'),
+        'username' => getenv('DB_USERNAME') ?: 'root',
+        'password' => getenv('DB_PASSWORD') ?: '',
+        'charset' => getenv('DB_CHARSET') ?: 'utf8mb4',
+    ])
+    : Database::boot([
+        'driver' => 'sqlite',
+        'sqlite_path' => $databasePath,
+    ]);
+
+echo 'Engine: ' . $database->driver() . PHP_EOL;
+
+// The schema is applied here rather than assumed. Migrations are tracked, so on a
+// database that is already up to date this does nothing, and on a fresh one it
+// removes a setup step that used to be a separate throwaway script.
+$applied = (new Migrator($database, $basePath . '/database/migrations', translateToSqlite: $driver === 'sqlite'))->migrate();
+
+if ($applied !== []) {
+    echo 'Applied migrations: ' . implode(', ', $applied) . PHP_EOL;
+}
 
 $config = Config::fromFile($basePath . '/config/app.php');
 $crypto = new Crypto('0123456789abcdef0123456789abcdef');
@@ -120,6 +165,24 @@ $entry = $blog->findPublished((string) $id);
 check('entry is created and found by id', $entry !== null);
 check('slug is generated', $entry !== null && ($entry['slug'] ?? '') !== '');
 check('excerpt strips markup', $entry !== null && !str_contains((string) $entry['excerpt'], '<'));
+
+// A long entry is where the excerpt length and the column width meet. The column
+// is VARCHAR(320) on MySQL, which rejects one character over; SQLite accepts
+// anything, so only a check like this one catches the difference.
+$longBody = str_repeat("## 小节标题\n\n这是一段用来把摘要撑到上限之上的正文内容。\n\n", 40);
+$longId = $blog->create($ownerId, '一篇足够长的日志', $longBody);
+$longEntry = $database->selectOne('SELECT excerpt FROM blog_posts WHERE id = :blog_id', ['blog_id' => $longId]);
+$excerptLength = mb_strlen((string) ($longEntry['excerpt'] ?? ''));
+
+check(
+    'a long entry stores an excerpt within the column width',
+    $excerptLength > 0 && $excerptLength <= 320,
+    'length=' . $excerptLength,
+);
+check(
+    'the long excerpt carries no Markdown markers',
+    $longEntry !== null && !str_contains((string) $longEntry['excerpt'], '#') && !str_contains((string) $longEntry['excerpt'], "\n"),
+);
 
 $slug = (string) ($entry['slug'] ?? '');
 $bySlug = $blog->findPublished($slug);
@@ -246,6 +309,73 @@ $database->execute(
 check('pruning removes the expired entry', $cache->pruneExpired() >= 1);
 check('the pruned entry is gone', $cache->getStale('test.prune') === null);
 
+// The economy writes to two tables under a balance guard, and it was the one
+// module this script did not touch — which is how a statement MySQL refuses
+// (`:amount` bound twice) survived in `debit()` while every SQLite run passed.
+echo PHP_EOL . 'Economy' . PHP_EOL;
+
+$economy = new EconomyRepository($database);
+
+// Cleared first, for the same reason as the cache rows above: the daily
+// check-in writes a per-day limit row, so without this the second run would find
+// the day already claimed and report a failure that says nothing about the code.
+// Removing the account takes its balance, its items and its limit rows with it.
+$database->execute('DELETE FROM users WHERE username = :username', ['username' => 'smoke_spender']);
+$database->execute('DELETE FROM shop_items WHERE code = :code', ['code' => 'smoke_item']);
+$database->execute('DELETE FROM shop_items WHERE code = :code', ['code' => 'smoke_expensive']);
+
+$spenderId = $database->insert(
+    "INSERT INTO users (username, password_hash, role, status) VALUES (:username, :hash, 'user', 'active')",
+    ['username' => 'smoke_spender', 'hash' => password_hash('smoke-password', PASSWORD_DEFAULT)],
+);
+$database->execute(
+    'INSERT INTO user_profiles (user_id, display_name, exp, stardust) VALUES (:user_id, :name, 0, 100)',
+    ['user_id' => $spenderId, 'name' => 'smoke_spender'],
+);
+
+$balance = static fn (): int => (int) $database->selectOne(
+    'SELECT stardust FROM user_profiles WHERE user_id = :user_id',
+    ['user_id' => $spenderId],
+)['stardust'];
+
+$economy->adjust($spenderId, 50, 10);
+check('stardust and experience are credited', $balance() === 150, 'balance=' . $balance());
+
+check('a debit within the balance succeeds', $economy->debit($spenderId, 30) === true);
+check('the debit is deducted exactly once', $balance() === 120, 'balance=' . $balance());
+check('a debit beyond the balance is refused', $economy->debit($spenderId, 10000) === false);
+check('the refused debit left the balance alone', $balance() === 120, 'balance=' . $balance());
+check('a zero debit is refused', $economy->debit($spenderId, 0) === false);
+
+$itemId = $database->insert(
+    "INSERT INTO shop_items (code, name, description, type, rarity, price, icon, css_class)
+     VALUES ('smoke_item', '冒烟测试遗物', '只用于自检', 'effect', 'common', 40, '🧪', 'effect-smoke')",
+);
+
+$economyService = new EconomyService(
+    $database,
+    new UserRepository($database),
+    $economy,
+    new RateLimitRepository($database),
+    $config,
+);
+
+$purchase = $economyService->purchase($spenderId, $itemId);
+check('a purchase within the balance succeeds', ($purchase['ok'] ?? false) === true, (string) ($purchase['message'] ?? ''));
+check('the purchase charged the price', $balance() === 80, 'balance=' . $balance());
+check('the purchased item is owned', $economy->ownsItem($spenderId, $itemId) === true);
+check('buying the same item twice is refused', ($economyService->purchase($spenderId, $itemId)['ok'] ?? true) === false);
+
+$expensiveId = $database->insert(
+    "INSERT INTO shop_items (code, name, description, type, rarity, price, icon, css_class)
+     VALUES ('smoke_expensive', '昂贵的冒烟遗物', '只用于自检', 'effect', 'legendary', 100000, '💸', 'effect-smoke')",
+);
+check('a purchase beyond the balance is refused', ($economyService->purchase($spenderId, $expensiveId)['ok'] ?? true) === false);
+check('the refused purchase left the balance alone', $balance() === 80, 'balance=' . $balance());
+
+check('the first check-in of the day succeeds', ($economyService->checkIn($spenderId)['ok'] ?? false) === true);
+check('a second check-in the same day is refused', ($economyService->checkIn($spenderId)['ok'] ?? true) === false);
+
 $steam = new SteamService($cache, $config);
 check('seasonal calendar is available offline', count($steam->calendar()) > 0);
 
@@ -292,6 +422,37 @@ $audit = new AuditRepository($database);
 $audit->record(AuditRepository::LOGIN_FAILED, null, '', null, '203.0.113.5', 'probe');
 check('audit entries are recorded', count($audit->recent(10)) > 0);
 check('failed logins are counted for an address', $audit->recentFailedLogins('203.0.113.5') >= 1);
+
+// The audit table is only worth having if the paths that matter write to it.
+// Recording a row here by hand, as above, proves the table works; it does not
+// prove that a refused sign-in reaches it, which is what the throttle's own
+// counter is read from.
+echo PHP_EOL . 'Sign-in is written to the audit log' . PHP_EOL;
+
+$session = new Session($config);
+$auth = new AuthService($database, new UserRepository($database), $session, new Csrf($session), $audit);
+
+$before = count($audit->recent(500));
+// Counted before the attempt as well, so a second run of this script compares
+// against its own starting point instead of an absolute one.
+$failuresBefore = $audit->recentFailedLogins('198.51.100.7');
+$auth->attempt('smoke_owner', 'definitely-not-the-password', '198.51.100.7', 'probe');
+$after = count($audit->recent(500));
+
+check('a refused sign-in adds an audit entry', $after === $before + 1, sprintf('%d → %d', $before, $after));
+check(
+    'the refused sign-in is attributed to the client address',
+    $audit->recentFailedLogins('198.51.100.7') === $failuresBefore + 1,
+    sprintf('%d → %d', $failuresBefore, $audit->recentFailedLogins('198.51.100.7')),
+);
+
+$auditedActions = array_column($audit->recent(500), 'action');
+
+check(
+    'publishing through the admin service is audited',
+    in_array(AuditRepository::BLOG_CREATED, $auditedActions, true)
+        && in_array(AuditRepository::BLOG_DELETED, $auditedActions, true),
+);
 
 echo PHP_EOL;
 printf('%d check(s) failed.%s', $failures, PHP_EOL);

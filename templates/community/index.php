@@ -14,6 +14,14 @@ use App\Http\View;
 
 $activeCategory = $activeCategory ?? null;
 ?>
+<?php
+// Both libraries are UMD bundles and are loaded before the module that uses
+// them, so posts render at first paint rather than after a second round trip.
+// The Content-Security-Policy allows scripts from this origin only.
+?>
+<script src="/assets/js/vendor/marked.min.js"></script>
+<script src="/assets/js/vendor/purify.min.js"></script>
+
 <section class="feed">
     <header class="feed-header">
         <h1>虚空枢纽</h1>
@@ -46,11 +54,18 @@ $activeCategory = $activeCategory ?? null;
                 <?php endforeach; ?>
             </select>
 
+            <span class="emoji-picker" data-emoji-picker>
+                <button type="button" class="tool-btn" data-emoji-toggle aria-expanded="false">😊 表情</button>
+                <span class="emoji-panel" data-emoji-panel hidden></span>
+            </span>
+
             <label class="sr-only" for="post-image">配图</label>
             <input id="post-image" name="image" type="file" accept="image/jpeg,image/png,image/gif,image/webp">
 
             <button type="submit" class="btn btn-primary">发布</button>
         </div>
+
+        <p class="compose-hint muted">支持 Markdown（标题、列表、引用、代码块）与 <code>[s:name]</code> 表情。</p>
 
         <p class="form-status" data-form-status role="status" aria-live="polite"></p>
     </form>
@@ -71,12 +86,20 @@ $activeCategory = $activeCategory ?? null;
                 </time>
             </header>
 
-            <div class="post-body">
-                <p><?= nl2br(View::escape($post['content'])) ?></p>
-                <?php if (!empty($post['image_path'])): ?>
-                    <img class="post-image" src="<?= View::escape($post['image_path']) ?>" alt="帖子配图" loading="lazy">
-                <?php endif; ?>
+            <?php
+            // The body is rendered as Markdown by assets/js/markdown.js. The
+            // escaped source is emitted inside the element first, so a browser
+            // without JavaScript — or a failed bundle request — shows the text
+            // instead of an empty post.
+            ?>
+            <div class="post-body markdown-body"
+                 data-markdown-source="<?= View::escape(json_encode((string) $post['content'], JSON_UNESCAPED_UNICODE)) ?>">
+                <p class="post-text"><?= nl2br(View::escape($post['content'])) ?></p>
             </div>
+
+            <?php if (!empty($post['image_path'])): ?>
+                <img class="post-image" src="<?= View::escape($post['image_path']) ?>" alt="帖子配图" loading="lazy">
+            <?php endif; ?>
 
             <footer class="post-actions">
                 <button type="button" class="action-btn <?= ((int) $post['liked_by_viewer']) === 1 ? 'is-active' : '' ?>"

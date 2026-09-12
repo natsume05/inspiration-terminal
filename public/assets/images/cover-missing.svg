@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 480" role="img" aria-label="暂无封面">
+    <!--
+        Stand-in for a blog entry that has no cover image.
+
+        Emitting no cover at all left the list ragged, and an entry whose cover
+        file is missing from disk rendered a broken-image icon, which reads as a
+        fault in the site rather than as one absent file. This keeps the layout
+        uniform and says which of the two it is.
+    -->
+    <defs>
+        <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#141922"/>
+            <stop offset="100%" stop-color="#0b0c10"/>
+        </linearGradient>
+    </defs>
+    <rect width="1200" height="480" fill="url(#fade)"/>
+    <g fill="none" stroke="#45a29e" stroke-width="3" opacity="0.5">
+        <rect x="510" y="170" width="180" height="120" rx="10"/>
+        <path d="M510 240l50-38 44 32 40-30 46 36"/>
+        <circle cx="565" cy="202" r="10"/>
+    </g>
+    <text x="600" y="330" text-anchor="middle" fill="#7d8590"
+          font-family="system-ui, sans-serif" font-size="22">暂无封面</text>
+</svg>
